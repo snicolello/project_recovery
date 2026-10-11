@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/snicolello/project_recovery/manifest/schema.json",
+  "title": "Project Recovery manifest",
+  "description": "Declares a vault's project roots, the baseline note and labelled lines that answer each recovery field, the decision sources, and the authority policy. Version 0.1 (release R1). recipe.validate_manifest enforces the required keys and the R1 constraints marked below.",
+  "type": "object",
+  "required": ["manifest_version", "name", "vault", "index", "budget", "authority_policy", "projects"],
+  "properties": {
+    "manifest_version": {"const": "0.1"},
+    "name": {"type": "string", "pattern": "^[a-z0-9-]+$", "description": "Names the derived index directory under .qmd/."},
+    "description": {"type": "string"},
+    "vault": {
+      "type": "object",
+      "required": ["root"],
+      "properties": {
+        "root": {"type": "string", "description": "Vault root, relative to the manifest file. Source locators in receipts are relative to this root. Overridable with --vault-root."}
+      }
+    },
+    "index": {
+      "type": "object",
+      "required": ["engine", "version", "search"],
+      "properties": {
+        "engine": {"const": "qmd"},
+        "version": {"const": "2.8.3"},
+        "search": {
+          "type": "object",
+          "required": ["type", "rerank"],
+          "properties": {
+            "type": {"const": "lex", "description": "R1 is lexical only."},
+            "rerank": {"const": false},
+            "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10}
+          }
+        },
+        "embeddings": {"const": false}
+      }
+    },
+    "budget": {
+      "type": "object",
+      "required": ["max_tokens"],
+      "properties": {
+        "max_tokens": {"type": "integer", "minimum": 1, "default": 4000},
+        "tokenizer": {"const": "approx-utf8-bytes-div-3"}
+      }
+    },
+    "authority_policy": {
+      "type": "object",
+      "required": ["local_claims"],
+      "properties": {
+        "local_claims": {"const": "local_only", "description": "R1: every decision is labelled local_only."},
+        "verifier": {"type": "null", "description": "R2 placeholder for the serial GitHub verifier."},
+        "acceptance_records": {"type": "array", "description": "R2 placeholder: allowlisted repositories and record types."},
+        "note": {"type": "string"}
+      }
+    },
+    "projects": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["collection", "root", "baseline_note", "fields", "decision_statuses", "authority"],
+        "properties": {
+          "collection": {"type": "string", "description": "QMD collection name; every query is scoped to it."},
+          "root": {"type": "string", "description": "Project directory relative to the vault root (allowlisted source root)."},
+          "baseline_note": {"type": "string", "description": "Note, relative to the project root, that states the recovery fields."},
+          "fields": {
+            "type": "object",
+            "required": ["objective", "current_state", "blockers", "next_action", "accepted_decisions"],
+            "additionalProperties": {"type": "array", "items": {"type": "string"}, "description": "Line prefixes in the baseline note that answer this field. Each matching line is cited verbatim."}
+          },
+          "decision_statuses": {"type": "array", "items": {"type": "string"}, "description": "Frontmatter status values that mark a note as a decision source. 'accepted' goes to accepted_decisions (still local_only); others to other_decisions."},
+          "authority": {
+            "type": "object",
+            "properties": {
+              "record": {"type": "string", "description": "Governing record, relative to the project root."},
+              "record_key": {"type": "string", "default": "status"},
+              "approver_labels": {"type": "array", "items": {"type": "string"}},
+              "approvals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "note", "label"],
+                  "properties": {
+                    "name": {"type": "string"},
+                    "note": {"type": "string"},
+                    "label": {"type": "string", "description": "A line whose value starts with UNKNOWN yields unknown, with the line cited as evidence."}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

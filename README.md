@@ -6,7 +6,7 @@ A fresh agent session that resumes an interrupted project needs five things: the
 
 ## Status
 
-Release R0: contract and fixtures. No recipe or verifier code exists yet. The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
+Release R1 in review: a manifest and a read-only read, refresh, assemble recipe over pinned QMD 2.8.3 (lexical only), shipped as the agent skill in `skills/project-recovery/`, passing scenarios S1 to S5 with zero unsupported assertions. Authority verification against GitHub is R2; every decision is labelled `local_only` until then. Try it: [`docs/quickstart.md`](docs/quickstart.md). The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 
@@ -20,6 +20,9 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 | `docs/discovery/` | Phase 0 decision brief, MVP (minimum viable product) acceptance criteria, and the hand-trial gap list. |
 | `fixtures/synthetic-vault/` | Nine fictional Markdown notes across two projects (Atlas, Beacon). SHA-256 digests in `fixtures/synthetic-vault-hashes.json`. |
 | `fixtures/scenario-plan.json` | Five restart scenarios with expectations written before execution. |
+| `manifest/` | Manifest schema, the fixture vault's manifest, and pinned tool versions. |
+| `skills/project-recovery/` | The R1 recipe as an agent skill: `SKILL.md`, the pinned QMD lockfile, and stdlib Python scripts. |
+| `scripts/run_scenarios.py` | Runs S1 to S5 and scores every gate; exits non-zero on any failure. |
 | `evidence/scoped-evaluation-2026-10-10/` | Executed tool responses, source-integrity checks, versions, tool schemas, MCP (Model Context Protocol) request logs, and the harness scripts. Workspace paths are replaced with `<workspace>`. |
 
 ## Roadmap

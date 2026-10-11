@@ -1,0 +1,17 @@
+{
+  "recorded": "2026-10-11",
+  "release": "R1",
+  "qmd": {
+    "package": "@tobilu/qmd",
+    "version": "2.8.3",
+    "integrity": "sha512-zjfVwrObPB618B6x8SdhlGv/tX9OxRHsbQnr5DUtBvqPK6HGQ27lM+9/BAY5okpjrHVnW56hLyDkqoTcsrVLzA==",
+    "lockfile": "skills/project-recovery/qmd/package-lock.json",
+    "install": "npm ci --ignore-scripts into qmd-runtime/ (git-ignored)",
+    "mode": "lexical only; rerank false; no embedding or model download"
+  },
+  "node": "24.13.0",
+  "npm": "11.6.2",
+  "python": "3.11.9 (3.11+ required; stdlib only)",
+  "platform_tested": "Windows 11",
+  "tokenizer": "approx-utf8-bytes-div-3"
+}

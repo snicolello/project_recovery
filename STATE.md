@@ -33,7 +33,6 @@ Release R0 content (contract, nine synthetic fixture notes with hashes, five sce
 
 - R2 authority and freshness, R3 Librarian, R4 vault pilot, R5 public v1.0: each behind its predecessor's gate on Epic #113.
 - Comparative 40-case benchmark: cancelled under ruling 3; re-entry only if a later release gate cannot be decided without it.
-- Board registration of a `Project Recovery` option on the portfolio board's project field: owner adds the option; the Agent Skills board config then records its identifier.
 
 ## Blocked
 

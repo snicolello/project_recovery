@@ -1,0 +1,15 @@
+{
+  "tool": "qmd",
+  "args": [
+    "search",
+    "restart",
+    "-c",
+    "atlas",
+    "--format",
+    "json"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.293,
+  "stdout": "[\n  {\n    \"docid\": \"#978242\",\n    \"score\": 0.55,\n    \"file\": \"qmd://atlas/Restart Runbook.md\",\n    \"line\": 2,\n    \"title\": \"Restart Runbook\",\n    \"snippet\": \"@@ -1,4 @@ (0 before, 8 after)\\n---\\r\\ntitle: Restart Runbook\\r\\ntype: note\\r\\npermalink: restart-runbook\\r\"\n  },\n  {\n    \"docid\": \"#533ce1\",\n    \"score\": 0.34,\n    \"file\": \"qmd://atlas/Project.md\",\n    \"line\": 16,\n    \"title\": \"Atlas Project\",\n    \"snippet\": \"@@ -15,3 @@ (14 before, 0 after)\\nRecovery marker: ATLAS-42.\\r\\nRelated: [[Queue Decision]], [[Restart Runbook]], [[Release Checklist]].\\r\\n\"\n  }\n]\n",
+  "stderr": ""
+}

@@ -1,0 +1,10 @@
+{
+  "tool": "bm",
+  "args": [
+    "--help"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 0.026,
+  "stdout": "",
+  "stderr": "Failed to canonicalize script path\n"
+}

@@ -1,0 +1,72 @@
+Timeout (0:00:20)!
+Thread 0x00006fc4 (most recent call first):
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 295 in accept
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 627 in _fallback_socketpair
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 120 in _make_self_pipe
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 66 in __init__
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 720 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 823 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 137 in _lazy_init
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 58 in __enter__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2547 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_core\_eventloop.py", line 83 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\fastmcp\server\mixins\transport.py", line 123 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 19 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 118 in mcp
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1524 in wrapper
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 483 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 741 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1119 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 187 in _main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1197 in main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 802 in __call__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1137 in __call__
+  File "<string>", line 1 in <module>
+Timeout (0:00:20)!
+Thread 0x00006fc4 (most recent call first):
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 295 in accept
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 627 in _fallback_socketpair
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 120 in _make_self_pipe
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 66 in __init__
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 720 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 823 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 137 in _lazy_init
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 58 in __enter__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2547 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_core\_eventloop.py", line 83 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\fastmcp\server\mixins\transport.py", line 123 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 19 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 118 in mcp
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1524 in wrapper
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 483 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 741 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1119 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 187 in _main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1197 in main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 802 in __call__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1137 in __call__
+  File "<string>", line 1 in <module>
+Timeout (0:00:20)!
+Thread 0x00006fc4 (most recent call first):
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 295 in accept
+  File "<codex-runtime>\dependencies\python\Lib\socket.py", line 627 in _fallback_socketpair
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 120 in _make_self_pipe
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\selector_events.py", line 66 in __init__
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 720 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\events.py", line 823 in new_event_loop
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 137 in _lazy_init
+  File "<codex-runtime>\dependencies\python\Lib\asyncio\runners.py", line 58 in __enter__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2547 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\anyio\_core\_eventloop.py", line 83 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\fastmcp\server\mixins\transport.py", line 123 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 19 in run
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\basic_memory\cli\commands\mcp.py", line 118 in mcp
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1524 in wrapper
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 483 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 741 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1119 in invoke
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 187 in _main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\core.py", line 1197 in main
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\_click\core.py", line 802 in __call__
+  File "<workspace>\work\scoped-evaluation\bm-venv\Lib\site-packages\typer\main.py", line 1137 in __call__
+  File "<string>", line 1 in <module>

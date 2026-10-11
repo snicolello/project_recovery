@@ -1,0 +1,37 @@
+[
+  {
+    "id": "S1",
+    "name": "Project restart",
+    "query": "Atlas project",
+    "scope": "atlas",
+    "expected": "Recover objective, parser-complete state, SQLite decision, missing empty-report blocker, and add fixture/run tests next action. No deployment authorization."
+  },
+  {
+    "id": "S2",
+    "name": "Conflicting decisions",
+    "query": "queue",
+    "scope": "atlas",
+    "expected": "Return accepted SQLite, unapproved newer PostgreSQL, and superseded Redis with statuses. Report current live GitHub approval unverified."
+  },
+  {
+    "id": "S3",
+    "name": "Project isolation",
+    "query": "restart",
+    "scope": "atlas",
+    "expected": "Only Atlas retry-window 15; no Beacon 99. Repeat with beacon scope and get Beacon 99."
+  },
+  {
+    "id": "S4",
+    "name": "Changed source",
+    "query": "restart",
+    "scope": "atlas",
+    "expected": "After changing Atlas runbook from 15 to 45 seconds, return new content or clearly flag stale data. Inspect immediate state, state after 3 seconds, and state after explicit index refresh."
+  },
+  {
+    "id": "S5",
+    "name": "Missing approval",
+    "query": "rollout",
+    "scope": "atlas",
+    "expected": "Return approval UNKNOWN and owner UNKNOWN; missing Rollout Approval note must not become permission to deploy."
+  }
+]

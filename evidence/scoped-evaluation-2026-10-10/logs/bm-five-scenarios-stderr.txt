@@ -1,0 +1,68 @@
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                                                                             │
+│                        ▄▀▀ ▄▀█ █▀▀ ▀█▀ █▀▄▀█ █▀▀ █▀█                        │
+│                        █▀  █▀█ ▄▄█  █  █ ▀ █ █▄▄ █▀▀                        │
+│                                                                             │
+│                                                                             │
+│                                                                             │
+│                               FastMCP 4.0.0b1                               │
+│                            https://gofastmcp.com                            │
+│                                                                             │
+│                 🖥  Server:      Basic Memory, 4.0.0b1                       │
+│                 🚀 Deploy free: https://horizon.prefect.io                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         🎉 Update available: 4.1.0                          │
+│                     Run: pip install --upgrade fastmcp                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+[10/10/26 19:33:03] INFO     Starting MCP server 'Basic        transport.py:241
+                             Memory' with transport 'stdio'                    
+                    DEBUG    Sending INFO to client: Listing    context.py:1347
+                             all available projects                            
+[10/10/26 19:33:04] Error calling tool 'list_memory_projects'                  
+                    ┌─────────── Traceback (most recent call last) ───────────┐
+                    │ <workspace>                                             │
+                    │ atgpt-conversation-this-is-an\work\scoped-evaluation\bm │
+                    │ -venv\Lib\site-packages\fastmcp\server\server.py:1485   │
+                    │ in call_tool                                            │
+                    │                                                         │
+                    │ <workspace>                                             │
+                    │ atgpt-conversation-this-is-an\work\scoped-evaluation\bm │
+                    │ -venv\Lib\site-packages\fastmcp\tools\base.py:422 in    │
+                    │ _run                                                    │
+                    │                                                         │
+                    │                ... 40 frames hidden ...                 │
+                    │                                                         │
+                    │ <workspace>                                             │
+                    │ atgpt-conversation-this-is-an\work\scoped-evaluation\bm │
+                    │ -venv\Lib\site-packages\basic_memory\api\v2\routers\pro │
+                    │ ject_router.py:133 in list_projects                     │
+                    │                                                         │
+                    │   130 │   │   A list of all projects with metadata      │
+                    │   131 │   """                                           │
+                    │   132 │   projects = await project_service.list_project │
+                    │ > 133 │   default_project = await project_service.get_d │
+                    │   134 │                                                 │
+                    │   135 │   project_items = [                             │
+                    │   136 │   │   ProjectItem(                              │
+                    │                                                         │
+                    │ <workspace>                                             │
+                    │ atgpt-conversation-this-is-an\work\scoped-evaluation\bm │
+                    │ -venv\Lib\site-packages\basic_memory\services\project_s │
+                    │ ervice.py:132 in get_default_project_name               │
+                    │                                                         │
+                    │    129 │   │   │   db_default = await self.repository.g │
+                    │    130 │   │   if db_default is not None:               │
+                    │    131 │   │   │   return db_default.name               │
+                    │ >  132 │   │   raise ValueError("No default project con │
+                    │    133 │                                                │
+                    │    134 │   @property                                    │
+                    │    135 │   def current_project(self) -> Optional[str]:  │
+                    └─────────────────────────────────────────────────────────┘
+                    ValueError: No default project configured                  

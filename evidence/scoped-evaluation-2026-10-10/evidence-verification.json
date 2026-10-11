@@ -1,0 +1,25 @@
+{
+  "purpose": "Artifact consistency checks, not an accuracy score or additional benchmark cases",
+  "checks": {
+    "original_nine_note_vault_unchanged": true,
+    "bm_runtime_started_with_identical_bytes": true,
+    "bm_only_intentional_source_change": true,
+    "qmd_runtime_started_with_identical_bytes": true,
+    "qmd_only_intentional_source_change": true,
+    "bm_ready_project_contains_five_fields": true,
+    "qmd_project_contains_five_fields": true,
+    "bm_status_filter_selects_only_accepted_note": true,
+    "bm_unfiltered_accepted_note_ranks_third": true,
+    "qmd_unfiltered_accepted_note_ranks_third": true,
+    "bm_atlas_scope_excludes_beacon": true,
+    "qmd_atlas_scope_excludes_beacon": true,
+    "bm_immediate_read_old": true,
+    "bm_later_read_new": true,
+    "qmd_later_read_still_old": true,
+    "qmd_refreshed_read_new": true,
+    "bm_missing_note_content_null": true,
+    "qmd_missing_note_error": true,
+    "qmd_snippet_label_disagrees_with_file": true,
+    "qmd_tarball_matches_registry_integrity": true
+  }
+}

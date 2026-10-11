@@ -1,0 +1,156 @@
+{
+  "bin": {
+    "qmd": "bin/qmd"
+  },
+  "bugs": {
+    "url": "https://github.com/tobi/qmd/issues"
+  },
+  "dist": {
+    "shasum": "7e1515b1daf349a1dc88cff53da925d34f89c948",
+    "tarball": "https://registry.npmjs.org/@tobilu/qmd/-/qmd-2.8.3.tgz",
+    "fileCount": 53,
+    "integrity": "sha512-zjfVwrObPB618B6x8SdhlGv/tX9OxRHsbQnr5DUtBvqPK6HGQ27lM+9/BAY5okpjrHVnW56hLyDkqoTcsrVLzA==",
+    "signatures": [
+      {
+        "sig": "MEUCIHW8DfXOgj/MyuB0/oMufSYUoShkgbR0HnWDUUfbWouaAiEAnZg04j9W3ygnyMjyQ/CaYBPYo9ZgoDS0iIQ8HsVCXck=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@tobilu%2fqmd@2.8.3",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 914522
+  },
+  "main": "dist/index.js",
+  "name": "@tobilu/qmd",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "node-llama-cpp",
+      "tree-sitter-go",
+      "tree-sitter-python",
+      "tree-sitter-rust",
+      "tree-sitter-typescript"
+    ]
+  },
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "Tobi Lutke",
+    "email": "tobi@lutke.com"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "gitHead": "facd35e01359e59d938bc9418e93fb9318addee3",
+  "license": "MIT",
+  "scripts": {
+    "qmd": "tsx src/cli/qmd.ts",
+    "test": "node scripts/test-all.mjs",
+    "build": "node scripts/build.mjs",
+    "index": "tsx src/cli/qmd.ts index",
+    "rerank": "tsx src/cli/qmd.ts rerank",
+    "search": "tsx src/cli/qmd.ts search",
+    "vector": "tsx src/cli/qmd.ts vector",
+    "prepare": "node scripts/install-hooks.mjs && node scripts/build.mjs",
+    "release": "./scripts/release.sh",
+    "vsearch": "tsx src/cli/qmd.ts vsearch",
+    "test:bun": "bun test --timeout 60000 --preload ./src/test-preload.ts",
+    "inspector": "npx @modelcontextprotocol/inspector tsx src/cli/qmd.ts mcp",
+    "test:node": "node ./node_modules/vitest/vitest.mjs run --reporter=verbose --testTimeout 60000",
+    "test:unit": "CI=true node ./node_modules/vitest/vitest.mjs run --reporter=verbose --testTimeout 60000 test/ && CI=true bun test --timeout 60000 --preload ./src/test-preload.ts test/",
+    "test:types": "node ./node_modules/typescript/bin/tsc -p tsconfig.build.json --noEmit",
+    "test:package": "node scripts/package-smoke.mjs",
+    "smoke:package-grammars": "node scripts/check-package-grammars.mjs"
+  },
+  "_npmUser": {
+    "name": "GitHub Actions",
+    "email": "npm-oidc-no-reply@github.com",
+    "trustedPublisher": {
+      "id": "github",
+      "oidcConfigId": "oidc:e6c4aec0-27ea-47d9-99dd-7b537d96ce18"
+    }
+  },
+  "homepage": "https://github.com/tobi/qmd#readme",
+  "keywords": [
+    "markdown",
+    "search",
+    "fts",
+    "full-text-search",
+    "vector",
+    "semantic-search",
+    "sqlite",
+    "bm25",
+    "embeddings",
+    "rag",
+    "mcp",
+    "reranking",
+    "knowledge-base",
+    "local-ai",
+    "llm"
+  ],
+  "repository": {
+    "url": "git+https://github.com/tobi/qmd.git",
+    "type": "git"
+  },
+  "_npmVersion": "11.17.0",
+  "description": "Query Markup Documents - On-device hybrid search for markdown files with BM25, vector search, and LLM reranking",
+  "directories": {},
+  "maintainers": [
+    {
+      "name": "tobilu",
+      "email": "tobi@lutke.com"
+    }
+  ],
+  "_nodeVersion": "24.19.0",
+  "dependencies": {
+    "zod": "4.2.1",
+    "yaml": "2.9.0",
+    "fast-glob": "3.3.3",
+    "picomatch": "4.0.5",
+    "sqlite-vec": "0.1.9",
+    "better-sqlite3": "^13.0.3",
+    "node-llama-cpp": "3.20.0",
+    "tree-sitter-go": "0.25.0",
+    "web-tree-sitter": "0.26.12",
+    "tree-sitter-rust": "0.24.0",
+    "tree-sitter-python": "0.25.0",
+    "tree-sitter-typescript": "0.23.2",
+    "@modelcontextprotocol/server": "2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "_hasShrinkwrap": false,
+  "devDependencies": {
+    "tsx": "4.23.12",
+    "vitest": "3.2.7",
+    "@types/better-sqlite3": "7.6.13"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "optionalDependencies": {
+    "sqlite-vec-linux-x64": "0.1.9",
+    "sqlite-vec-darwin-x64": "0.1.9",
+    "sqlite-vec-linux-arm64": "0.1.9",
+    "sqlite-vec-windows-x64": "0.1.9",
+    "sqlite-vec-darwin-arm64": "0.1.9"
+  },
+  "_npmOperationalInternal": {
+    "tmp": "tmp/qmd_2.8.3_1786919432494_0.7097457050364584",
+    "host": "s3://npm-registry-packages-npm-production"
+  },
+  "_id": "@tobilu/qmd@2.8.3",
+  "version": "2.8.3"
+}

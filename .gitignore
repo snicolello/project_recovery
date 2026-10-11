@@ -1,0 +1,15 @@
+# Isolated tool runtimes and indexes never belong in the repository
+.venv/
+*-venv/
+qmd-runtime/
+node_modules/
+__pycache__/
+*.pyc
+.qmd/
+*.sqlite
+*.db
+runtime-vaults/
+
+# Local scratch
+.scratch/
+*.log

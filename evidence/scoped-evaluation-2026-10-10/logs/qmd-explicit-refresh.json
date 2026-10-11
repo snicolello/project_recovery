@@ -1,0 +1,10 @@
+{
+  "tool": "qmd",
+  "args": [
+    "update"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.323,
+  "stdout": "Updating 2 collection(s)...\n\n[1/2] atlas (**/*.md)\nCollection: <workspace>\\work\\scoped-evaluation\\qmd-vault\\atlas (**/*.md)\n\nIndexed: 0 new, 1 updated, 6 unchanged, 0 removed\nCleaned up 1 orphaned content hash(es)\n\n[2/2] beacon (**/*.md)\nCollection: <workspace>\\work\\scoped-evaluation\\qmd-vault\\beacon (**/*.md)\n\nIndexed: 0 new, 0 updated, 2 unchanged, 0 removed\n\n\u2713 All collections updated.\n\nRun 'qmd embed' to update embeddings (9 unique hashes need vectors)\n",
+  "stderr": ""
+}

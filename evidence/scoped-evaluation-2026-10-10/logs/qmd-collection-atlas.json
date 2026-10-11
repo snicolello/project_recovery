@@ -1,0 +1,14 @@
+{
+  "tool": "qmd",
+  "args": [
+    "collection",
+    "add",
+    "./qmd-vault/atlas",
+    "--name",
+    "atlas"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.347,
+  "stdout": "Creating collection 'atlas'...\nCollection: <workspace>\\work\\scoped-evaluation\\qmd-vault\\atlas (**/*.md)\n\nIndexed: 7 new, 0 updated, 0 unchanged, 0 removed\n\nRun 'qmd embed' to update embeddings (7 unique hashes need vectors)\n\u2713 Collection 'atlas' created successfully\n",
+  "stderr": ""
+}

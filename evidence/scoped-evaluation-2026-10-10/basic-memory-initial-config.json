@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "atlas": {
+      "path": "<workspace>\\work\\scoped-evaluation\\bm-vault\\atlas",
+      "mode": "local"
+    },
+    "beacon": {
+      "path": "<workspace>\\work\\scoped-evaluation\\bm-vault\\beacon",
+      "mode": "local"
+    }
+  },
+  "default_project": null,
+  "semantic_search_enabled": false,
+  "auto_update": false,
+  "logfire_enabled": false,
+  "logfire_send_to_logfire": false,
+  "index_changes": true,
+  "disable_permalinks": true,
+  "project_root": "<workspace>\\work\\scoped-evaluation\\bm-vault",
+  "log_level": "WARNING"
+}

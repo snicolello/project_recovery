@@ -29,7 +29,7 @@ Expected last line: `ok 9 bad 0`.
 
 ## 4. Install QMD 2.8.3, pinned, scripts disabled
 
-Read `skills/project-recovery/scripts/install_qmd.py` first; it is short. It copies `skills/project-recovery/qmd/package.json` and its lockfile into `qmd-runtime/` and runs `npm ci --ignore-scripts` there, with the npm cache inside that directory.
+Read `skills/project-recovery/scripts/install_qmd.py` first; it is short. It copies `skills/project-recovery/qmd/package.json` and its lockfile into `qmd-runtime/` and runs `npm ci --ignore-scripts` there, with a throwaway npm cache in a temporary directory that is deleted afterwards.
 
 ```powershell
 python -I skills/project-recovery/scripts/install_qmd.py
@@ -78,8 +78,10 @@ The unit tests print `OK` (one symlink test is skipped when Windows does not all
 Everything the run created is git-ignored and can be deleted:
 
 ```powershell
-Remove-Item -Recurse -Force qmd-runtime, .qmd, .scratch, runtime-vaults
+python -I -c "import shutil; [shutil.rmtree(d, ignore_errors=True) for d in ('qmd-runtime', '.qmd', '.scratch', 'runtime-vaults')]"
 ```
+
+Then delete the clone itself if you no longer need it.
 
 ## Troubleshooting
 

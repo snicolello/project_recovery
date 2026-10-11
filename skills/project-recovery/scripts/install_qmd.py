@@ -1,8 +1,10 @@
 """Install the pinned QMD package into the repository's git-ignored qmd-runtime/.
 
-Package scripts are disabled (--ignore-scripts), the npm cache is kept inside
-qmd-runtime/, nothing is installed globally, and the only network access is
-npm fetching the exact tarballs named in the committed lockfile.
+Package scripts are disabled (--ignore-scripts), npm uses a throwaway cache in
+a short temporary directory that is deleted afterwards (deep cache paths inside
+the clone can exceed the Windows path limit), nothing is installed globally, and
+the only network access is npm fetching the exact tarballs named in the
+committed lockfile.
 
 Usage: python -I skills/project-recovery/scripts/install_qmd.py
 """
@@ -12,6 +14,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -30,12 +33,16 @@ def main() -> int:
     RUNTIME.mkdir(exist_ok=True)
     for name in ("package.json", "package-lock.json"):
         shutil.copyfile(PIN / name, RUNTIME / name)
+    cache = Path(tempfile.mkdtemp(prefix="prq-npm-"))
     cmd = [
         npm, "ci", "--ignore-scripts", "--no-audit", "--no-fund", "--update-notifier=false",
-        "--cache", str(RUNTIME / ".npm-cache"),
+        "--cache", str(cache),
     ]
-    print("running:", " ".join(Path(c).name if i == 0 else c for i, c in enumerate(cmd)), flush=True)
-    result = subprocess.run(cmd, cwd=RUNTIME)
+    print("running: npm ci --ignore-scripts --no-audit --no-fund (temporary cache)", flush=True)
+    try:
+        result = subprocess.run(cmd, cwd=RUNTIME)
+    finally:
+        shutil.rmtree(cache, ignore_errors=True)
     if result.returncode != 0:
         return result.returncode
     pkg = json.loads((RUNTIME / "node_modules" / "@tobilu" / "qmd" / "package.json").read_text(encoding="utf-8"))

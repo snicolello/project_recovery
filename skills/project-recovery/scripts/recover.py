@@ -98,8 +98,7 @@ def main(argv: list[str] | None = None) -> int:
         result = recipe.assemble(m, args.project, args.query, session, args.max_tokens)
         if args.out:
             args.out.parent.mkdir(parents=True, exist_ok=True)
-            args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "
-", encoding="utf-8")
+            args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         emit(result)
         return 0
 

@@ -1,0 +1,67 @@
+{
+  "manifest_version": "0.1",
+  "name": "fixture-vault",
+  "description": "Manifest for the synthetic fixture vault (Atlas and Beacon). Paths are relative to this file; source locators are relative to the vault root.",
+  "vault": {
+    "root": "../fixtures/synthetic-vault"
+  },
+  "index": {
+    "engine": "qmd",
+    "version": "2.8.3",
+    "search": {"type": "lex", "rerank": false, "limit": 10},
+    "embeddings": false
+  },
+  "budget": {
+    "max_tokens": 4000,
+    "tokenizer": "approx-utf8-bytes-div-3"
+  },
+  "authority_policy": {
+    "local_claims": "local_only",
+    "verifier": null,
+    "acceptance_records": [],
+    "note": "R2 placeholder. R2 adds allowlisted repositories and acceptance record types (issue comment, PR review, merge) and verifies them serially. Until then no decision is verified."
+  },
+  "projects": {
+    "atlas": {
+      "collection": "atlas",
+      "root": "atlas",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": ["Objective:"],
+        "current_state": ["Current state:"],
+        "blockers": ["Blocker:"],
+        "next_action": ["Next authorized action:", "Deployment is not authorized."],
+        "accepted_decisions": ["Accepted decision:"]
+      },
+      "decision_statuses": ["accepted", "draft", "superseded"],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": [
+          {"name": "rollout_approval", "note": "Release Checklist.md", "label": "Atlas rollout approval:"},
+          {"name": "rollout_owner", "note": "Release Checklist.md", "label": "Rollout owner:"}
+        ]
+      }
+    },
+    "beacon": {
+      "collection": "beacon",
+      "root": "beacon",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": ["Objective:"],
+        "current_state": ["Current state:"],
+        "blockers": ["Blocker:"],
+        "next_action": ["Next authorized action:"],
+        "accepted_decisions": ["Accepted decision:"]
+      },
+      "decision_statuses": ["accepted", "draft", "superseded"],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": []
+      }
+    }
+  }
+}

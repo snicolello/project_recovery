@@ -3,7 +3,7 @@
 - Project code: `RECOVERY`
 - Trust zone: `Personal`
 - Repository: https://github.com/snicolello/project_recovery
-- Portfolio board: https://github.com/users/snicolello/projects/1
+- Coordination: Issues in https://github.com/snicolello/stephen-project-hub (the Personal project board was retired on 2026-10-11, hub #116)
 - Coordination issue: https://github.com/snicolello/stephen-project-hub/issues/113 (Epic; releases R0 to R5 are its child tickets)
 - Licence: Apache-2.0 (`LICENSE`)
 

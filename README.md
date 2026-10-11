@@ -6,7 +6,7 @@ A fresh agent session that resumes an interrupted project needs five things: the
 
 ## Status
 
-Release R1 in review: a manifest and a read-only read, refresh, assemble recipe over pinned QMD 2.8.3 (lexical only), shipped as the agent skill in `skills/project-recovery/`, passing scenarios S1 to S5 with zero unsupported assertions. Authority verification against GitHub is R2; every decision is labelled `local_only` until then. Try it: [`docs/quickstart.md`](docs/quickstart.md). The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
+Release R1 is merged: a manifest and a read-only read, refresh, assemble recipe over pinned QMD 2.8.3 (lexical only), shipped as the agent skill in `skills/project-recovery/`, passing scenarios S1 to S5 with zero unsupported assertions. R2 (authority and freshness, GitHub verification) is contracted in [stephen-project-hub#119](https://github.com/snicolello/stephen-project-hub/issues/119); every decision is labelled `local_only` until it lands. Try it: [`docs/quickstart.md`](docs/quickstart.md). The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 

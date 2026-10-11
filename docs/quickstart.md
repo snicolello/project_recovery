@@ -53,13 +53,13 @@ Assemble the Atlas packet:
 python -I skills/project-recovery/scripts/recover.py assemble --manifest manifest/fixture-vault.json --project atlas --query "Atlas project" --out .scratch/atlas-packet.json
 ```
 
-The packet is printed and also written, as UTF-8, to `.scratch/atlas-packet.json` (git-ignored). Open it. You should see the objective, current state, blocker and next action from `atlas/Project.md`, the accepted SQLite decision labelled `local_only`, the draft PostgreSQL and superseded Redis decisions under `other_decisions`, and `unknowns` for the approver, the rollout approval and the rollout owner. Every item has a receipt. Check one by hand:
+The packet is printed as compact JSON (the form its token budget is counted on) and also written, as UTF-8, to `.scratch/atlas-packet.json` (git-ignored). Open it. You should see the objective, current state, blocker and next action from `atlas/Project.md`, the accepted SQLite decision labelled `local_only`, the draft PostgreSQL and superseded Redis decisions under `other_decisions`, and `unknowns` for the approver, the rollout approval and the rollout owner. Every item has a receipt. Check one by hand:
 
 ```powershell
 python -I skills/project-recovery/scripts/recover.py validate --manifest manifest/fixture-vault.json --packet .scratch/atlas-packet.json
 ```
 
-Expected: `"receipts_failed": 0`. Edit one `content_sha` in the file and run it again: that field becomes `unknown`, a conflict appears, and the exit code is 1.
+Expected: `"failures": 0`. Edit one `content_sha` in the file, or change an `authority_state` to `verified`, and run it again: the claim is rejected, the field becomes `unknown`, a conflict appears, and the exit code is 1.
 
 ## 6. Run all scenarios and gates
 

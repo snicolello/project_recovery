@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import queue
+import re
 import shutil
 import subprocess
 import threading
@@ -27,7 +28,9 @@ QMD_BIN = REPO / "qmd-runtime" / "node_modules" / "@tobilu" / "qmd" / "bin" / "q
 QMD_PACKAGE = QMD_BIN.parent.parent / "package.json"
 
 ALLOWED_TOOLS = frozenset({"query", "get", "multi_get", "status"})
-ALLOWED_CLI = (("collection", "add"), ("update",))
+COLLECTION_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
+# QMD collection config keys that would make `qmd update` run shell commands.
+HOOK_KEY = re.compile(r"^\s*(update|update_command|pull|pre_update|post_update)\s*:", re.MULTILINE)
 PROTOCOL_VERSION = "2025-11-25"
 
 
@@ -67,10 +70,28 @@ def environment(state_dir: Path) -> dict[str, str]:
     return env
 
 
+def check_cli_args(args: list[str]) -> None:
+    """Exact-argv allowlist: ``update`` alone, or ``collection add <abs dir> --name <name>``."""
+    if args == ["update"]:
+        return
+    if (len(args) == 5 and args[:2] == ["collection", "add"] and args[3] == "--name"
+            and not args[2].startswith("-") and Path(args[2]).is_absolute()
+            and COLLECTION_NAME.match(args[4])):
+        return
+    raise QmdError(f"QMD CLI invocation not allowlisted: {args!r}")
+
+
+def check_no_hooks(state_dir: Path) -> None:
+    """Refuse to run when the instance config defines any per-collection update hook."""
+    config = state_dir / "config" / "index.yml"
+    if config.exists() and HOOK_KEY.search(config.read_text(encoding="utf-8", errors="replace")):
+        raise QmdError(f"QMD config defines an update hook; refusing to run: {config.name}")
+
+
 def index_cli(state_dir: Path, args: list[str], timeout: float = 120) -> str:
     """Run an allowlisted index-maintenance command; returns stdout."""
-    if not any(tuple(args[: len(p)]) == p for p in ALLOWED_CLI):
-        raise QmdError(f"QMD CLI command not allowlisted: {args[:2]}")
+    check_cli_args(args)
+    check_no_hooks(state_dir)
     state_dir.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(
         _command() + args, env=environment(state_dir), cwd=state_dir, capture_output=True,

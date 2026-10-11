@@ -100,10 +100,47 @@ def ordered_receipts(packet: dict) -> list[dict]:
     return out
 
 
-def check_item(item: dict, root: Path) -> tuple[bool, str]:
+R1_AUTHORITY_STATES = frozenset({"local_only"})
+
+
+def all_dicts(value, path: str = "") -> list[tuple[str, dict]]:
+    """Every dict in the packet in pre-order (receipts excluded), with its path."""
+    out: list[tuple[str, dict]] = []
+    if isinstance(value, dict):
+        out.append((path, value))
+        for key, child in value.items():
+            if key in ("receipt", "budget"):
+                continue
+            out.extend(all_dicts(child, f"{path}.{key}" if path else key))
+    elif isinstance(value, list):
+        for i, child in enumerate(value):
+            out.extend(all_dicts(child, f"{path}[{i}]"))
+    return out
+
+
+def scope_prefix(packet: dict) -> str | None:
+    root = (packet.get("scope") or {}).get("root") if isinstance(packet.get("scope"), dict) else None
+    if not isinstance(root, str) or not root:
+        return None
+    return "" if root == "." else root.rstrip("/") + "/"
+
+
+def check_item(item: dict, root: Path, prefix: str | None = "", generations: frozenset = frozenset()) -> tuple[bool, str]:
+    """A cited item validates when its receipt source sits under the packet's scope root, its
+    generation matches the packet's (and the recorded one, when given), its content_sha matches
+    the source bytes, and its text equals those bytes."""
+    if not isinstance(item, dict):
+        return False, "item is not an object"
     receipt = item.get("receipt")
     if not isinstance(receipt, dict):
         return False, "no receipt"
+    if prefix is None:
+        return False, "packet has no scope.root"
+    source = receipt.get("source")
+    if not isinstance(source, str) or not source.startswith(prefix):
+        return False, f"source outside scope root {prefix!r}"
+    if generations and receipt.get("generation") not in generations:
+        return False, "receipt generation differs from the recorded generation"
     ok, why = validate_receipt(receipt, root)
     if not ok:
         return False, why
@@ -112,39 +149,91 @@ def check_item(item: dict, root: Path) -> tuple[bool, str]:
     return True, "ok"
 
 
-def unsupported_assertions(packet: dict, root: Path) -> list[dict]:
-    """Every cited item whose receipt does not validate against the bytes under root."""
-    problems = []
-    for path, node in iter_nodes(packet):
-        for key in ("items", "evidence"):
-            for item in node.get(key, []):
-                ok, why = check_item(item, root)
-                if not ok:
-                    problems.append({"field": path, "source": (item.get("receipt") or {}).get("source"), "reason": why})
-    return problems
+def audit(packet: dict, root: Path, expected_generation: str | None = None,
+          scope_root: str | None = None) -> tuple[dict, list[dict]]:
+    """Revalidate a packet. Returns (corrected copy, problems).
 
+    Checks: every cited item (receipt bytes, text, scope root, generation); every
+    ``established`` node has at least one validating item (or established child decision);
+    every ``authority_state`` is ``local_only`` (R1); ``conflicts`` and ``unknowns`` exist.
+    Each failure removes the claim, sets the field ``unknown`` and records a conflict.
+    """
+    out = copy.deepcopy(packet) if isinstance(packet, dict) else {}
+    problems: list[dict] = []
 
-def revalidate(packet: dict, root: Path) -> dict:
-    """Return a copy in which every failing receipt is removed, its field set to
-    ``unknown`` when nothing valid remains, and a conflict recorded."""
-    out = copy.deepcopy(packet)
+    def conflict(field: str, kind: str, reason: str, receipt: dict | None = None) -> None:
+        entry = {"field": field, "kind": kind, "reason": reason}
+        if receipt is not None:
+            entry.update({"source": receipt.get("source"), "span": receipt.get("span"),
+                          "claimed_sha": receipt.get("content_sha")})
+        out["conflicts"].append(entry)
+        problems.append(entry)
+
+    for key in ("conflicts", "unknowns"):
+        if not isinstance(out.get(key), list):
+            out[key] = []
+            if isinstance(packet, dict) and key in packet:
+                conflict(key, "structural", f"{key} is not a list")
+    prefix = scope_prefix(out)
+    if prefix is None:
+        conflict("scope", "structural", "packet has no scope.root")
+    if scope_root is not None:
+        declared = "" if scope_root == "." else scope_root.rstrip("/") + "/"
+        if prefix is not None and prefix != declared:
+            conflict("scope.root", "scope_mismatch", f"packet scope {prefix!r} differs from the manifest's {declared!r}")
+        prefix = declared
+    packet_gen = (out.get("freshness") or {}).get("generation") if isinstance(out.get("freshness"), dict) else None
+    if expected_generation and packet_gen != expected_generation:
+        conflict("freshness.generation", "generation_mismatch",
+                 f"packet generation {packet_gen!r} differs from the recorded {expected_generation!r}")
+    generations = frozenset(g for g in (expected_generation or packet_gen,) if g)
+
     for path, node in iter_nodes(out):
         for key in ("items", "evidence"):
+            if key not in node:
+                continue
+            if not isinstance(node[key], list):
+                node[key] = []
+                conflict(path, "structural", f"{key} is not a list")
+                continue
             kept = []
-            for item in node.get(key, []):
-                ok, why = check_item(item, root)
+            for item in node[key]:
+                ok, why = check_item(item, root, prefix, generations)
                 if ok:
                     kept.append(item)
-                    continue
-                receipt = item.get("receipt") or {}
-                out["conflicts"].append({
-                    "field": path, "kind": "receipt_validation_failed", "source": receipt.get("source"),
-                    "span": receipt.get("span"), "claimed_sha": receipt.get("content_sha"), "reason": why,
-                })
-            if key in node:
-                node[key] = kept
-        if node.get("status") == "established" and not node.get("items"):
-            node["status"] = "unknown"
-            node["reason"] = "receipt failed validation"
-            out["unknowns"].append({"field": path, "reason": "receipt failed validation"})
-    return out
+                else:
+                    conflict(path, "receipt_validation_failed", why,
+                             item.get("receipt") if isinstance(item, dict) and isinstance(item.get("receipt"), dict) else {})
+            node[key] = kept
+
+    nodes = all_dicts(out)
+    for path, node in nodes:
+        if "authority_state" in node and node["authority_state"] not in R1_AUTHORITY_STATES:
+            conflict(path, "authority_state_not_permitted",
+                     f"authority_state {node['authority_state']!r} is not permitted in R1 (only local_only)")
+            node["authority_state"] = "local_only"
+    for path, node in reversed(nodes):  # children before parents
+        if node.get("status") != "established":
+            continue
+        has_items = bool(node.get("items"))
+        decisions = node.get("decisions") if isinstance(node.get("decisions"), list) else []
+        has_child = any(isinstance(d, dict) and d.get("status") == "established" for d in decisions)
+        if has_items or has_child:
+            continue
+        node["status"] = "unknown"
+        node["reason"] = "no validating evidence"
+        out["unknowns"].append({"field": path, "reason": "no validating evidence"})
+        conflict(path, "established_without_valid_items", "field claimed established without a validating receipt")
+    return out, problems
+
+
+def unsupported_assertions(packet: dict, root: Path, expected_generation: str | None = None,
+                           scope_root: str | None = None) -> list[dict]:
+    """Every claim in the packet that does not validate (see ``audit``)."""
+    return audit(packet, root, expected_generation, scope_root)[1]
+
+
+def revalidate(packet: dict, root: Path, expected_generation: str | None = None,
+               scope_root: str | None = None) -> dict:
+    """Corrected copy: failing claims removed, their fields ``unknown``, conflicts recorded."""
+    return audit(packet, root, expected_generation, scope_root)[0]

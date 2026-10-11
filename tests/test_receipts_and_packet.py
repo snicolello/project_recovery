@@ -1,6 +1,6 @@
 """Unit tests for receipt validation, packet bounding and the read-only surface.
 
-Run: python -I -m unittest discover -s tests -t .
+Run: python -I -m unittest discover -s tests
 These tests need neither Node nor QMD; they use a temporary synthetic root.
 """
 from __future__ import annotations
@@ -29,6 +29,9 @@ def item(root: Path, source: str, start: int, end: int) -> dict:
 
 def sample_packet(root: Path, hits: int = 0) -> dict:
     return {
+        "project": "p",
+        "scope": {"collection": "p", "root": "p"},
+        "freshness": {"generation": "g1"},
         "fields": {
             "objective": {"status": "established", "items": [item(root, "p/Note.md", 6, 6)]},
             "other_decisions": {"decisions": [{"title": f"d{i}", "status": "established",
@@ -123,7 +126,7 @@ class PacketTests(unittest.TestCase):
         p["fields"]["objective"]["items"][0]["receipt"]["content_sha"] = "0" * 64
         out = pk.revalidate(p, self.root)
         self.assertEqual(out["fields"]["objective"]["status"], "unknown")
-        self.assertIn({"field": "fields.objective", "reason": "receipt failed validation"}, out["unknowns"])
+        self.assertIn({"field": "fields.objective", "reason": "no validating evidence"}, out["unknowns"])
         self.assertTrue(any(c["field"] == "fields.objective" and c["kind"] == "receipt_validation_failed"
                             for c in out["conflicts"]))
         self.assertEqual(p["fields"]["objective"]["status"], "established", "input must not be mutated")
@@ -132,7 +135,8 @@ class PacketTests(unittest.TestCase):
         p = sample_packet(self.root)
         p["fields"]["objective"]["items"][0]["text"] = "Objective: deploy now."
         self.assertEqual(pk.revalidate(p, self.root)["fields"]["objective"]["status"], "unknown")
-        self.assertEqual(len(pk.unsupported_assertions(p, self.root)), 1)
+        kinds = [x["kind"] for x in pk.unsupported_assertions(p, self.root)]
+        self.assertEqual(kinds, ["receipt_validation_failed", "established_without_valid_items"])
 
     def test_clean_packet_has_no_unsupported_assertions(self):
         p = sample_packet(self.root, hits=2)

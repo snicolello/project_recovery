@@ -43,3 +43,4 @@ Release R0 content (contract, nine synthetic fixture notes with hashes, five sce
 - Hub Epic #113 and its ruling comments; hub PR #114 (STATE.md routing).
 - `evidence/scoped-evaluation-2026-10-10/evidence-verification.json`: twenty artifact consistency checks, all true, from the hand trial.
 - `fixtures/synthetic-vault-hashes.json`: SHA-256 of the nine fixture notes.
+- R1: https://github.com/snicolello/project_recovery/pull/1 (`scripts/run_scenarios.py` gate output, review remediation, completion view on hub #118).

@@ -109,8 +109,7 @@ def load_manifest(path: Path, vault_root: Path | None = None, state_dir: Path | 
         tag = hashlib.sha256(os.path.normcase(str(root)).encode("utf-8")).hexdigest()[:8]
         state_dir = REPO / ".qmd" / f"{raw['name']}-{tag}"
     state_dir = state_dir.resolve()
-    if os.path.normcase(str(state_dir)).startswith(os.path.normcase(str(root)) + os.sep):
-        raise RecipeError("index state must live outside the vault root")
+    check_state_dir(state_dir, root)
     projects = {
         name: Project(name, p["collection"], p["root"], p["baseline_note"], p["fields"],
                       p["authority"], list(p["decision_statuses"]))
@@ -120,6 +119,52 @@ def load_manifest(path: Path, vault_root: Path | None = None, state_dir: Path | 
         safe_resolve(root, proj.source(proj.baseline_note))  # allowlist check on declared paths
     return Manifest(path, raw["name"], root, state_dir, projects,
                     int(raw["index"]["search"].get("limit", 10)), int(raw["budget"]["max_tokens"]), raw)
+
+
+# Derived index location --------------------------------------------------
+
+STATE_BASE = REPO / ".qmd"
+STATE_MARKER = ".project-recovery-state"
+# Everything the recipe or QMD creates in a state directory; nothing else is ever deleted.
+STATE_ENTRIES = frozenset({STATE_MARKER, "generation.json", "index.sqlite", "index.sqlite-wal",
+                           "index.sqlite-shm", "index.sqlite-journal", "config", "xdg-config",
+                           "xdg-cache", "mcp-stderr.log"})
+
+
+def _within(child: Path, parent: Path) -> bool:
+    c, p = os.path.normcase(str(child)), os.path.normcase(str(parent))
+    return c == p or c.startswith(p.rstrip(os.sep) + os.sep)
+
+
+def check_state_dir(state_dir: Path, vault_root: Path) -> None:
+    """The derived index must sit strictly inside <repo>/.qmd/ and share no path with the vault."""
+    base = Path(os.path.realpath(STATE_BASE))
+    state = Path(os.path.realpath(state_dir))
+    root = Path(os.path.realpath(vault_root))
+    if not _within(state, base) or os.path.normcase(str(state)) == os.path.normcase(str(base)):
+        raise RecipeError("state dir must be a subdirectory of <repo>/.qmd/")
+    if _within(state, root) or _within(root, state):
+        raise RecipeError("state dir must not equal, contain, or sit inside the vault root")
+
+
+def clear_state(state_dir: Path) -> None:
+    """Delete a state directory only if this tool created it and it holds only tool files."""
+    if not state_dir.exists():
+        return
+    if not (state_dir / STATE_MARKER).is_file():
+        raise RecipeError(f"refusing to rebuild: {state_dir.name} lacks the {STATE_MARKER} marker")
+    unknown = sorted(p.name for p in state_dir.iterdir() if p.name not in STATE_ENTRIES)
+    if unknown:
+        raise RecipeError(f"refusing to rebuild: unexpected entries in state dir: {unknown}")
+    for p in state_dir.iterdir():
+        if p.name == STATE_MARKER:
+            continue
+        if p.is_dir() and not p.is_symlink():
+            shutil.rmtree(p)
+        else:
+            p.unlink()
+    (state_dir / STATE_MARKER).unlink()
+    state_dir.rmdir()
 
 
 # Refresh -------------------------------------------------------------------
@@ -144,10 +189,15 @@ def generation_path(m: Manifest) -> Path:
 
 def refresh(m: Manifest, rebuild: bool = False) -> dict:
     """Build or update the index, then record a content-derived generation."""
+    check_state_dir(m.state_dir, m.vault_root)
+    if rebuild:
+        clear_state(m.state_dir)
     if installed_version() != "2.8.3":
         raise RecipeError("QMD 2.8.3 not installed; run install_qmd.py")
-    if rebuild and m.state_dir.exists():
-        shutil.rmtree(m.state_dir)
+    if m.state_dir.exists() and not (m.state_dir / STATE_MARKER).is_file() and any(m.state_dir.iterdir()):
+        raise RecipeError(f"state dir {m.state_dir.name} exists but was not created by this tool")
+    m.state_dir.mkdir(parents=True, exist_ok=True)
+    (m.state_dir / STATE_MARKER).write_text("project-recovery derived index; safe to delete\n", encoding="utf-8")
     if not (m.state_dir / "index.sqlite").exists():
         for proj in m.projects.values():
             base = m.vault_root if proj.root == "." else safe_resolve(m.vault_root, proj.root)

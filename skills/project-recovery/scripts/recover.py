@@ -6,8 +6,10 @@
     python -I recover.py assemble --manifest M --project P --query "Atlas project" [--max-tokens 4000] [--out F]
     python -I recover.py validate --manifest M --packet packet.json
 
-Every command prints JSON on stdout. Only ``refresh`` changes anything, and only the
-derived index under the instance's state directory (git-ignored, outside the vault).
+Every command prints JSON on stdout. ``assemble`` prints compact JSON, the exact form
+the 4,000-token bound is counted on; the other commands print indented JSON. Only
+``refresh`` changes anything, and only the derived index under <repo>/.qmd/.
+``validate`` exits 1 when any claim fails (see packet.audit).
 """
 from __future__ import annotations
 
@@ -28,8 +30,13 @@ def emit(value) -> None:
     sys.stdout.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
 
 
+def emit_compact(value) -> None:
+    sys.stdout.write(pk.compact(value).decode("utf-8") + "\n")
+
+
 def main(argv: list[str] | None = None) -> int:
-    sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name in ("refresh", "query", "fetch", "assemble", "validate"):
@@ -62,10 +69,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.cmd == "validate":
         original = json.loads(args.packet.read_text(encoding="utf-8"))
-        checked = pk.revalidate(original, m.vault_root)
-        added = len(checked["conflicts"]) - len(original.get("conflicts", []))
-        emit({"receipts_failed": added, "packet": checked})
-        return 1 if added else 0
+        project = m.projects.get(original.get("project")) if isinstance(original, dict) else None
+        try:
+            expected = recipe.load_generation(m)["generation"]
+        except recipe.RecipeError:
+            expected = None
+        checked, problems = pk.audit(original, m.vault_root, expected, project.root if project else None)
+        if project is None:
+            problems.append({"field": "project", "kind": "scope_mismatch", "reason": "packet project not in manifest"})
+        emit({"failures": len(problems), "problems": problems, "recorded_generation": expected, "packet": checked})
+        return 1 if problems else 0
 
     proj = m.projects[args.project]
     with McpSession(m.state_dir) as session:
@@ -98,8 +111,8 @@ def main(argv: list[str] | None = None) -> int:
         result = recipe.assemble(m, args.project, args.query, session, args.max_tokens)
         if args.out:
             args.out.parent.mkdir(parents=True, exist_ok=True)
-            args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        emit(result)
+            args.out.write_text(pk.compact(result).decode("utf-8") + "\n", encoding="utf-8")
+        emit_compact(result)
         return 0
 
 

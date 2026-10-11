@@ -78,10 +78,10 @@ The unit tests print `OK` (one symlink test is skipped when Windows does not all
 Everything the run created is git-ignored and can be deleted:
 
 ```powershell
-python -I -c "import shutil; [shutil.rmtree(d, ignore_errors=True) for d in ('qmd-runtime', '.qmd', '.scratch', 'runtime-vaults')]"
+python -I -c "import os, shutil; [shutil.rmtree('\\\\?\\' + os.path.abspath(d), ignore_errors=True) for d in ('qmd-runtime', '.qmd', '.scratch', 'runtime-vaults')]"
 ```
 
-Then delete the clone itself if you no longer need it.
+The `\\?\` prefix lets Python delete `node_modules` paths longer than the classic Windows 260-character limit, which `Remove-Item` in Windows PowerShell 5.1 cannot. Then delete the clone itself the same way if you no longer need it.
 
 ## Troubleshooting
 

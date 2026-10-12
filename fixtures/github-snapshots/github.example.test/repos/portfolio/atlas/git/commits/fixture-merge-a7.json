@@ -1,0 +1,24 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/atlas/git/commits/fixture-merge-a7",
+  "sha": "fixture-merge-a7",
+  "node_id": "C_fixture_merge_a7",
+  "author": {
+    "name": "fixture-owner",
+    "date": "2026-10-01T15:00:00Z"
+  },
+  "committer": {
+    "name": "fixture-owner",
+    "date": "2026-10-01T15:00:00Z"
+  },
+  "parents": [
+    {
+      "sha": "fixture-commit-a0"
+    },
+    {
+      "sha": "fixture-commit-a1"
+    }
+  ],
+  "message": "Merge pull request #7 from portfolio/queue-sqlite\n\nACCEPTED: queue-decision sha256:90c16e8bc87740db0fcd8038ca741e33e75e393d721199c3890d830324e68f48"
+}

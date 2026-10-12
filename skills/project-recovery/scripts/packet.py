@@ -1,10 +1,12 @@
 """Packet utilities: token bound, canonical form, receipt revalidation.
 
-Tokenizer: ``approx-utf8-bytes-div-3``. Token count is the ceiling of the packet's
-compact UTF-8 JSON length divided by 3. No tokenizer library is used; dividing by 3
-rather than the common 4 characters per token over-counts on purpose because packets
-are dense with hex digests and paths, which tokenize poorly. Treat the figure as a
-conservative estimate, not an exact count for any one model.
+Tokenizer: ``approx-utf8-bytes-div-2.9``. Token count is the ceiling of the packet's
+compact UTF-8 JSON length divided by 2.9. No tokenizer library is used. Packets are dense
+with hex digests and paths, which tokenize poorly; measured against cl100k_base and
+o200k_base (SKILL.md, "Token estimate check") the worst packet ran 2.998 bytes per token,
+so the earlier divisor 3 under-counted by 0.1% and was widened to 2.9 (estimate at least
+1.034 times the real count on every measured packet). Treat the figure as a conservative
+estimate, not an exact count for any one model.
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ from typing import Iterator
 
 from receipts import SourceError, cited_text, read_source, validate_receipt
 
-TOKENIZER = "approx-utf8-bytes-div-3"
+TOKENIZER = "approx-utf8-bytes-div-2.9"
 DEFAULT_LIMIT = 4000
 VOLATILE_KEYS = frozenset({"observed_at", "refreshed_at", "assembled_at", "verified_at"})
 # Droppable lists, in the order they are trimmed (last element first).
@@ -30,7 +32,7 @@ def compact(packet: dict) -> bytes:
 
 
 def estimate_tokens(packet: dict) -> int:
-    return math.ceil(len(compact(packet)) / 3)
+    return -(-len(compact(packet)) * 10 // 29)  # ceil(bytes / 2.9) in integers
 
 
 def _droppable_list(packet: dict, name: str) -> list:
@@ -174,7 +176,8 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
     every ``authority_state`` is one of the four contract states, and ``verified`` appears
     only on an entry of ``fields.accepted_decisions``; every accepted decision carries a
     verified result with revision and ``verified_at`` and passes ``recheck(entry) ->
-    (ok, reason)`` (re-verification through a verifier). Without ``recheck`` an accepted
+    (ok, reason[, conflict kind])`` (re-verification through a verifier, including the content
+    binding: a changed note is ``approved_text_mismatch``). Without ``recheck`` an accepted
     decision cannot be confirmed and is demoted. A decision's ``local_status`` must equal
     the frontmatter status in its source bytes. ``conflicts`` and ``unknowns`` must exist.
     Each failure removes the claim (a demoted decision moves to ``decision_candidates`` as
@@ -233,6 +236,7 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
     accepted = acc.get("decisions") if acc is not None and isinstance(acc.get("decisions"), list) else []
     for i, entry in reversed(list(enumerate(accepted))):
         path = f"fields.accepted_decisions.decisions[{i}]"
+        kind = "authority_not_verified"
         v = entry.get("verification") if isinstance(entry, dict) else None
         if not isinstance(entry, dict):
             ok, why = False, "entry is not an object"
@@ -243,10 +247,12 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
         elif recheck is None:
             ok, why = False, "verified authority not re-checked: no verifier given (offline)"
         else:
-            ok, why = recheck(entry)
+            result = recheck(entry)  # (ok, reason) or (ok, reason, conflict kind)
+            ok, why = result[0], result[1]
+            kind = result[2] if len(result) > 2 else kind
         if ok:
             continue
-        conflict(path, "authority_not_verified", why)
+        conflict(path, kind, why)
         accepted.pop(i)
         if isinstance(entry, dict):
             entry["authority_state"] = "unverified"

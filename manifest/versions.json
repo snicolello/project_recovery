@@ -13,7 +13,7 @@
   "npm": "11.6.2",
   "python": "3.11.9 (3.11+ required; stdlib only)",
   "platform_tested": "Windows 11",
-  "tokenizer": "approx-utf8-bytes-div-3",
-  "tokenizer_check": "2026-10-11, R2 packets S1 to S8: estimate / real tokens >= 1.002 (o200k_base) and >= 1.014 (cl100k_base), tiktoken 0.8.0 in a throwaway virtualenv; never under-counts, divisor kept",
-  "gh_smoke": "optional; gh CLI with an existing session, read-only GET (scripts/live_gh_smoke.py)"
+  "tokenizer": "approx-utf8-bytes-div-2.9",
+  "tokenizer_check": "2026-10-12, 23 compact packets S1 to S8 including the review negatives, tiktoken 0.8.0 in a throwaway virtualenv: 2.998 to 3.267 bytes per token. Divisor 3 under-counted once (o200k_base, S8 control, ratio 0.999), so it was widened to 2.9: estimate / real >= 1.034",
+  "gh_smoke": "optional; gh CLI with an existing session, read-only GET requests, one at a time (scripts/live_gh_smoke.py)"
 }

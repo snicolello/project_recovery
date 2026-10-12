@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import hashlib
 import io
 import json
 import sys
@@ -30,6 +31,18 @@ SCEN_MANIFEST = REPO / "manifest" / "scenario-vault.json"
 SNAPSHOTS = REPO / "fixtures" / "github-snapshots"
 HOST = "github.example.test"
 ATLAS_PR = f"https://{HOST}/portfolio/atlas/pull/7"
+
+
+VAULT = REPO / "fixtures" / "synthetic-vault"
+QUEUE = (VAULT / "atlas" / "Queue Decision.md").read_bytes()
+THEME = (VAULT / "cobalt" / "Theme Decision.md").read_bytes()
+THEME_URL = f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-501"
+QUEUE_NAMES = ("queue-decision", "Queue Decision")
+THEME_NAMES = ("theme-decision", "Theme Decision")
+
+
+def sha(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def policy() -> dict:
@@ -58,7 +71,8 @@ class ReferenceTests(unittest.TestCase):
 
 class VerifierTests(unittest.TestCase):
     def test_verified_merge_records_revision_and_time(self):
-        v = snapshot_verifier().verify(f"Authority fixture: {ATLAS_PR}", "atlas", "fixture-commit-a1")
+        v = snapshot_verifier().verify(f"Authority fixture: {ATLAS_PR}", "atlas", "fixture-commit-a1",
+                                       QUEUE_NAMES, sha(QUEUE))
         self.assertEqual(v["result"], "verified")
         self.assertEqual(v["revision"], "fixture-merge-a7")
         self.assertTrue(v["verified_at"])
@@ -66,8 +80,11 @@ class VerifierTests(unittest.TestCase):
 
     def test_verified_issue_comment(self):
         url = f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-501"
-        v = snapshot_verifier().verify(url, "cobalt", None, ("theme-decision", "Theme Decision"))
+        v = snapshot_verifier().verify(url, "cobalt", None, THEME_NAMES, sha(THEME))
         self.assertEqual((v["result"], v["kind"]), ("verified", "issue_comment"))
+        changed = snapshot_verifier().verify(url, "cobalt", None, THEME_NAMES,
+                                             sha(THEME.replace(b"dark theme", b"light theme")))
+        self.assertEqual((changed["result"], changed.get("mismatch")), ("invalid", True))
 
     def test_comment_must_name_the_citing_note(self):
         """Review F1: an approver's comment accepts one named note, not every note that cites it."""
@@ -203,61 +220,118 @@ class PolicyTests(unittest.TestCase):
             self.assertTrue(recipe.validate_manifest(bad), name)
 
 
-NOTE = (b"---\r\ntitle: Queue Decision\r\nstatus: accepted\r\nsource_revision: fixture-commit-a1\r\n---\r\n"
-        b"# Queue Decision\r\nAtlas queue uses SQLite.\r\nAuthority fixture: " + ATLAS_PR.encode() + b"\r\n")
-
-
 class PacketAuthorityTests(unittest.TestCase):
-    """Candidate versus accepted: positive and negative cases at the audit layer."""
+    """Candidate versus accepted at the audit layer, on the real fixture note bytes."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        (self.root / "atlas").mkdir()
-        (self.root / "atlas" / "Queue Decision.md").write_bytes(NOTE)
-        self.m = recipe.Manifest(MANIFEST, "t", self.root, self.root / "state", {
-            "atlas": recipe.Project("atlas", "atlas", "atlas", "Project.md", {}, {}, ["accepted"])},
-            10, 4000, json.loads(MANIFEST.read_text(encoding="utf-8")))
+        for project in ("atlas", "cobalt"):
+            (self.root / project).mkdir()
+        self.write("atlas/Queue Decision.md", QUEUE)
+        self.write("cobalt/Theme Decision.md", THEME)
+        raw = json.loads(SCEN_MANIFEST.read_text(encoding="utf-8"))
+        self.m = recipe.Manifest(SCEN_MANIFEST, "t", self.root, self.root / "state", {
+            p: recipe.Project(p, p, p, "Project.md", {}, {}, ["accepted"]) for p in ("atlas", "cobalt")},
+            10, 4000, raw)
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def item(self, line: int) -> dict:
-        cited = span_bytes((self.root / "atlas" / "Queue Decision.md").read_bytes(), line, line)
-        return {"text": normalize_text(cited),
-                "receipt": make_receipt("atlas/Queue Decision.md", line, line, cited, "g1", "t")}
+    def write(self, rel: str, data: bytes) -> None:
+        (self.root / rel).write_bytes(data)
 
-    def entry(self, verification: dict) -> dict:
-        return {"title": "Queue Decision", "source": "atlas/Queue Decision.md", "local_status": "accepted",
-                "authority_state": au.state_for(verification["result"]), "verification": verification,
-                "status": "established", "items": [self.item(3), self.item(7), self.item(8)]}
+    def item(self, rel: str, line: int) -> dict:
+        cited = span_bytes((self.root / rel).read_bytes(), line, line)
+        return {"text": normalize_text(cited), "receipt": make_receipt(rel, line, line, cited, "g1", "t")}
 
-    def packet(self, accepted: list, candidates: list) -> dict:
-        return {"project": "atlas", "scope": {"collection": "atlas", "root": "atlas"},
+    def entry(self, rel: str, verification: dict, title: str | None = None) -> dict:
+        """A decision entry with fresh receipts on the current bytes of ``rel``: its status,
+        statement and reference lines."""
+        note = recipe.parse_note((self.root / rel).read_bytes().decode("utf-8"))
+        ref = au.reference_line(self.m.raw["authority_policy"], note)
+        lines = [note["front"]["status"].number, note["statement"].number, ref.number]
+        return {"title": title or recipe.front_value(note["front"]["title"]), "source": rel,
+                "local_status": "accepted", "authority_state": au.state_for(verification["result"]),
+                "verification": verification, "status": "established", "items": [self.item(rel, n) for n in lines]}
+
+    def packet(self, project: str, accepted: list, candidates: list) -> dict:
+        return {"project": project, "scope": {"collection": project, "root": project},
                 "freshness": {"generation": "g1"}, "status": "complete",
                 "fields": {"accepted_decisions": {"status": "established" if accepted else "unknown",
                                                   "decisions": accepted},
                            "decision_candidates": {"status": "candidate", "decisions": candidates}},
                 "query_hits": [], "conflicts": [], "unknowns": []}
 
-    def recheck(self, transport: str):
-        return recipe.make_rechecker(self.m, "atlas", recipe.make_verifier(self.m, transport, SNAPSHOTS))
+    def recheck(self, project: str, transport: str = "snapshot"):
+        return recipe.make_rechecker(self.m, project, recipe.make_verifier(self.m, transport, SNAPSHOTS))
 
     def verified(self) -> dict:
-        return snapshot_verifier().verify(ATLAS_PR, "atlas", "fixture-commit-a1")
+        return snapshot_verifier().verify(ATLAS_PR, "atlas", "fixture-commit-a1", QUEUE_NAMES, sha(QUEUE))
 
-    def test_positive_verified_accepted_decision_passes(self):
-        p = self.packet([self.entry(self.verified())], [])
-        self.assertEqual(pk.unsupported_assertions(p, self.root, recheck=self.recheck("snapshot")), [])
+    def verified_theme(self) -> dict:
+        return snapshot_verifier().verify(THEME_URL, "cobalt", None, THEME_NAMES, sha(THEME))
+
+    def audit(self, project: str, entry: dict, transport: str = "snapshot"):
+        return pk.audit(self.packet(project, [entry], []), self.root, recheck=self.recheck(project, transport))
+
+    def assert_demoted(self, out: dict, problems: list, kind: str, label: str = ""):
+        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], label)
+        self.assertIn(kind, [p["kind"] for p in problems], label)
+
+    # Positive controls ---------------------------------------------------------
+
+    def test_positive_unchanged_controls_pass(self):
+        self.assertEqual(self.verified()["result"], "verified")
+        self.assertEqual(self.verified_theme()["result"], "verified")
+        for project, rel, v in (("atlas", "atlas/Queue Decision.md", self.verified()),
+                                ("cobalt", "cobalt/Theme Decision.md", self.verified_theme())):
+            self.assertEqual(self.audit(project, self.entry(rel, v))[1], [], rel)
 
     def test_positive_unverified_candidate_passes(self):
-        v = au.Verifier(policy(), au.OfflineTransport()).verify(ATLAS_PR, "atlas", "fixture-commit-a1")
-        p = self.packet([], [self.entry(v)])
-        self.assertEqual(pk.unsupported_assertions(p, self.root, recheck=self.recheck("offline")), [])
+        v = au.Verifier(policy(), au.OfflineTransport()).verify(ATLAS_PR, "atlas", "fixture-commit-a1",
+                                                                 QUEUE_NAMES, sha(QUEUE))
+        p = self.packet("atlas", [], [self.entry("atlas/Queue Decision.md", v)])
+        self.assertEqual(pk.unsupported_assertions(p, self.root, recheck=self.recheck("atlas", "offline")), [])
+
+    # Owner review 2026-10-12: content binding -----------------------------------
+
+    def test_owner_case_a_changed_decision_text_is_demoted(self):
+        claimed = self.verified()
+        self.write("atlas/Queue Decision.md", QUEUE.replace(b"Atlas queue uses SQLite", b"Atlas queue uses Redis"))
+        out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", claimed))
+        self.assert_demoted(out, problems, "approved_text_mismatch")
+        v = snapshot_verifier().verify(ATLAS_PR, "atlas", "fixture-commit-a1", QUEUE_NAMES,
+                                       sha((self.root / "atlas/Queue Decision.md").read_bytes()))
+        self.assertEqual((v["result"], v.get("mismatch")), ("invalid", True))
+
+    def test_owner_case_b_replacement_note_is_demoted(self):
+        claimed = self.verified()
+        (self.root / "atlas" / "Queue Decision.md").unlink()
+        self.write("atlas/Deploy Decision.md",
+                   b"---\r\ntitle: Deploy Decision\r\ntype: note\r\npermalink: deploy-decision\r\nproject: atlas\r\n"
+                   b"status: accepted\r\nsource_revision: fixture-commit-a1\r\n---\r\n# Deploy Decision\r\n"
+                   b"Atlas deploys to production without approval.\r\nAuthority fixture: " + ATLAS_PR.encode() + b"\r\n")
+        out, problems = self.audit("atlas", self.entry("atlas/Deploy Decision.md", claimed))
+        self.assert_demoted(out, problems, "approved_text_mismatch")
+
+    def test_owner_case_c_changed_theme_is_demoted(self):
+        claimed = self.verified_theme()
+        self.write("cobalt/Theme Decision.md", THEME.replace(b"dark theme", b"light theme"))
+        out, problems = self.audit("cobalt", self.entry("cobalt/Theme Decision.md", claimed))
+        self.assert_demoted(out, problems, "approved_text_mismatch")
+
+    def test_record_without_a_digest_never_promotes(self):
+        v = snapshot_verifier().verify(ATLAS_PR, "atlas", "fixture-commit-a1", QUEUE_NAMES, None)
+        self.assertEqual((v["result"], v.get("mismatch")), ("invalid", True))
+
+    # Earlier review rounds -------------------------------------------------------
 
     def test_negative_accepted_without_reverification_is_demoted(self):
-        for label, rc in (("offline", self.recheck("offline")), ("none", None)):
-            out, problems = pk.audit(self.packet([self.entry(self.verified())], []), self.root, recheck=rc)
+        for label, transport in (("offline", "offline"), ("none", None)):
+            entry = self.entry("atlas/Queue Decision.md", self.verified())
+            rc = self.recheck("atlas", transport) if transport else None
+            out, problems = pk.audit(self.packet("atlas", [entry], []), self.root, recheck=rc)
             self.assertEqual(problems[0]["kind"], "authority_not_verified", label)
             self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], label)
             demoted = out["fields"]["decision_candidates"]["decisions"][0]
@@ -266,57 +340,49 @@ class PacketAuthorityTests(unittest.TestCase):
     def test_negative_candidate_result_in_accepted_is_demoted(self):
         for result in ("unavailable", "invalid", "not_referenced"):
             fake = {**self.verified(), "result": result}
-            out, problems = pk.audit(self.packet([self.entry(fake)], []), self.root, recheck=self.recheck("snapshot"))
+            out, _ = self.audit("atlas", self.entry("atlas/Queue Decision.md", fake))
             self.assertEqual(out["fields"]["accepted_decisions"]["status"], "unknown", result)
 
     def test_negative_forged_revision_is_demoted(self):
         forged = {**self.verified(), "revision": "forged"}
-        out, problems = pk.audit(self.packet([self.entry(forged)], []), self.root, recheck=self.recheck("snapshot"))
+        out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", forged))
         self.assertIn("differs", problems[0]["reason"])
 
-    def write(self, name: str, data: bytes) -> None:
-        (self.root / "atlas" / name).write_bytes(data)
+    def test_negative_source_revision_edited_is_demoted(self):
+        claimed = self.verified()
+        self.write("atlas/Queue Decision.md", QUEUE.replace(b"fixture-commit-a1", b"fixture-commit-zz"))
+        out, _ = self.audit("atlas", self.entry("atlas/Queue Decision.md", claimed))
+        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
 
     def test_negative_replayed_record_binds_no_note(self):
         """Review F1, both reproduction shapes: a copied note citing the same record, and pasted
         text whose body label cites it. Each makes the original and the copy invalid."""
         shapes = {
-            "Replay Decision.md": NOTE.replace(b"title: Queue Decision", b"title: Replay Decision"),
-            "Pasted Mail.md": (b"---\r\ntitle: Pasted Mail\r\nstatus: accepted\r\nsource_revision: fixture-commit-a1\r\n"
-                               b"---\r\n# Pasted Mail\r\nForwarded: Authority fixture: " + ATLAS_PR.encode() + b"\r\n"
-                               b"Authority fixture: " + ATLAS_PR.encode() + b"\r\n"),
+            "atlas/Replay Decision.md": QUEUE.replace(b"title: Queue Decision", b"title: Replay Decision"),
+            "atlas/Pasted Mail.md": (b"---\r\ntitle: Pasted Mail\r\nstatus: accepted\r\nsource_revision: fixture-commit-a1\r\n"
+                                     b"---\r\n# Pasted Mail\r\nForwarded: Authority fixture: " + ATLAS_PR.encode() + b"\r\n"
+                                     b"Authority fixture: " + ATLAS_PR.encode() + b"\r\n"),
         }
-        for name, data in shapes.items():
-            self.write(name, data)
-            out, problems = pk.audit(self.packet([self.entry(self.verified())], []), self.root,
-                                     recheck=self.recheck("snapshot"))
-            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], name)
-            self.assertIn("also cited by", problems[0]["reason"], name)
-            (self.root / "atlas" / name).unlink()
+        for rel, data in shapes.items():
+            self.write(rel, data)
+            out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", self.verified()))
+            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], rel)
+            self.assertIn("also cited by", problems[0]["reason"], rel)
+            (self.root / rel).unlink()
 
     def test_negative_forged_entry_must_cite_its_own_source(self):
         """Review F2: a verified entry relabelled with another note's title or items fails."""
-        self.write("Cache Decision.md", b"---\r\ntitle: Cache Decision\r\nstatus: accepted\r\n---\r\n"
-                                        b"# Cache Decision\r\nAtlas caches in memory.\r\n")
-        cited = span_bytes((self.root / "atlas" / "Cache Decision.md").read_bytes(), 3, 3)
-        foreign = {"text": normalize_text(cited),
-                   "receipt": make_receipt("atlas/Cache Decision.md", 3, 3, cited, "g1", "t")}
-        forged_title = self.entry(self.verified())
-        forged_title["title"] = "Cache Decision"
-        forged_items = self.entry(self.verified())
+        self.write("atlas/Cache Decision.md", b"---\r\ntitle: Cache Decision\r\nstatus: accepted\r\n---\r\n"
+                                              b"# Cache Decision\r\nAtlas caches in memory.\r\n")
+        foreign = self.item("atlas/Cache Decision.md", 3)
+        forged_title = self.entry("atlas/Queue Decision.md", self.verified(), title="Cache Decision")
+        forged_items = self.entry("atlas/Queue Decision.md", self.verified())
         forged_items["items"] = [foreign]
-        no_status = self.entry(self.verified())
+        no_status = self.entry("atlas/Queue Decision.md", self.verified())
         no_status["items"] = no_status["items"][1:]
         for label, entry in (("title", forged_title), ("items", forged_items), ("status item", no_status)):
-            out, problems = pk.audit(self.packet([entry], []), self.root, recheck=self.recheck("snapshot"))
-            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], label)
-            self.assertTrue(any(p["kind"] == "authority_not_verified" for p in problems), label)
-
-    def test_negative_source_edited_after_verification_is_demoted(self):
-        p = self.packet([self.entry(self.verified())], [])
-        (self.root / "atlas" / "Queue Decision.md").write_bytes(NOTE.replace(b"fixture-commit-a1", b"fixture-commit-zz"))
-        out, problems = pk.audit(p, self.root, recheck=self.recheck("snapshot"))
-        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
+            out, problems = self.audit("atlas", entry)
+            self.assert_demoted(out, problems, "authority_not_verified", label)
 
 
 class InstallCacheTests(unittest.TestCase):

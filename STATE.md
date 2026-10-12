@@ -18,7 +18,7 @@
 
 ## Current baseline
 
-Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2, in review on `feat/119-r2-authority`: `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes and four synthetic GitHub snapshots, scenarios S6 to S8, 119 offline gate checks and 71 unit tests, remediated after independent review (records bound to the citing note). The contract is unchanged. No Librarian code exists.
+Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2, in review on `feat/119-r2-authority`: `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes and four synthetic GitHub snapshots, scenarios S6 to S8, 124 offline gate checks and 75 unit tests, remediated after independent review (records bound to the citing note) and owner review (records bound to the approved note bytes by digest). The contract is unchanged. No Librarian code exists.
 
 ## Completed
 

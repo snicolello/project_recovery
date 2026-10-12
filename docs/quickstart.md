@@ -66,7 +66,7 @@ Every item has a receipt. Now read the cited record from the fixed synthetic sna
 python -I skills/project-recovery/scripts/recover.py assemble --manifest manifest/fixture-vault.json --project atlas --query "Atlas project" --verifier snapshot --out .scratch/atlas-verified.json
 ```
 
-The SQLite decision is now under `accepted_decisions`, `verified`, with `revision` `fixture-merge-a7` and a `verified_at` time. Check both packets by hand:
+The SQLite decision is now under `accepted_decisions`, `verified`, with `revision` `fixture-merge-a7`, a `verified_at` time and `approved_digest`: the synthetic merge commit message says `ACCEPTED: queue-decision sha256:90c16e8b...`, the SHA-256 of the note's bytes. Change one character of `atlas/Queue Decision.md` in a copy and the same record no longer accepts it (`approved_text_mismatch`). Check both packets by hand:
 
 ```powershell
 python -I skills/project-recovery/scripts/recover.py validate --manifest manifest/fixture-vault.json --packet .scratch/atlas-packet.json
@@ -83,7 +83,7 @@ python -I -m unittest discover -s tests
 python -I scripts/verify_fixture_hashes.py
 ```
 
-`run_scenarios.py` takes about 35 seconds and needs no network. Its last line must be `ALL GATES PASS (119 checks; ...)` and it exits 0. It scores, for each scenario, recovery completeness, unsupported assertions, abstention, isolation, freshness (generation stated) and the token budget; the S2 decisions offline (candidate, unverified) and through the snapshot verifier (accepted, verified); the S4 changed-source sequence on a copy; S6 edits and a refresh made while a packet is being assembled; S7 budget stress on a generated vault; S8 adversarial instructions in a Cobalt note, compared with the same vault without that note, plus replayed, unmerged, non-approver and unreadable acceptance records, and an approver's acceptance comment cited by a copied template or pasted text; the negative tests (corrupted receipt, altered text, traversal locators, missing note, out-of-scope query, budget trimming, forged revision, hand-promoted candidate, rate-limited transport); the read-only tool surface; 20 repeat runs of eight packets with an index rebuild before run 11; and fixture integrity before and after. The packets it produced are in `.scratch/run_scenarios/packets/`.
+`run_scenarios.py` takes about 35 seconds and needs no network. Its last line must be `ALL GATES PASS (124 checks; ...)` and it exits 0. It scores, for each scenario, recovery completeness, unsupported assertions, abstention, isolation, freshness (generation stated) and the token budget; the S2 decisions offline (candidate, unverified) and through the snapshot verifier (accepted, verified); the S4 changed-source sequence on a copy; S6 edits and a refresh made while a packet is being assembled; S7 budget stress on a generated vault; S8 adversarial instructions in a Cobalt note, compared with the same vault without that note, plus replayed, unmerged, non-approver and unreadable acceptance records, an approver's acceptance comment cited by a copied template or pasted text, and an unchanged approval record against a changed decision text, a replacement note or a changed theme (each `approved_text_mismatch`); the negative tests (corrupted receipt, altered text, traversal locators, missing note, out-of-scope query, budget trimming, forged revision, hand-promoted candidate, rate-limited transport); the read-only tool surface; 20 repeat runs of eight packets with an index rebuild before run 11; and fixture integrity before and after. The packets it produced are in `.scratch/run_scenarios/packets/`.
 
 The unit tests print `OK` (one symlink test is skipped when Windows does not allow unprivileged symlinks; the junction test still runs).
 
@@ -95,7 +95,7 @@ Not needed for any gate. If the GitHub CLI `gh` is installed and signed in, read
 python -I scripts/live_gh_smoke.py --reference https://github.com/snicolello/project_recovery/pull/1 --approver snicolello
 ```
 
-Expected: `"result": "verified"` with the merge commit as `revision`. Offline, or without `gh`, the result is `unavailable` and the exit code is 1; nothing fails silently.
+It reads the pull request and its merge commit, one request at a time. Expected: `"result": "invalid"`, reason `approved_text_mismatch`, because that merge message names no note digest; `revision` is the merge commit and `summary.requests` is 2. Offline, or without `gh`, the result is `unavailable`. The exit code is 1 in both cases; nothing fails silently.
 
 ## 8. Clean up
 

@@ -281,53 +281,12 @@ def front_value(line: Line) -> str:
     return line.text.partition(":")[2].strip()
 
 
-def reference_line(policy: dict, note: dict) -> Line | None:
-    """The line that names a note's acceptance record, per the authority policy."""
-    spec = policy.get("reference", {})
-    key = spec.get("frontmatter_key")
-    if key and key in note["front"]:
-        return note["front"][key]
-    for label in spec.get("body_labels", []):
-        for line in note["body"]:
-            if line.text.startswith(label):
-                return line
-    return None
-
-
-def binding_value(policy: dict, note: dict) -> str | None:
-    key = (policy.get("binding") or {}).get("frontmatter_key")
-    line = note["front"].get(key) if key else None
-    return front_value(line) if line else None
-
-
-def note_names(note: dict, rel: str) -> tuple[str, ...]:
-    """Names an acceptance comment may use to bind itself to a note: permalink and title."""
-    names = []
-    for key in ("permalink", "title"):
-        line = note["front"].get(key)
-        if line and front_value(line):
-            names.append(front_value(line))
-    return tuple(names) or (Path(rel).stem,)
-
-
-def record_citations(policy: dict, notes: dict[str, dict]) -> dict[str, list[str]]:
-    """Acceptance record URL -> every note (source) whose reference line cites it."""
-    out: dict[str, list[str]] = {}
-    for source, note in sorted(notes.items()):
-        line = reference_line(policy, note)
-        ref = au.parse_reference(line.text) if line else None
-        if ref is not None:
-            out.setdefault(ref.url, []).append(source)
-    return out
-
-
-def replayed(v: dict, source: str, citations: dict[str, list[str]]) -> dict:
-    """A record cited by more than one note binds none of them: the result becomes invalid."""
-    others = [c for c in citations.get(v.get("reference"), []) if c != source]
-    if not others or v["result"] == "not_referenced":
-        return v
-    return {**v, "result": "invalid",
-            "reason": f"the record is also cited by {others}; one acceptance record binds one note"}
+def mismatch_conflict(source: str, v: dict) -> dict:
+    """Conflict for a record whose approval text does not name this note's current bytes."""
+    return {"field": "decisions", "kind": "approved_text_mismatch", "source": source,
+            "reference": v.get("reference"), "revision": v.get("revision"),
+            "approved_digest": v.get("approved_digest"), "current_digest": v.get("note_digest"),
+            "reason": "the acceptance record does not approve the decision's current bytes; not accepted"}
 
 
 class Assembler:
@@ -427,8 +386,8 @@ class Assembler:
         ``local_status`` is read from the cited, receipt-validated status line."""
         accepted, candidates, other = [], [], []
         by_stem = {}
-        citations = record_citations(self.policy, {self.proj.source(q[len(self.proj.collection) + 1:]): parse_note(t)
-                                                   for q, t in listing.items()})
+        citations = au.record_citations(self.policy, {self.proj.source(q[len(self.proj.collection) + 1:]): parse_note(t)
+                                                      for q, t in listing.items()})
         for url, sources in citations.items():
             if len(sources) > 1:
                 self.conflicts.append({"field": "decisions", "kind": "acceptance_record_replayed", "reference": url,
@@ -461,17 +420,17 @@ class Assembler:
             entry = {"title": front_value(title_line) if title_line else Path(rel).stem, "source": source,
                      "local_status": front_value(Line(0, status_item["text"])) if status_item else "unknown"}
             if is_claim:
-                ref_line = reference_line(self.policy, note)
+                ref_line = au.reference_line(self.policy, note)
                 ref_item = self.cite(field, rel, ref_line.number, ref_line.number) if ref_line else None
                 items.append(ref_item)
-                binding = binding_value(self.policy, note)
-                names = note_names(note, rel)
                 if ref_line and not ref_item:
-                    v = {**self.verifier.verify(None, self.proj.name, binding), "result": "invalid",
+                    v = {**self.verifier.verify(None, self.proj.name, None), "result": "invalid",
                          "reason": "the reference line failed receipt validation"}
-                else:
-                    v = replayed(self.verifier.verify(ref_item["text"] if ref_item else None, self.proj.name,
-                                                      binding, names), source, citations)
+                else:  # the reference is read from the cited, receipt-validated text
+                    v = au.verify_decision(self.verifier, note, source, self.proj.name, served, citations,
+                                           reference_text=ref_item["text"] if ref_item else None)
+                if v.get("mismatch"):
+                    self.conflicts.append(mismatch_conflict(source, v))
                 entry.update({"authority_state": au.state_for(v["result"]), "verification": v})
             else:
                 entry["authority_state"] = "local_only"
@@ -569,7 +528,8 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
         if not isinstance(source, str) or not source.startswith(prefix):
             return False, "decision source outside the project root"
         try:
-            note = parse_note(read_source(m.vault_root, source).decode("utf-8"))
+            data = read_source(m.vault_root, source)
+            note = parse_note(data.decode("utf-8"))
         except (SourceError, UnicodeDecodeError) as exc:
             return False, f"decision source unreadable: {exc}"
         status = note["front"].get("status")
@@ -592,10 +552,10 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
                 notes[src] = parse_note(read_source(m.vault_root, src).decode("utf-8"))
             except (SourceError, UnicodeDecodeError):
                 continue
-        line = reference_line(policy, note)
-        v = replayed(verifier.verify(line.text if line else None, proj.name, binding_value(policy, note),
-                                     note_names(note, source.rsplit("/", 1)[-1])), source,
-                     record_citations(policy, notes))
+        v = au.verify_decision(verifier, note, source, proj.name, sha256_hex(data),
+                               au.record_citations(policy, notes))
+        if v.get("mismatch"):
+            return False, v["reason"], "approved_text_mismatch"
         claimed = entry.get("verification") or {}
         if v["result"] != "verified":
             return False, f"re-verification {v['result']}: {v['reason']}"

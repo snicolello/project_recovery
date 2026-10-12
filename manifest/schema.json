@@ -39,7 +39,7 @@
       "required": ["max_tokens"],
       "properties": {
         "max_tokens": {"type": "integer", "minimum": 1, "default": 4000},
-        "tokenizer": {"const": "approx-utf8-bytes-div-3"}
+        "tokenizer": {"const": "approx-utf8-bytes-div-2.9"}
       }
     },
     "authority_policy": {
@@ -62,11 +62,11 @@
           "description": "Record kinds that count as acceptance.",
           "items": {
             "type": "object",
-            "required": ["kind"],
+            "required": ["kind", "body_marker"],
             "properties": {
               "kind": {"enum": ["pull_merge", "pull_review", "issue_comment"]},
               "rule": {"type": "string"},
-              "body_marker": {"type": "string", "description": "issue_comment only: text the comment body must contain."}
+              "body_marker": {"type": "string", "description": "Required. The marker the approval text uses to name the approved note and its digest; see authority.verify_decision."}
             }
           }
         },
@@ -94,7 +94,7 @@
         },
         "binding": {
           "type": "object",
-          "description": "Binds a record to the citing note. A pull merge or review promotes only when the note declares this frontmatter key and the record's subject revision (pull request head or reviewed commit) equals it. An issue comment must contain body_marker followed by the note's permalink or title. A record cited by more than one note in the project binds none of them.",
+          "description": "The frontmatter key a note uses to declare its subject revision. When a record is bound to a decision is defined once, in authority.verify_decision.",
           "properties": {
             "frontmatter_key": {"type": "string"},
             "record_field": {"const": "subject_revision"}

@@ -1,6 +1,6 @@
 {
   "base_revision": "5ab0ea2",
-  "revision": "ef1c962",
+  "revision": "fc2ffa9",
   "cases": [
     {
       "id": "control-cobalt",
@@ -1564,6 +1564,32 @@
         "result": "rejected",
         "failures": 13
       }
+    },
+    {
+      "id": "M-31",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "nesting 500 levels deep (re-check of f159446)",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "RecursionError: maximum recursion depth exceeded while calling a Python object"
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
     }
   ],
   "summary": {
@@ -1612,7 +1638,8 @@
       "M-13",
       "M-18",
       "M-26",
-      "M-28"
+      "M-28",
+      "M-31"
     ],
     "after_unexpected": [],
     "controls_after": {

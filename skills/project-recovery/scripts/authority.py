@@ -473,10 +473,10 @@ def binding_value(policy: dict, note: dict) -> str | None:
 
 
 def note_names(note: dict, source: str) -> tuple[str, ...]:
-    """Names the approval text may use for the note: permalink and title (else the file stem)."""
-    names = [_value(note["front"][k]) for k in ("permalink", "title")
-             if k in note["front"] and _value(note["front"][k])]
-    return tuple(names) or (Path(source).stem,)
+    """Names the approval text may use for the note: its permalink and title, read from the
+    note's hashed bytes only (never the file name, which the digest does not cover)."""
+    return tuple(_value(note["front"][k]) for k in ("permalink", "title")
+                 if k in note["front"] and _value(note["front"][k]))
 
 
 def record_citations(policy: dict, notes: dict[str, dict]) -> dict[str, list[str]]:

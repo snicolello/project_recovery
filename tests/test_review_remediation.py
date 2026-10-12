@@ -180,7 +180,7 @@ class AuditTests(unittest.TestCase):
     def test_decision_container_without_established_decision_fails(self):
         p = self.packet()
         p["fields"]["accepted_decisions"] = {"status": "established", "decisions": []}
-        self.assertEqual(self.kinds(p), ["established_without_valid_items"])
+        self.assertEqual(self.kinds(p), ["established_without_verified_decision"])
 
     def test_verified_state_on_a_candidate_fails(self):
         p = self.packet()

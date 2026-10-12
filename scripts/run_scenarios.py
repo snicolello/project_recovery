@@ -330,7 +330,7 @@ def score_s2_verified(g: Gates, packet: dict, m) -> None:
             and v.get("reference") == ATLAS_RECORD
             and all(d["local_status"] == "stated_in_baseline" and d["authority_state"] == "local_only"
                     for d in packet["fields"]["decision_candidates"]["decisions"])
-            and av["requests"] == 2 and not av["overlapping_requests"],  # the pull request, then its merge commit
+            and av["requests"] == 2 and not av["overlapping_requests"],  # the pull request, then its reviews
             f"accepted {list(acc)}; revision {v.get('revision')}; requests {av['requests']}")
     g.check("authority", "S2-verified: draft and superseded stay local_only",
             {d["authority_state"] for d in packet["fields"]["other_decisions"]["decisions"]} == {"local_only"}, "")
@@ -757,6 +757,48 @@ def run_s8_baseline_case(g: Gates, verified: dict, out_dir: Path) -> None:
             and any("other than its own source" in x["reason"] for x in problems), f"{len(problems)} problems")
 
 
+def run_s8_validate_shapes(g: Gates, scen, verified: dict) -> None:
+    """Fourth re-review: validate accepts under accepted_decisions only exactly what assembly
+    produces. The unbound text is the Ops Inbox line, whose receipt is valid."""
+    inbox = next(h for h in verified["query_hits"] if h["source"] == "cobalt/Ops Inbox.md")["items"][0]
+    theme_index = 0
+    fixture_line = next(i + 1 for i, l in enumerate((scen.vault_root / "cobalt/Theme Decision.md").read_bytes()
+                                                      .split(b"\n")) if l.startswith(b"Fixture note:"))
+
+    def theme(p):
+        return p["fields"]["accepted_decisions"]["decisions"][theme_index]
+
+    shapes = {
+        "evidence on the verified entry": lambda p: theme(p).__setitem__("evidence", [inbox]),
+        "nested established node in the entry": lambda p: theme(p).__setitem__(
+            "detail", {"status": "established", "items": [inbox]}),
+        "items on accepted_decisions": lambda p: p["fields"]["accepted_decisions"].__setitem__("items", [inbox]),
+        "established with no decision, field-level items": lambda p: p["fields"].__setitem__(
+            "accepted_decisions", {"status": "established", "decisions": [], "items": [inbox]}),
+        "statement swapped for another line of the note": lambda p: theme(p)["items"].__setitem__(
+            1, {"text": "Fixture note: the cited comment is an approver's acceptance.",
+                "receipt": dict(theme(p)["items"][1]["receipt"], span=[fixture_line, fixture_line],
+                                content_sha=hashlib.sha256(span_line(scen, "cobalt/Theme Decision.md",
+                                                                     fixture_line)).hexdigest())}),
+        "duplicate accepted entry": lambda p: p["fields"]["accepted_decisions"]["decisions"].append(copy.deepcopy(theme(p))),
+    }
+    for label, place in shapes.items():
+        forged = copy.deepcopy(verified)
+        place(forged)
+        out, problems = pk.audit(forged, scen.vault_root, recheck=rechecker(scen, "cobalt"))
+        acc = out["fields"]["accepted_decisions"]
+        texts = [i["text"] for _, n in pk.iter_nodes(acc) for k in ("items", "evidence") for i in n.get(k, [])]
+        g.check("negative", f"S8 validate: {label} -> rejected",
+                bool(problems) and "receipt_validation_failed" not in [x["kind"] for x in problems] and not any("SYSTEM OVERRIDE" in t or "Fixture note" in t for t in texts)
+                and len(acc.get("decisions", [])) <= 1,
+                f"problems {[x['kind'] for x in problems][:3]}")
+
+
+def span_line(m, source: str, line: int) -> bytes:
+    from receipts import span_bytes
+    return span_bytes((m.vault_root / source).read_bytes(), line, line)
+
+
 def run_s8(g: Gates, scen, packets: dict, out_dir: Path) -> None:
     # The 4,000-token packet (scored above) may trim low-ranked query hits, including the Ops
     # Inbox; that is budget behaviour, reported in budget.omitted. The content and control
@@ -805,6 +847,7 @@ def run_s8(g: Gates, scen, packets: dict, out_dir: Path) -> None:
     run_s8_owner_cases(g, p, atlas, out_dir)
     run_s8_borrow_paths(g, out_dir)
     run_s8_baseline_case(g, p, out_dir)
+    run_s8_validate_shapes(g, scen, p)
     ap = atlas["fields"]["authority"]["approvals"]
     g.check("adversarial", "S8 Atlas packet unaffected by the Cobalt instructions",
             not any(r["source"].startswith("cobalt/") for r in pk.ordered_receipts(atlas))

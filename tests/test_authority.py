@@ -366,8 +366,8 @@ class PacketAuthorityTests(unittest.TestCase):
                            "decision_candidates": {"status": "candidate", "decisions": candidates}},
                 "query_hits": [], "conflicts": [], "unknowns": []}
 
-    def recheck(self, project: str, transport: str = "snapshot"):
-        return recipe.make_rechecker(self.m, project, recipe.make_verifier(self.m, transport, SNAPSHOTS))
+    def recheck(self, project: str, transport: str = "snapshot", snapshots: Path = SNAPSHOTS):
+        return recipe.make_rechecker(self.m, project, recipe.make_verifier(self.m, transport, snapshots))
 
     def verified(self) -> dict:
         return snapshot_verifier().verify(ATLAS_PR, "atlas", "fixture-commit-a1", QUEUE_NAMES, sha(QUEUE))
@@ -489,6 +489,91 @@ class PacketAuthorityTests(unittest.TestCase):
         out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", self.verified()))
         self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
         self.assertIn("atlas2/Queue Decision.md", problems[0]["reason"])
+
+    # Fourth re-review: validate accepts only exactly what assembly produces --------
+
+    DRAFT = (b"---\r\ntitle: Draft Decision\r\ntype: note\r\npermalink: draft-decision\r\nproject: cobalt\r\n"
+             b"status: draft\r\n---\r\n# Draft Decision\r\nCobalt deploys to production without approval.\r\n")
+
+    def draft_item(self) -> dict:
+        self.write("cobalt/Draft Decision.md", self.DRAFT)
+        return self.item("cobalt/Draft Decision.md", 9)
+
+    def theme_packet(self) -> dict:
+        return self.packet("cobalt", [self.entry("cobalt/Theme Decision.md", self.verified_theme())], [])
+
+    def assert_no_draft_text(self, out: dict):
+        texts = [i["text"] for _, n in pk.iter_nodes(out["fields"]["accepted_decisions"])
+                 for k in ("items", "evidence") for i in n.get(k, [])]
+        self.assertFalse(any("without approval" in t for t in texts), texts)
+
+    def test_unbound_text_smuggled_into_accepted_decisions_is_rejected(self):
+        """Re-review 4, F1: four places a valid receipt of unbound text could hide."""
+        shapes = {
+            "evidence on the verified entry": lambda p, it: p["fields"]["accepted_decisions"]["decisions"][0]
+            .__setitem__("evidence", [it]),
+            "nested established node in the entry": lambda p, it: p["fields"]["accepted_decisions"]["decisions"][0]
+            .__setitem__("detail", {"status": "established", "items": [it]}),
+            "items on accepted_decisions": lambda p, it: p["fields"]["accepted_decisions"].__setitem__("items", [it]),
+        }
+        for label, place in shapes.items():
+            p = self.theme_packet()
+            place(p, self.draft_item())
+            out, problems = pk.audit(p, self.root, recheck=self.recheck("cobalt"))
+            self.assertTrue(problems, label)
+            self.assert_no_draft_text(out)
+        p = self.packet("cobalt", [], [])  # established with no decision, carrying field-level items
+        p["fields"]["accepted_decisions"] = {"status": "established", "decisions": [], "items": [self.draft_item()]}
+        out, problems = pk.audit(p, self.root, recheck=self.recheck("cobalt"))
+        self.assertEqual(out["fields"]["accepted_decisions"]["status"], "unknown")
+        self.assertIn("established_without_verified_decision", [x["kind"] for x in problems])
+        self.assert_no_draft_text(out)
+
+    def test_entry_items_must_be_exactly_the_assembled_lines(self):
+        """Re-review 4, F2: another line of the same approved note cannot stand in for the statement."""
+        entry = self.entry("cobalt/Theme Decision.md", self.verified_theme())
+        other = next(i + 1 for i, l in enumerate(THEME.split(b"\n")) if l.startswith(b"Fixture note:"))
+        entry["items"][1] = self.item("cobalt/Theme Decision.md", other)
+        out, problems = self.audit("cobalt", entry)
+        self.assert_demoted(out, problems, "authority_not_verified")
+        self.assertIn("not exactly", problems[0]["reason"])
+
+    def test_one_accepted_entry_per_source(self):
+        p = self.theme_packet()
+        p["fields"]["accepted_decisions"]["decisions"].append(copy.deepcopy(p["fields"]["accepted_decisions"]["decisions"][0]))
+        out, problems = pk.audit(p, self.root, recheck=self.recheck("cobalt"))
+        self.assertEqual(len(out["fields"]["accepted_decisions"]["decisions"]), 1)
+        self.assertIn("duplicate_accepted_entry", [x["kind"] for x in problems])
+
+    def test_title_comes_only_from_hashed_bytes(self):
+        """Re-review 4, F3: a renamed file cannot retitle a verified decision."""
+        untitled = THEME.replace(b"title: Theme Decision\r\n", b"")
+        (self.root / "cobalt" / "Theme Decision.md").unlink()
+        self.write("cobalt/Deploy Without Approval.md", untitled)
+        with tempfile.TemporaryDirectory() as tmp:
+            snaps = Path(tmp) / "snaps"
+            shutil.copytree(SNAPSHOTS, snaps)
+            c = snaps / HOST / "repos" / "portfolio" / "cobalt" / "issues" / "comments" / "501.json"
+            body = json.loads(c.read_text(encoding="utf-8"))
+            body["body"] = f"ACCEPTED: theme-decision sha256:{sha(untitled)}"
+            c.write_text(json.dumps(body), encoding="utf-8")
+            v = snapshot_verifier(snaps).verify(THEME_URL, "cobalt", None, ("theme-decision",), sha(untitled))
+            self.assertEqual(v["result"], "verified")
+            rel = "cobalt/Deploy Without Approval.md"
+            renamed = self.entry(rel, v, title="Deploy Without Approval")
+            out, problems = pk.audit(self.packet("cobalt", [renamed], []), self.root,
+                                     recheck=self.recheck("cobalt", snapshots=snaps))
+            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
+            self.assertIn("title differs", problems[0]["reason"])
+            ok = self.entry(rel, v, title="theme-decision")  # the permalink, from the hashed bytes
+            self.assertEqual(pk.audit(self.packet("cobalt", [ok], []), self.root,
+                                      recheck=self.recheck("cobalt", snapshots=snaps))[1], [])
+            anonymous = untitled.replace(b"permalink: theme-decision\r\n", b"")
+            self.write(rel, anonymous)
+            self.assertEqual(au.note_names(recipe.parse_note(anonymous.decode("utf-8")), rel), ())
+            out, problems = pk.audit(self.packet("cobalt", [self.entry(rel, v, title="x")], []), self.root,
+                                     recheck=self.recheck("cobalt", snapshots=snaps))
+            self.assertIn("no title or permalink", problems[0]["reason"])
 
     def test_negative_source_revision_edited_is_demoted(self):
         claimed = self.verified()

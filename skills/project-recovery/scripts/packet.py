@@ -234,12 +234,24 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
     fields = out.get("fields") if isinstance(out.get("fields"), dict) else {}
     acc = fields.get("accepted_decisions") if isinstance(fields.get("accepted_decisions"), dict) else None
     accepted = acc.get("decisions") if acc is not None and isinstance(acc.get("decisions"), list) else []
+    if acc is not None:
+        # accepted_decisions carries decisions only; no cited content of its own.
+        for key in [k for k in acc if k not in ("status", "basis", "reason", "decisions")]:
+            conflict(f"fields.accepted_decisions.{key}", "structural",
+                     f"accepted_decisions may not carry {key!r}; only verified decisions")
+            del acc[key]
+    first: dict = {}
+    for i, entry in enumerate(accepted):
+        if isinstance(entry, dict):
+            first.setdefault(entry.get("source"), i)
     for i, entry in reversed(list(enumerate(accepted))):
         path = f"fields.accepted_decisions.decisions[{i}]"
         kind = "authority_not_verified"
         v = entry.get("verification") if isinstance(entry, dict) else None
         if not isinstance(entry, dict):
             ok, why = False, "entry is not an object"
+        elif first.get(entry.get("source")) != i:
+            ok, why, kind = False, f"a second accepted entry for {entry.get('source')!r}", "duplicate_accepted_entry"
         elif entry.get("authority_state") != "verified" or not isinstance(v, dict) or v.get("result") != "verified":
             ok, why = False, "accepted decision without a verified acceptance result"
         elif not v.get("revision") or not v.get("verified_at") or not v.get("reference"):
@@ -261,6 +273,13 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
             cands = fields.setdefault("decision_candidates", {"status": "candidate", "decisions": []})
             cands.setdefault("decisions", []).append(entry)
     accepted_ids = {id(e) for e in accepted}
+    if acc is not None and acc.get("status") == "established" and not any(
+            isinstance(e, dict) and e.get("status") == "established" for e in accepted):
+        acc["status"] = "unknown"
+        acc["reason"] = "no verified decision survived validation"
+        out["unknowns"].append({"field": "fields.accepted_decisions", "reason": acc["reason"]})
+        conflict("fields.accepted_decisions", "established_without_verified_decision",
+                 "accepted_decisions claimed established without a verified decision")
 
     nodes = all_dicts(out)
     for path, node in nodes:

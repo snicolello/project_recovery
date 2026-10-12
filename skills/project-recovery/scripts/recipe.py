@@ -25,7 +25,7 @@ import authority as au
 import packet as pk
 from qmd_client import REPO, McpSession, QmdError, index_cli, installed_version
 from receipts import (SourceError, make_receipt, normalize_text, read_source, safe_resolve, sha256_hex,
-                      validate_receipt)
+                      span_bytes, validate_receipt)
 
 CONTRACT_VERSION = "0.1"
 RECIPE_VERSION = "r2"
@@ -296,6 +296,28 @@ def shared_notes(m: "Manifest", project: str) -> dict[str, dict]:
     return notes
 
 
+def decision_title(note: dict) -> str | None:
+    """A decision's displayed title, from its hashed bytes only: the title line, else the
+    permalink. None when neither exists (such a note is never promoted)."""
+    for key in ("title", "permalink"):
+        line = note["front"].get(key)
+        if line and front_value(line):
+            return front_value(line)
+    return None
+
+
+def decision_lines(policy: dict, note: dict) -> list[int]:
+    """The lines a decision entry cites, in order: status, statement, acceptance reference.
+    Assembly cites exactly these; validate requires exactly these."""
+    lines = [note["front"]["status"].number] if note["front"].get("status") else []
+    if note["statement"]:
+        lines.append(note["statement"].number)
+    ref = au.reference_line(policy, note)
+    if ref is not None:
+        lines.append(ref.number)
+    return lines
+
+
 def mismatch_conflict(source: str, v: dict) -> dict:
     """Conflict for a record whose approval text does not bind this note's current bytes
     (``approved_text_mismatch``) or is not approver-authored (``approval_text_not_approver_authored``)."""
@@ -433,8 +455,7 @@ class Assembler:
             items = [status_item]
             if note["statement"]:
                 items.append(self.cite(field, rel, note["statement"].number, note["statement"].number))
-            title_line = note["front"].get("title")
-            entry = {"title": front_value(title_line) if title_line else Path(rel).stem, "source": source,
+            entry = {"title": decision_title(note), "source": source,
                      "local_status": front_value(Line(0, status_item["text"])) if status_item else "unknown"}
             if is_claim:
                 ref_line = au.reference_line(self.policy, note)
@@ -545,17 +566,24 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
         status = note["front"].get("status")
         if not status or front_value(status) != "accepted":
             return False, "decision source does not claim status accepted"
-        # The entry must describe the note it names: its title, and items cited from it.
-        title = note["front"].get("title")
-        if entry.get("title") != (front_value(title) if title else Path(source).stem):
+        # The entry must be exactly what assembly produces for this note: its title from the
+        # hashed bytes, and its items exactly the status, statement and reference lines, with
+        # no other cited content anywhere inside the entry.
+        title = decision_title(note)
+        if title is None:
+            return False, "the note's bytes carry no title or permalink; it cannot be promoted"
+        if entry.get("title") != title:
             return False, "entry title differs from its source note"
+        if "evidence" in entry or any(node is not entry for _, node in pk.iter_nodes(entry)):
+            return False, "entry carries cited content outside its own items"
         items = entry.get("items") if isinstance(entry.get("items"), list) else []
-        sources = [(i.get("receipt") or {}).get("source") for i in items if isinstance(i, dict)]
-        if any(src != source for src in sources):
+        got = [(((i.get("receipt") or {}).get("source")), list((i.get("receipt") or {}).get("span") or []),
+                (i.get("receipt") or {}).get("content_sha")) if isinstance(i, dict) else None for i in items]
+        want = [(source, [n, n], sha256_hex(span_bytes(data, n, n))) for n in decision_lines(policy, note)]
+        if any(g and g[0] != source for g in got):
             return False, "entry cites items from a note other than its own source"
-        if not any(isinstance(i, dict) and (i.get("receipt") or {}).get("source") == source
-                   and i.get("text") == status.text for i in items):
-            return False, "entry carries no status line cited from its source note"
+        if got != want:
+            return False, "entry items are not exactly the status, statement and reference lines of its source note"
         v = au.verify_decision(verifier, note, source, proj.name, sha256_hex(data),
                                au.record_citations(policy, shared_notes(m, project)))
         if v.get("conflict"):

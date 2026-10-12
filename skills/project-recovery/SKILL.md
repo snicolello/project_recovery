@@ -74,8 +74,17 @@ Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and j
   - A marker inside an HTML comment is refused (stripped before matching). A marker on a lazy blockquote continuation line, one without `>`, binds, because it is still approver-authored text.
   - Login comparison is case-sensitive, so a case mismatch fails safe (not accepted).
   - For a pull merge, the reviews list is read once, as its first page.
+  - The approver comment may sit on any issue in an allowlisted repository; no particular issue is configured.
+  - The login is checked against the approvers list; GitHub's `author_association` is not checked.
+  - Only the first body line of a decision note (its statement) is displayed and cited.
+  - A `pull_review` record does not require the pull request to be merged; the digest binds the approved bytes.
   - The REST API does not reveal comment edits by collaborators, and an agent using the owner's `gh` session can post as the owner. That is the inherent limit of the trust root: the approvers' GitHub accounts.
-- `validate` also requires an accepted entry's title to match its source note, and every item to come from that note (including its status line).
+- `validate` accepts under `accepted_decisions` only what assembly would produce:
+  - one entry per source note;
+  - the title read from the note's hashed bytes (title line, else permalink; a note with neither is never promoted);
+  - items that are exactly that note's status, statement and reference lines, compared by span and digest;
+  - no other cited content anywhere in the entry;
+  - nothing on the `accepted_decisions` node except `status`, `basis`, `reason` and `decisions`, which is `established` only while a verified decision survives.
 - `verifier`: default `transport` and `serial: true`. Requests run one at a time behind a lock that refuses a second concurrent request; each distinct record is read at most once per run.
 
 ## Live GitHub smoke test (optional)

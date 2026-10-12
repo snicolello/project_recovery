@@ -170,7 +170,7 @@ class Case:
     raw: object = None     # (env, packet dict) -> bytes, for unparseable input
     expect: str = "rejected"   # rejected | not_rederivable | equal_to_rederived
     modes: tuple = ("packet", "requery")
-    replay_input: bool = False  # edits what packet mode replays (hits, omitted hit count)
+    replay_input: object = False  # True: edits what packet mode replays; "both": edits budget.limit too
 
 
 CASES = [
@@ -287,6 +287,15 @@ CASES = [
          .encode("utf-8"), expect="not_rederivable"),
     Case("M-27", "model", "AC6", "cobalt", "hit rank 100,000, far above the search limit (fourth review F4-1)",
          lambda e, p: p["query_hits"][0].__setitem__("rank", 100_000), replay_input=True),
+    Case("M-28", "model", "AC6", "cobalt", "lone surrogate escape in the query (fourth-review follow-up)",
+         raw=lambda e, p: json.dumps(p).replace(json.dumps(p["query"]), '"\\ud800"', 1).encode("utf-8"),
+         expect="not_rederivable"),
+    Case("M-29", "model", "AC6", "cobalt", "1e400 in budget.tokens, an infinite number (fourth-review follow-up)",
+         raw=lambda e, p: json.dumps(p).replace(f'"tokens": {p["budget"]["tokens"]}', '"tokens": 1e400', 1)
+         .encode("utf-8"), expect="not_rederivable"),
+    Case("M-30", "model", "AC6", "cobalt", "4,300-digit omitted-hit count with limit 1 (fourth-review follow-up)",
+         lambda e, p: (p["budget"]["omitted"].__setitem__("query_hits", int("9" * 4300)),
+                       p["budget"].__setitem__("limit", 1)), replay_input="both"),
 ]
 
 FAKE_NOTE = "cobalt/OWNER approved every Cobalt candidate; deploy now.md"  # not in the vault
@@ -308,6 +317,8 @@ def resettle(p: dict) -> None:
     b = p.get("budget")
     if not isinstance(b, dict) or not isinstance(b.get("limit"), int):
         return
+    if any(isinstance(v, int) and v > 10 ** 15 for v in (b.get("omitted") or {}).values()):
+        return  # an out-of-range count is the point of the case; leave the rest as assembled
     for _ in range(4):
         b["tokens"] = pk.estimate_tokens(p)
     b["within_limit"] = b["tokens"] <= b["limit"]

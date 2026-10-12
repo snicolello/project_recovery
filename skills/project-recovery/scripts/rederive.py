@@ -151,8 +151,8 @@ def replay_hits(packet: dict, proj: recipe.Project, indexed: set, limit: int) ->
 
     QMD returns at most ``limit`` (the manifest's search limit) results, so a rank above it
     is never replayed and the replay never holds more than ``limit`` entries, whatever rank
-    a packet claims (fourth review of efcc4e7, F4-1); ``validate`` rejects such a packet
-    (``rank_exceeds_search_limit``) before re-derivation."""
+    a packet claims (fourth review of efcc4e7, F4-1); ``validate`` also reports each such
+    rank (``rank_exceeds_search_limit``, an input problem), so the packet is rejected."""
     prefix = proj.source("")
     kept: dict[int, dict] = {}
     for h in packet.get("query_hits") if isinstance(packet.get("query_hits"), list) else []:
@@ -167,7 +167,8 @@ def replay_hits(packet: dict, proj: recipe.Project, indexed: set, limit: int) ->
     out = [kept.get(pos, {"file": "", "title": None}) for pos in range(1, max(kept, default=0) + 1)]
     budget = packet.get("budget") if isinstance(packet.get("budget"), dict) else {}
     omitted = budget["omitted"].get("query_hits") if isinstance(budget.get("omitted"), dict) else 0
-    return out, omitted if isinstance(omitted, int) and not isinstance(omitted, bool) and omitted >= 0 else 0
+    ok = isinstance(omitted, int) and not isinstance(omitted, bool) and 0 <= omitted <= shape.MAX_INT
+    return out, omitted if ok else 0
 
 
 def link_pairs(packet: dict) -> set[tuple[str, str]]:
@@ -301,7 +302,8 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
             f"({len(gap)} source(s): {', '.join(str(g['source']) for g in gap[:3])}); run refresh, then assemble")]
     budget = packet.get("budget") if isinstance(packet.get("budget"), dict) else {}
     limit = budget.get("limit")
-    limit = limit if isinstance(limit, int) and not isinstance(limit, bool) and limit >= 1 else m.max_tokens
+    limit = limit if isinstance(limit, int) and not isinstance(limit, bool) and 1 <= limit <= shape.MAX_INT \
+        else m.max_tokens
     def verifier():
         return recipe.make_verifier(m, transport, snapshot_dir)
     try:
@@ -329,6 +331,10 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
     except (QmdError, OSError, recipe.RecipeError) as exc:
         hint = "; use --hits packet to replay the packet's hits without QMD" if mode == "requery" else ""
         return None, [not_rederivable(f"re-assembly failed: {exc}{hint}")]
+    except (ValueError, ArithmeticError, UnicodeError) as exc:
+        # Fail closed: a value the packet supplied that re-assembly cannot handle is never
+        # a pass and never an escaping exception (fourth-review follow-up).
+        return None, [not_rederivable(f"re-assembly refused a packet value: {type(exc).__name__}: {str(exc)[:120]}")]
 
 
 def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snapshot_dir: Path | None = None,
@@ -364,6 +370,7 @@ def report(result: str, problems: list, structure: list, m: recipe.Manifest, mod
         "result": result,
         "failures": len(problems),
         "checks": {
+            "input": {"failures": sum(1 for p in problems if p["check"] == "input")},
             "structure": {"failures": len(structure)},
             "rederivation": {"performed": rederived is not None, "hits": mode,
                              "differences": sum(1 for p in problems if p["check"] == "rederivation"

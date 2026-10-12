@@ -16,6 +16,7 @@ import json
 import sys
 import tracemalloc
 import unittest
+import unittest.mock
 
 from reliance_cases import (CASES, EMPTY_HIT, HITS, LIMIT_CASES, LINK_NOTE, assemble, build, make_env,  # sets sys.path
                             record_generation, resettle)
@@ -88,7 +89,7 @@ class RelianceGateTests(unittest.TestCase):
                     self.assertTrue(any(x["field"] != "budget.tokens" for x in r["problems"]), r["problems"])
                     if case.expect == "not_rederivable":
                         self.assertIsNone(r["packet"])
-                    elif not (mode == "packet" and case.replay_input):
+                    elif not ((mode == "packet" and case.replay_input) or case.replay_input == "both"):
                         # nothing from the submitted packet is kept: the output is the re-derivation
                         self.assertEqual(pk.canonical(r["packet"]), pk.canonical(original))
 
@@ -326,10 +327,11 @@ class FourthReviewTests(unittest.TestCase):
                     peak = tracemalloc.get_traced_memory()[1]
                 finally:
                     tracemalloc.stop()
+                # memory first: before the fix, packet mode fails here, on the allocation itself
+                self.assertLess(peak, 4_000_000, "replay allocation must not grow with the claimed rank")
                 self.assertEqual(r["result"], "rejected")
                 self.assertEqual(r["problems"][0]["kind"], "rank_exceeds_search_limit")
-                self.assertLess(peak, 4_000_000, "replay allocation must not grow with the claimed rank")
-                self.assertEqual(r["checks"]["structure"]["failures"], 0)
+                self.assertEqual((r["checks"]["input"]["failures"], r["checks"]["structure"]["failures"]), (1, 0))
 
     def test_f4_1_replay_never_exceeds_the_search_limit(self):
         # Run only against the fixed code: before the fix this rank would exhaust memory.
@@ -365,6 +367,63 @@ class FourthReviewTests(unittest.TestCase):
         self.assertEqual((code, result["result"], result["packet"]), (1, "not_rederivable", None))
         self.assertNotIn("Traceback", err.getvalue())
         self.assertGreater(sys.get_int_max_str_digits(), 0, "the integer-conversion limit stays enabled")
+
+
+class FourthReviewFollowUpTests(unittest.TestCase):
+    """Focused re-review of 1fd34de: no exception escapes validate or the CLI, in either mode."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.env = make_env(packets=False)
+        cls.packet = assemble(cls.env, "cobalt")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.env.close()
+
+    def outcome(self, data: bytes) -> list:
+        """(mode, result) for both modes, plus the CLI's (exit, result, traceback?)."""
+        env, out = self.env, []
+        for mode in rederive.MODES:
+            r = rederive.validate(env.m, data, "snapshot", None, mode,
+                                  session_factory=lambda: rederive.VaultSession(env.m, "cobalt", HITS["cobalt"]))
+            out.append((mode, r["result"], r["packet"] is None))
+        path = env.root.parent / "follow-up.json"
+        path.write_bytes(data)
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = recover.main(["validate", "--manifest", str(env.m.path), "--vault-root", str(env.root),
+                                 "--state-dir", str(env.state), "--packet", str(path), "--hits", "packet"])
+        out.append(("cli", code, json.loads(stdout.getvalue())["result"], "Traceback" in stderr.getvalue()))
+        return out
+
+    def test_lone_surrogate(self):
+        text = json.dumps(self.packet).replace(json.dumps(self.packet["query"]), '"\\ud800"', 1)
+        self.assertEqual(self.outcome(text.encode("utf-8")),
+                         [("requery", "not_rederivable", True), ("packet", "not_rederivable", True),
+                          ("cli", 1, "not_rederivable", False)])
+
+    def test_infinite_number(self):
+        text = json.dumps(self.packet).replace(f'"tokens": {self.packet["budget"]["tokens"]}', '"tokens": 1e400', 1)
+        self.assertEqual(self.outcome(text.encode("utf-8"))[:2],
+                         [("requery", "not_rederivable", True), ("packet", "not_rederivable", True)])
+
+    def test_huge_count_with_a_small_limit(self):
+        p = copy.deepcopy(self.packet)
+        p["budget"]["omitted"]["query_hits"], p["budget"]["limit"] = int("9" * 4300), 1
+        got = self.outcome(json.dumps(p).encode("utf-8"))
+        self.assertEqual([g[1] for g in got[:2]], ["rejected", "rejected"])
+        self.assertEqual(got[2][:3:2], ("cli", "rejected"))
+        self.assertFalse(got[2][3])
+
+    def test_rederivation_fails_closed_on_an_unexpected_value_error(self):
+        env = self.env
+
+        def broken():
+            raise ValueError("simulated")
+        with unittest.mock.patch.object(rederive.recipe, "assemble", side_effect=ValueError("simulated")):
+            r = rederive.validate(env.m, json.dumps(self.packet).encode("utf-8"), "snapshot", None, "packet")
+        self.assertEqual((r["result"], r["packet"]), ("not_rederivable", None))
 
 
 class DocumentationTests(unittest.TestCase):

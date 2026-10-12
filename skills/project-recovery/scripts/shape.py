@@ -7,17 +7,24 @@ passes ``check`` may still say anything a well-formed packet can say; whether it
 are what the vault and the acceptance records support is decided by re-derivation
 (``rederive.py``), not here.
 
-``parse`` reads packet text strictly: UTF-8 JSON, one object, no duplicate keys, no NaN
+``parse`` reads packet text strictly: UTF-8 JSON, one object, no duplicate keys, no NaN,
+no infinite number (``1e400`` included), no lone surrogate, no integer beyond Python's
+conversion limit
 or Infinity, bounded size and depth.
 """
 from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import re
 
 MAX_PACKET_BYTES = 4_000_000
 MAX_PROBLEMS = 100
+# Largest integer any packet count, rank, limit or token figure may hold. Far above anything
+# assembly produces, small enough that arithmetic on it never nears the integer-conversion
+# limit (fourth-review follow-up: a 4,300-digit count plus one could not be printed).
+MAX_INT = 10 ** 15
 
 TIMESTAMP = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z")
 HEX64 = re.compile(r"[0-9a-f]{64}")
@@ -58,8 +65,8 @@ def _int(v) -> bool:
 
 STR = Scalar("a string", lambda v: isinstance(v, str))
 BOOL = Scalar("a boolean", lambda v: isinstance(v, bool))
-COUNT = Scalar("an integer >= 0", lambda v: _int(v) and v >= 0)
-POSITIVE = Scalar("an integer >= 1", lambda v: _int(v) and v >= 1)
+COUNT = Scalar("an integer from 0 to 10^15", lambda v: _int(v) and 0 <= v <= MAX_INT)
+POSITIVE = Scalar("an integer from 1 to 10^15", lambda v: _int(v) and 1 <= v <= MAX_INT)
 TS = Scalar("a UTC timestamp YYYY-MM-DDTHH:MM:SS.mmmZ", _timestamp)
 SHA = Scalar("a lowercase SHA-256 hex digest", lambda v: isinstance(v, str) and HEX64.fullmatch(v))
 SPAN = Scalar("[start, end] with 1 <= start <= end",
@@ -224,6 +231,13 @@ def _no_constant(name: str):
     raise ParseError(f"non-finite number {name} is not JSON")
 
 
+def _finite_float(text: str) -> float:
+    value = float(text)
+    if not math.isfinite(value):
+        raise ParseError(f"number {text[:20]} is not finite")
+    return value
+
+
 def parse(data: bytes) -> dict:
     """Packet text to an object, or ParseError. A leading UTF-8 byte-order mark is ignored."""
     if len(data) > MAX_PACKET_BYTES:
@@ -235,7 +249,8 @@ def parse(data: bytes) -> dict:
     except UnicodeDecodeError as exc:
         raise ParseError(f"packet is not UTF-8: {exc}") from None
     try:
-        value = json.loads(text, object_pairs_hook=_no_duplicates, parse_constant=_no_constant)
+        value = json.loads(text, object_pairs_hook=_no_duplicates, parse_constant=_no_constant,
+                           parse_float=_finite_float)
     except RecursionError:
         raise ParseError("packet nesting is too deep") from None
     except json.JSONDecodeError as exc:
@@ -248,4 +263,8 @@ def parse(data: bytes) -> dict:
         raise ParseError(f"packet holds a value JSON parsing refuses: {str(exc)[:120]}") from None
     if not isinstance(value, dict):
         raise ParseError(f"packet is a JSON {type(value).__name__}, not an object")
+    try:  # a \ud800-style escape decodes to a lone surrogate, which no output can encode
+        json.dumps(value, ensure_ascii=False).encode("utf-8")
+    except UnicodeEncodeError:
+        raise ParseError("packet holds a string that is not valid Unicode (a lone surrogate)") from None
     return value

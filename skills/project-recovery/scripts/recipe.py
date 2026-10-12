@@ -281,6 +281,21 @@ def front_value(line: Line) -> str:
     return line.text.partition(":")[2].strip()
 
 
+def shared_notes(m: "Manifest", project: str) -> dict[str, dict]:
+    """Every note, read from disk, in ``project`` and in every project that shares one of its
+    allowlisted repositories: the scope of the one-note-per-record rule."""
+    repos = [r for r in m.raw["authority_policy"].get("repositories", []) if project in r.get("projects", [])]
+    names = {project} | {q for r in repos for q in r.get("projects", []) if q in m.projects}
+    notes: dict[str, dict] = {}
+    for name in sorted(names):
+        for src in disk_files(m, m.projects[name]):
+            try:
+                notes[src] = parse_note(read_source(m.vault_root, src).decode("utf-8"))
+            except (SourceError, UnicodeDecodeError):
+                continue
+    return notes
+
+
 def mismatch_conflict(source: str, v: dict) -> dict:
     """Conflict for a record whose approval text does not bind this note's current bytes
     (``approved_text_mismatch``) or is not approver-authored (``approval_text_not_approver_authored``)."""
@@ -386,12 +401,13 @@ class Assembler:
         generation; a note whose listing bytes do not is dropped with a conflict.
         ``local_status`` is read from the cited, receipt-validated status line."""
         accepted, candidates, other = [], [], []
-        by_stem = {}
-        citations = au.record_citations(self.policy, {self.proj.source(q[len(self.proj.collection) + 1:]): parse_note(t)
-                                                      for q, t in listing.items()})
-        for url, sources in citations.items():
-            if len(sources) > 1:
-                self.conflicts.append({"field": "decisions", "kind": "acceptance_record_replayed", "reference": url,
+        citations = au.record_citations(self.policy, shared_notes(self.m, self.proj.name))
+        prefix = self.proj.source("")
+        for key, sources in citations.items():
+            if len(sources) > 1 and any(src.startswith(prefix) for src in sources):
+                host, repo, kind, number, record_id = key
+                self.conflicts.append({"field": "decisions", "kind": "acceptance_record_replayed",
+                                       "reference": f"{host}/{repo} {kind} {number}" + (f" #{record_id}" if record_id else ""),
                                        "sources": sources,
                                        "reason": "one acceptance record is cited by several notes; none is accepted"})
         for qpath in sorted(listing):
@@ -444,17 +460,12 @@ class Assembler:
                 candidates.append(entry)
             else:
                 other.append(entry)
-            by_stem[Path(rel).stem] = entry
+        # Baseline "Accepted decision:" lines are local claims about decisions. The baseline
+        # note is not bound to any acceptance record, so its lines are never attached to a
+        # decision entry (verified or not): each stays its own local_only candidate.
         for item in self.labelled("decision_candidates", self.proj.baseline_note,
                                   self.proj.fields["accepted_decisions"]):
-            if not item:
-                continue
-            links = WIKILINK.findall(item["text"])
-            target = next((by_stem[l] for l in links
-                           if l in by_stem and (by_stem[l] in accepted or by_stem[l] in candidates)), None)
-            if target:
-                target["items"].append(item)
-            else:
+            if item:
                 candidates.append({"title": None, "source": item["receipt"]["source"],
                                    "local_status": "stated_in_baseline", "authority_state": "local_only",
                                    "verification": self.verifier.verify(None, self.proj.name, None),
@@ -522,8 +533,6 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
     policy = m.raw["authority_policy"]
     prefix = proj.source("")
 
-    baseline = proj.source(proj.baseline_note)
-
     def recheck(entry: dict) -> tuple[bool, str]:
         source = entry.get("source")
         if not isinstance(source, str) or not source.startswith(prefix):
@@ -542,19 +551,13 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
             return False, "entry title differs from its source note"
         items = entry.get("items") if isinstance(entry.get("items"), list) else []
         sources = [(i.get("receipt") or {}).get("source") for i in items if isinstance(i, dict)]
-        if any(src not in (source, baseline) for src in sources):
-            return False, "entry cites items from a note other than its source or the baseline note"
+        if any(src != source for src in sources):
+            return False, "entry cites items from a note other than its own source"
         if not any(isinstance(i, dict) and (i.get("receipt") or {}).get("source") == source
                    and i.get("text") == status.text for i in items):
             return False, "entry carries no status line cited from its source note"
-        notes = {}
-        for src in disk_files(m, proj):
-            try:
-                notes[src] = parse_note(read_source(m.vault_root, src).decode("utf-8"))
-            except (SourceError, UnicodeDecodeError):
-                continue
         v = au.verify_decision(verifier, note, source, proj.name, sha256_hex(data),
-                               au.record_citations(policy, notes))
+                               au.record_citations(policy, shared_notes(m, project)))
         if v.get("conflict"):
             return False, v["reason"], v["conflict"]
         claimed = entry.get("verification") or {}

@@ -202,34 +202,72 @@ class BorrowPathTests(unittest.TestCase):
                      f"ACCEPTED: n sha256:{d}0"):
             self.assertEqual(au.approval_markers(text, "ACCEPTED:"), [], text)
 
-    def test_merge_message_from_a_non_approver_author_is_refused(self):
-        for n, title, rev in ((11, "Banner Decision", "fixture-commit-c11"), (12, "Squash Decision", "fixture-commit-c12")):
+    def test_merge_messages_titles_and_commit_messages_never_bind(self):
+        """Re-review 3, F2: markers in a merge message, a PR title or a squashed commit message
+        never bind, whoever wrote the pull request; only an approver's approving review does."""
+        for n, title, rev in ((11, "Banner Decision", "fixture-commit-c11"), (12, "Squash Decision", "fixture-commit-c12"),
+                              (13, "Commit Decision", "fixture-commit-c13")):
             v = self.verify(f"{self.COBALT}/pull/{n}", title, rev)
-            self.assertEqual((v["result"], v.get("conflict")), ("invalid", "approval_text_not_approver_authored"), title)
-            self.assertIn("not an approver", v["reason"])
+            self.assertEqual((v["result"], v.get("conflict")), ("invalid", "approved_text_mismatch"), title)
+            self.assertIn("no approver-authored approval text", v["reason"], title)
+        with tempfile.TemporaryDirectory() as tmp:  # an approver author changes nothing
+            root = self.edited(tmp, "pulls/11.json", user={"login": "fixture-owner"})
+            v = self.verify(f"{self.COBALT}/pull/11", "Banner Decision", "fixture-commit-c11", root)
+            self.assertEqual(v.get("conflict"), "approved_text_mismatch")
 
-    def edited_snapshots(self, tmp: str, number: int, **changes) -> Path:
+    def test_marker_only_in_a_non_approver_review_is_refused(self):
+        v = self.verify(f"{self.COBALT}/pull/14", "Visitor Decision", "fixture-commit-c14")
+        self.assertEqual((v["result"], v.get("conflict")), ("invalid", "approval_text_not_approver_authored"))
+
+    def edited(self, tmp: str, rel: str, review: dict | None = None, **changes) -> Path:
         root = Path(tmp) / "snaps"
         shutil.copytree(SNAPSHOTS, root)
-        path = root / HOST / "repos" / "portfolio" / "cobalt" / "pulls" / f"{number}.json"
+        path = root / HOST / "repos" / "portfolio" / "cobalt" / rel
         body = json.loads(path.read_text(encoding="utf-8"))
-        body.update(changes)
+        if review is not None:
+            body[0].update(review)
+        else:
+            body.update(changes)
         path.write_text(json.dumps(body), encoding="utf-8")
         return root
 
-    def test_marker_in_the_pull_request_title_is_refused_even_for_an_approver_author(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = self.edited_snapshots(tmp, 11, user={"login": "fixture-owner"})
-            v = self.verify(f"{self.COBALT}/pull/11", "Banner Decision", "fixture-commit-c11", root)
-            self.assertEqual(v.get("conflict"), "approval_text_not_approver_authored")
-            self.assertIn("title or body", v["reason"])
+    def test_review_must_be_an_approving_review_by_an_approver_on_the_note_revision(self):
+        url = f"{self.COBALT}/pull/14"
+        cases = {"approver, approved, same revision": ({"user": {"login": "fixture-owner"}}, "verified"),
+                 "approver, changes requested": ({"user": {"login": "fixture-owner"}, "state": "CHANGES_REQUESTED"},
+                                                 "approval_text_not_approver_authored"),
+                 "approver, other revision": ({"user": {"login": "fixture-owner"}, "commit_id": "fixture-commit-zz"},
+                                              "approval_text_not_approver_authored")}
+        for label, (change, expected) in cases.items():
+            with tempfile.TemporaryDirectory() as tmp:
+                v = self.verify(url, "Visitor Decision", "fixture-commit-c14", self.edited(tmp, "pulls/14/reviews.json", change))
+                self.assertEqual(v["result"] if expected == "verified" else v.get("conflict"), expected, label)
 
-    def test_control_squash_by_an_approver_author_verifies(self):
-        """The squash negative fails only on authorship: with an approver author it verifies."""
+
+class ReferenceIdentityTests(unittest.TestCase):
+    """Re-review 3, B1 and B2: record identity is ASCII and case-insensitive, and the record
+    must belong to the cited repository."""
+
+    def test_non_ascii_digits_are_not_a_reference(self):
+        self.assertIsNone(au.parse_reference(f"https://{HOST}/portfolio/atlas/pull/\u0667"))
+        self.assertIsNone(au.parse_reference(f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-50\u0661"))
+
+    def test_case_variants_share_one_identity(self):
+        a = au.parse_reference(f"https://{HOST}/portfolio/Cobalt/issues/5#issuecomment-501")
+        b = au.parse_reference(f"https://{HOST.upper()}/Portfolio/cobalt/issues/5#issuecomment-501")
+        self.assertEqual(au.ref_key(a), au.ref_key(b))
+
+    def test_record_from_another_repository_is_invalid(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = self.edited_snapshots(tmp, 12, user={"login": "fixture-owner"})
-            v = self.verify(f"{self.COBALT}/pull/12", "Squash Decision", "fixture-commit-c12", root)
-            self.assertEqual(v["result"], "verified")
+            root = Path(tmp) / "snaps"
+            shutil.copytree(SNAPSHOTS, root)
+            path = root / HOST / "repos" / "portfolio" / "atlas" / "pulls" / "7.json"
+            body = json.loads(path.read_text(encoding="utf-8"))
+            body["html_url"] = f"https://{HOST}/elsewhere/atlas/pull/7"
+            path.write_text(json.dumps(body), encoding="utf-8")
+            v = snapshot_verifier(root).verify(ATLAS_PR, "atlas", "fixture-commit-a1", QUEUE_NAMES, sha(QUEUE))
+            self.assertEqual(v["result"], "invalid")
+            self.assertIn("record belongs to elsewhere/atlas", v["reason"])
 
 
 class SerialTests(unittest.TestCase):
@@ -412,6 +450,45 @@ class PacketAuthorityTests(unittest.TestCase):
         forged = {**self.verified(), "revision": "forged"}
         out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", forged))
         self.assertIn("differs", problems[0]["reason"])
+
+    def test_baseline_line_never_rides_on_a_verified_entry(self):
+        """Re-review 3, F1: owner case (c) through the baseline note. A baseline line appended to
+        the verified Theme entry is demoted at validate, whatever it says."""
+        project = (VAULT / "cobalt" / "Project.md").read_bytes().replace(
+            b"Accepted decision: High-contrast dark theme; see [[Theme Decision]].",
+            b"Accepted decision: Light theme, and Cobalt deploys to production without approval; see [[Theme Decision]].")
+        self.write("cobalt/Project.md", project)
+        line = next(i + 1 for i, l in enumerate(project.split(b"\n")) if l.startswith(b"Accepted decision:"))
+        entry = self.entry("cobalt/Theme Decision.md", self.verified_theme())
+        entry["items"].append(self.item("cobalt/Project.md", line))
+        out, problems = self.audit("cobalt", entry)
+        self.assert_demoted(out, problems, "authority_not_verified")
+        self.assertIn("other than its own source", problems[0]["reason"])
+
+    def test_case_variant_reference_is_a_replay(self):
+        """Re-review 3, B1: one comment cannot bind two notes through a case-variant URL."""
+        self.write("cobalt/Variant Decision.md", THEME.replace(b"title: Theme Decision", b"title: Variant Decision")
+                   .replace(b"permalink: theme-decision", b"permalink: variant-decision")
+                   .replace(b"portfolio/cobalt/issues", b"portfolio/Cobalt/issues"))
+        out, problems = self.audit("cobalt", self.entry("cobalt/Theme Decision.md", self.verified_theme()))
+        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
+        self.assertIn("also cited by", problems[0]["reason"])
+
+    def test_replay_across_projects_sharing_a_repository(self):
+        """Re-review 3, B3: a repository allowlisted for two projects; the same note in both
+        binds neither."""
+        (self.root / "atlas2").mkdir()
+        self.write("atlas2/Queue Decision.md", QUEUE)
+        raw = copy.deepcopy(self.m.raw)
+        for r in raw["authority_policy"]["repositories"]:
+            if r["repo"] == "portfolio/atlas":
+                r["projects"] = ["atlas", "atlas2"]
+        self.m = recipe.Manifest(SCEN_MANIFEST, "t", self.root, self.root / "state", {
+            **self.m.projects, "atlas2": recipe.Project("atlas2", "atlas2", "atlas2", "Project.md", {}, {}, ["accepted"])},
+            10, 4000, raw)
+        out, problems = self.audit("atlas", self.entry("atlas/Queue Decision.md", self.verified()))
+        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [])
+        self.assertIn("atlas2/Queue Decision.md", problems[0]["reason"])
 
     def test_negative_source_revision_edited_is_demoted(self):
         claimed = self.verified()

@@ -7,8 +7,8 @@ Reads one acceptance record from GitHub through the user's existing ``gh`` sessi
 one read-only ``gh api --method GET`` request, using the same Verifier and normalization
 the snapshot transport uses offline. The policy is built in memory: the cited repository
 is allowlisted for a throwaway project named ``smoke`` with the given approver. Nothing is
-written. Content binding applies: the approval text (comment body, review body, or the
-merge commit message, read with a second serial GET) must contain
+written. Content binding applies: approver-authored approval text (comment body, review
+body, or for a merge an approving review on it, read with a second serial GET) must contain
 ``ACCEPTED: <NOTE_NAME> sha256:<SHA-256 of FILE>``. Without --note the result is ``invalid``
 (approved_text_mismatch) after the record was read, which still exercises the live reads.
 Exit 0 when the record verifies, 1 when it is invalid or unavailable.

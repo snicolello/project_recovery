@@ -12,5 +12,6 @@
     "name": "fixture-owner",
     "date": "2026-10-07T12:00:00Z"
   },
-  "message": "Merge pull request #11 from visitor/banner\n\nACCEPTED: banner-decision sha256:b4ba8733230712ed1d62c2884b8d55e6f0ec117bb79a7553c997601468aaadee"
+  "message": "Merge pull request #11 from visitor/banner\n\nACCEPTED: banner-decision sha256:b4ba8733230712ed1d62c2884b8d55e6f0ec117bb79a7553c997601468aaadee",
+  "_note": "Present for the record; merge commit messages are never read for markers."
 }

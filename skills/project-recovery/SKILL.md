@@ -66,12 +66,16 @@ Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and j
 - `acceptance_records`: the kinds that count (`pull_merge`, `pull_review`, `issue_comment`), each with a `body_marker` (`ACCEPTED:`).
 - `reference`: how a note names its one record, by frontmatter key (`acceptance_record`) or the first body line starting with a label (`Authority fixture:` in the fixtures). The line is cited with a receipt; the URL is read from the cited text.
 - `binding`: the frontmatter key a note uses to declare its subject revision (`source_revision`).
-- **When a record is bound to a decision** is defined in one place: `authority.verify_decision` (its docstring is the rule). Assembly and `validate` both call it. In short, the approval text itself must carry the line `ACCEPTED: <note permalink> sha256:<SHA-256 of the note's current bytes>` (content binding, owner review 2026-10-12), so an edited or different note is never accepted. The line must start at column zero, outside fenced code blocks; quoted or negated lines never count. A merge commit message counts only when both the pull request's author and its merger are approvers, and the marker is not in the pull request title or body. Conflicts are `approved_text_mismatch`, `approval_text_not_approver_authored` and `acceptance_record_replayed`. To approve a new version of a note, the approver posts a new marker with the new digest.
+- **When a record is bound to a decision** is defined in one place: `authority.verify_decision` (its docstring is the rule). Assembly and `validate` both call it. In short, the approval text itself must carry the line `ACCEPTED: <note permalink> sha256:<SHA-256 of the note's current bytes>` (content binding, owner review 2026-10-12), so an edited or different note is never accepted. The line must start at column zero, outside fenced code blocks and HTML comments; quoted or negated lines never count. Only approver-authored text is read: an approver's comment, an approving review, or, for a pull merge, an approving review by an approver on the note's `source_revision` on that pull request. A merge only establishes the revision; merge commit messages, pull request titles and bodies are never read. Baseline `Accepted decision:` lines are never attached to a decision entry; each stays its own `local_only` candidate. Conflicts are `approved_text_mismatch`, `approval_text_not_approver_authored` and `acceptance_record_replayed`. To approve a new version of a note, the approver posts a new marker with the new digest.
 - Limits of this rule:
   - Digests are over raw bytes, so line endings and trailing whitespace matter, and any edit to an approved note needs a new approval.
-  - One record approves exactly one note.
+  - One record approves exactly one note, counted across every project that shares the record's repository; record identity ignores URL case.
+  - A later `CHANGES_REQUESTED` review does not revoke an earlier approving review: the record is read as it stands.
+  - A marker inside an HTML comment is refused (stripped before matching). A marker on a lazy blockquote continuation line, one without `>`, binds, because it is still approver-authored text.
+  - Login comparison is case-sensitive, so a case mismatch fails safe (not accepted).
+  - For a pull merge, the reviews list is read once, as its first page.
   - The REST API does not reveal comment edits by collaborators, and an agent using the owner's `gh` session can post as the owner. That is the inherent limit of the trust root: the approvers' GitHub accounts.
-- `validate` also requires an accepted entry's title to match its source note, and its items to come from that note (including its status line) or the baseline note.
+- `validate` also requires an accepted entry's title to match its source note, and every item to come from that note (including its status line).
 - `verifier`: default `transport` and `serial: true`. Requests run one at a time behind a lock that refuses a second concurrent request; each distinct record is read at most once per run.
 
 ## Live GitHub smoke test (optional)
@@ -80,7 +84,7 @@ Not part of any gate; the gates run offline. With the `gh` CLI signed in, read o
 
 `python -I scripts/live_gh_smoke.py --reference https://github.com/snicolello/project_recovery/pull/1 --approver snicolello`
 
-It reads the pull request, then its merge commit, one request at a time. PR #1's merge message carries no `ACCEPTED: <name> sha256:<digest>` marker, so the expected result is `"result": "invalid"` with `approved_text_mismatch` and the merge commit as `revision` (2026-10-12: revision `22bcaa7f0caa5a9e3fdc91601fb21a8299e91045`, 2 requests, no overlap). With another `--approver` the result is also `invalid`. For a record whose approval text names a note, add `--note FILE --name NAME` to check the digest. `recover.py assemble --verifier gh` uses the same transport against a manifest's allowlisted repositories.
+It reads the pull request, then its reviews, one request at a time. No approving review on PR #1 carries an `ACCEPTED: <name> sha256:<digest>` marker, so the expected result is `"result": "invalid"` with `approved_text_mismatch` ("no approver-authored approval text") and the merge commit as `revision`. With another `--approver` the result is also `invalid`. For a record whose approval text names a note, add `--note FILE --name NAME` to check the digest. `recover.py assemble --verifier gh` uses the same transport against a manifest's allowlisted repositories.
 
 ## Token estimate check
 

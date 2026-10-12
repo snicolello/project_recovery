@@ -48,8 +48,11 @@ TRANSPORTS = ("offline", "snapshot", "gh")
 
 REF = re.compile(
     r"https://(?P<host>[A-Za-z0-9.-]+)/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+)/"
-    r"(?P<what>pull|issues)/(?P<number>\d+)"
-    r"(?:#(?P<frag>pullrequestreview|issuecomment)-(?P<id>\d+))?(?![\w/#-])")
+    r"(?P<what>pull|issues)/(?P<number>[0-9]+)"
+    r"(?:#(?P<frag>pullrequestreview|issuecomment)-(?P<id>[0-9]+))?(?![A-Za-z0-9_/#-])", re.ASCII)
+RECORD_REPO = re.compile(r"https://[A-Za-z0-9.-]+/(?:api/v3/repos/)?([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(?:pull|issues)/",
+                         re.ASCII)
+HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
 
 
 FENCE = re.compile(r"(?ms)^[ \t]{0,3}(`{3,}|~{3,})[^\n]*\n.*?(?:^[ \t]{0,3}\1[ \t]*$|\Z)")
@@ -59,10 +62,11 @@ def approval_markers(text: str, marker: str) -> list[tuple[str, str]]:
     """``(name, digest)`` for every whole-line ``<marker> <name> sha256:<digest>`` in ``text``.
 
     Only a line that starts at column zero with the marker counts: quoted lines (``> ...``),
-    negations (``NOT ACCEPTED: ...``) and any text inside fenced code blocks are ignored."""
+    negations (``NOT ACCEPTED: ...``), text inside fenced code blocks and text inside HTML
+    comments are ignored."""
     if not marker:
         return []
-    plain = FENCE.sub("", (text or "").replace("\r\n", "\n"))
+    plain = HTML_COMMENT.sub("", FENCE.sub("", (text or "").replace("\r\n", "\n")))
     line = re.compile(r"(?m)^" + re.escape(marker) + r" (\S+) sha256:([0-9a-f]{64})[ \t]*$")
     return [(m.group(1), m.group(2)) for m in line.finditer(plain)]
 
@@ -99,12 +103,20 @@ class Reference:
         return f"repos/{self.repo}/issues/comments/{self.record_id}"
 
 
+def ref_key(ref: Reference) -> tuple:
+    """Identity of a record for the one-note-per-record rule: case-insensitive host and repository."""
+    return (ref.host.lower(), ref.repo.lower(), ref.kind, ref.number, ref.record_id)
+
+
 def parse_reference(text: str) -> Reference | None:
     """The single acceptance-record URL in ``text``, or None (none, or more than one)."""
     found = list(REF.finditer(text))
     if len(found) != 1:
         return None
     m = found[0]
+    after = text[m.end():m.end() + 1]
+    if after and (after.isalnum() or after in "_/#-"):  # any script's digits or letters continue the URL
+        return None
     if m.group("frag") == "pullrequestreview":
         if m.group("what") != "pull":
             return None
@@ -321,39 +333,29 @@ class Verifier:
         return {k: v for k, v in self._verify(reference_text, project, binding, tuple(note_names),
                                               note_digest).items() if v is not None}
 
-    def approval_text(self, ref: Reference, body: dict, rec: dict) -> str | None:
-        """The text that names what was accepted, or None if unreadable.
+    def approval_texts(self, ref: Reference, body: dict, rec: dict, repo: dict,
+                       binding: str | None) -> tuple[list[str], list[str]]:
+        """(approver-authored texts, other texts) that may name what was accepted.
 
         A comment body or a review body is written by the actor already checked to be an
-        approver. A merge commit message is not necessarily: GitHub fills it from the pull
-        request title, body or the author's commits. Its markers are trusted only by the
-        caller's author check (``merge_text_authored_by_approver``)."""
+        approver. A merge establishes only the revision: merge commit messages, titles and
+        bodies are author-controlled and are never read for markers. For a pull merge the
+        approval text is the body of an approving review (state APPROVED, by an approver, on
+        the note's ``source_revision``) on that pull request, read with one more serial request.
+        Other reviews' bodies are returned separately, only to name the refusal."""
         if ref.kind == "issue_comment":
-            return rec.get("body", "")
+            return [rec.get("body", "")], []
         if ref.kind == "pull_review":
-            return body.get("body") or ""
-        sha = rec.get("revision")
-        if not sha:
-            return None
-        commit = self.fetch_path(ref.host, f"repos/{ref.repo}/git/commits/{sha}")
-        if not isinstance(commit, dict) or commit.get("sha") != sha:
-            return None
-        return commit.get("message") or ""
-
-    @staticmethod
-    def merge_text_refusal(body: dict, repo: dict, marker: str, matched: tuple) -> str | None:
-        """Why a merge commit message cannot carry this approval, or None if it can.
-
-        The pull request's author must be an approver (the message derives from the author's
-        title, body and commits) and the matching marker must not appear in the pull
-        request title or body, which the author controls. The merger was checked already."""
-        author = _login(body.get("user"))
-        if author not in repo["approvers"]:
-            return f"the merge message derives from {author!r}, who is not an approver"
-        surfaces = "\n".join(str(body.get(k) or "") for k in ("title", "body"))
-        if matched in approval_markers(surfaces, marker):
-            return "the marker appears in the pull request title or body, which the author controls"
-        return None
+            return [body.get("body") or ""], []
+        reviews = self.fetch_path(ref.host, f"repos/{ref.repo}/pulls/{ref.number}/reviews")
+        approver, other = [], []
+        for r in reviews if isinstance(reviews, list) else []:
+            if not isinstance(r, dict):
+                continue
+            ok = (r.get("state") == "APPROVED" and _login(r.get("user")) in repo["approvers"]
+                  and binding is not None and r.get("commit_id") == binding)
+            (approver if ok else other).append(r.get("body") or "")
+        return approver, other
 
     def _verify(self, reference_text: str | None, project: str, binding: str | None, note_names: tuple,
                 note_digest: str | None) -> dict:
@@ -381,6 +383,10 @@ class Verifier:
         problems = []
         if rec.get("number") != ref.number:
             problems.append("record does not match the cited number or id")
+        named = RECORD_REPO.match(str(body.get("html_url") or "")) if isinstance(body, dict) else None
+        if not named or named.group(1).lower() != ref.repo.lower():
+            problems.append(f"record belongs to {named.group(1) if named else 'an unnamed repository'!s}, "
+                            f"not the cited {ref.repo}")
         if ref.kind != "issue_comment" and rec.get("accepted") is not True:
             problems.append("pull request not merged" if ref.kind == "pull_merge" else "review state is not APPROVED")
         if rec.get("actor") not in repo["approvers"]:
@@ -397,19 +403,24 @@ class Verifier:
             return {**base, "result": "invalid", "reason": "; ".join(problems)}
         # Content binding: only checked once the record is otherwise a valid acceptance.
         try:
-            text = self.approval_text(ref, body, rec)
+            texts, others = self.approval_texts(ref, body, rec, repo, binding)
         except Unavailable as exc:
             return {**base, "result": "unavailable", "reason": f"approval text unreadable: {exc}"}
         marker = rule.get("body_marker") or ""
-        approved = approval_markers(text, marker)
+        approved = [m for t in texts for m in approval_markers(t, marker)]
         names = [n for n in note_names if n]
         matched = next(((n, d) for n, d in approved if n in names and d == note_digest), None)
-        if matched and ref.kind == "pull_merge":
-            refusal = self.merge_text_refusal(body, repo, marker, matched)
-            if refusal:
-                return {**base, "result": "invalid", "conflict": "approval_text_not_approver_authored",
-                        "approved_digest": matched[1], "note_digest": note_digest,
-                        "reason": f"approval_text_not_approver_authored: {refusal}"}
+        if not matched and any((n in names and d == note_digest)
+                               for t in others for n, d in approval_markers(t, marker)):
+            return {**base, "result": "invalid", "conflict": "approval_text_not_approver_authored",
+                    "approved_digest": note_digest, "note_digest": note_digest,
+                    "reason": ("approval_text_not_approver_authored: the marker for this note appears only in a "
+                               "review that is not an approving review by an approver on the note's revision")}
+        if not matched and not texts:
+            return {**base, "result": "invalid", "mismatch": True, "conflict": "approved_text_mismatch",
+                    "approved_digest": None, "note_digest": note_digest,
+                    "reason": ("approved_text_mismatch: no approver-authored approval text (an approving review "
+                               "by an approver on the note's revision) binds this note")}
         if not matched:
             shown = [f"{n} sha256:{d[:12]}" for n, d in approved] or ["no marker with a digest"]
             current = f"{names} sha256:{(note_digest or 'unknown')[:12]}"
@@ -469,13 +480,14 @@ def note_names(note: dict, source: str) -> tuple[str, ...]:
 
 
 def record_citations(policy: dict, notes: dict[str, dict]) -> dict[str, list[str]]:
-    """Acceptance record URL -> every note (source) in the project whose reference line cites it."""
-    out: dict[str, list[str]] = {}
+    """Record identity (``ref_key``) -> every note (source) whose reference line cites it.
+    The caller passes the notes of every project that shares the record's repository."""
+    out: dict[tuple, list[str]] = {}
     for source, note in sorted(notes.items()):
         line = reference_line(policy, note)
         ref = parse_reference(line.text) if line else None
         if ref is not None:
-            out.setdefault(ref.url, []).append(source)
+            out.setdefault(ref_key(ref), []).append(source)
     return out
 
 
@@ -488,24 +500,26 @@ def verify_decision(verifier: "Verifier", note: dict, source: str, project: str,
        (merged, APPROVED, or an approver's comment);
     2. for a pull merge or review, the note declares ``source_revision`` and it equals the
        record's subject revision;
-    3. the record's approval text (comment body, review body, or merge commit message)
-       contains a whole line, at column zero, outside fenced code blocks,
-       ``<body_marker> <note permalink> sha256:<note_digest>``, where ``note_digest`` is
-       SHA-256 of the note's current, validated bytes (``approval_markers``); quoted lines
-       and negations never count; otherwise ``invalid`` (``approved_text_mismatch``);
-    3a. for a pull merge, the merge commit message counts only when the pull request's
-       author is an approver (the merger was checked in 1) and the matching marker does not
-       appear in the pull request title or body; otherwise ``invalid``
-       (``approval_text_not_approver_authored``);
-    4. no other note in the project cites the same record (``citations``); otherwise
-       ``invalid`` for every citing note.
+    1a. the record's own URL names the cited repository (case-insensitive);
+    3. approver-authored approval text contains a whole line, at column zero, outside fenced
+       code blocks and HTML comments, ``<body_marker> <note permalink> sha256:<note_digest>``,
+       where ``note_digest`` is SHA-256 of the note's current, validated bytes
+       (``approval_markers``); quoted lines and negations never count; otherwise ``invalid``
+       (``approved_text_mismatch``). Approver-authored text is an approver's comment body, an
+       approving review's body, or, for a pull merge, the body of an approving review by an
+       approver on the note's revision on that pull request (``approval_texts``). Merge
+       commit messages, pull request titles and bodies are never read for markers; a marker
+       found only in a non-qualifying review is ``approval_text_not_approver_authored``;
+    4. no other note cites the same record (``citations``, keyed by ``ref_key`` across every
+       project sharing the repository); otherwise ``invalid`` for every citing note.
 
     ``reference_text`` overrides the reference line's text (assembly passes the cited,
     receipt-validated text). Requests go through the serial ``Verifier``."""
     line = reference_line(verifier.policy, note)
     text = reference_text if reference_text is not None else (line.text if line else None)
     v = verifier.verify(text, project, binding_value(verifier.policy, note), note_names(note, source), note_digest)
-    others = [c for c in citations.get(v.get("reference"), []) if c != source]
+    ref = parse_reference(v["reference"]) if v.get("reference") else None
+    others = [c for c in citations.get(ref_key(ref), []) if c != source] if ref else []
     if not others or v["result"] == "not_referenced":
         return v
     return {**v, "result": "invalid",

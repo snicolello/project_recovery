@@ -1,6 +1,6 @@
 {
   "base_revision": "5ab0ea2",
-  "revision": "a76abda",
+  "revision": "bc791ee",
   "cases": [
     {
       "id": "control-cobalt",
@@ -1296,6 +1296,87 @@
         "result": "rejected",
         "failures": 2
       }
+    },
+    {
+      "id": "M-21",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "impossible date in a timestamp (review R7)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 1,
+        "first_problem": "assembled_at: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-22",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "timestamp in non-ASCII digits (review R7)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "assembled_at: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-23",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "invented scope_violation conflict carrying text, ranks shifted (review R1)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "conflicts[1].source: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
     }
   ],
   "summary": {
@@ -1329,7 +1410,10 @@
       "M-12",
       "M-14",
       "M-15",
-      "M-16"
+      "M-16",
+      "M-21",
+      "M-22",
+      "M-23"
     ],
     "before_crashed": [
       "M-01",

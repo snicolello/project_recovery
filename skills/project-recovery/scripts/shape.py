@@ -240,6 +240,12 @@ def parse(data: bytes) -> dict:
         raise ParseError("packet nesting is too deep") from None
     except json.JSONDecodeError as exc:
         raise ParseError(f"packet is not JSON: {exc}") from None
+    except ParseError:
+        raise
+    except ValueError as exc:
+        # Python's integer-conversion limit (an integer of more than 4,300 digits) is kept;
+        # its error becomes the ordinary rejection (fourth review of efcc4e7, F4-2).
+        raise ParseError(f"packet holds a value JSON parsing refuses: {str(exc)[:120]}") from None
     if not isinstance(value, dict):
         raise ParseError(f"packet is a JSON {type(value).__name__}, not an object")
     return value

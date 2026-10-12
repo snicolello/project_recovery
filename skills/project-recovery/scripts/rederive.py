@@ -134,7 +134,7 @@ class VaultSession:
         return None
 
 
-def replay_hits(packet: dict, proj: recipe.Project, indexed: set) -> tuple[list[dict], int]:
+def replay_hits(packet: dict, proj: recipe.Project, indexed: set, limit: int) -> tuple[list[dict], int]:
     """The QMD result list a packet's hits imply, and its claimed omitted-hit count.
 
     Each kept hit sits at its rank. A rank with no kept hit (QMD returned something there
@@ -147,14 +147,19 @@ def replay_hits(packet: dict, proj: recipe.Project, indexed: set) -> tuple[list[
     QMD returns only documents indexed at the recorded generation, so a hit whose source is
     not one of ``indexed`` is replayed as an unresolvable result too; otherwise a packet
     could name a note that does not exist and carry its own text into the re-derived
-    ``query_hits`` and ``unknowns`` (re-review of bc791ee, R11)."""
+    ``query_hits`` and ``unknowns`` (re-review of bc791ee, R11).
+
+    QMD returns at most ``limit`` (the manifest's search limit) results, so a rank above it
+    is never replayed and the replay never holds more than ``limit`` entries, whatever rank
+    a packet claims (fourth review of efcc4e7, F4-1); ``validate`` rejects such a packet
+    (``rank_exceeds_search_limit``) before re-derivation."""
     prefix = proj.source("")
     kept: dict[int, dict] = {}
     for h in packet.get("query_hits") if isinstance(packet.get("query_hits"), list) else []:
         if not isinstance(h, dict) or not isinstance(h.get("source"), str):
             continue
         rank = h.get("rank")
-        if not isinstance(rank, int) or isinstance(rank, bool) or rank < 1 or rank in kept:
+        if not isinstance(rank, int) or isinstance(rank, bool) or not 1 <= rank <= limit or rank in kept:
             continue
         source = h["source"]
         file = proj.qmd_path(source[len(prefix):]) if source.startswith(prefix) and source in indexed else ""
@@ -256,6 +261,21 @@ def scope_projects(m: recipe.Manifest, project: str) -> list[str]:
     return sorted({project} | {q for r in repos for q in r.get("projects", []) if q in m.projects})
 
 
+def oversized_ranks(m: recipe.Manifest, packet: dict) -> list[dict]:
+    """A problem for each query hit ranked above the manifest's search limit: QMD never
+    returns more results than that, so no assembled packet has one (F4-1)."""
+    hits = packet.get("query_hits") if isinstance(packet.get("query_hits"), list) else []
+    out = []
+    for i, h in enumerate(hits):
+        rank = h.get("rank") if isinstance(h, dict) else None
+        if isinstance(rank, int) and not isinstance(rank, bool) and rank > m.search_limit:
+            out.append({"check": "input", "field": f"query_hits[{i}].rank", "kind": "rank_exceeds_search_limit",
+                        "reason": f"rank {brief(rank)} exceeds the manifest's search limit {m.search_limit}"})
+        if len(out) >= MAX_DIFFERENCES:
+            break
+    return out
+
+
 def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, snapshot_dir: Path | None = None,
              mode: str = "requery", session_factory=None) -> tuple[dict | None, list[dict]]:
     """(re-derived packet or None, problems that prevent re-derivation). The verifier is
@@ -290,7 +310,7 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
             with factory() as session:
                 return recipe.assemble(m, project, query, session, limit, verifier()), []
         indexed = set(record["files"])
-        hits, omitted = replay_hits(packet, proj, indexed)
+        hits, omitted = replay_hits(packet, proj, indexed, m.search_limit)
         with VaultSession(m, proj.collection, hits) as session:
             first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted)
         # missing_sources and the unknowns for uncitable hits are computed before the budget
@@ -322,11 +342,12 @@ def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snap
         problems = [{"check": "input", "field": "packet", "kind": "unparseable", "reason": str(exc)}]
         return report("not_rederivable", problems, [], m, mode, None, None)
     structure = shape.check(submitted)
+    ranks = oversized_ranks(m, submitted)
     rederived, blocked = rederive(m, submitted, transport, snapshot_dir, mode, session_factory)
     if rederived is None:
-        return report("not_rederivable", structure + blocked, structure, m, mode, submitted, None)
+        return report("not_rederivable", structure + ranks + blocked, structure, m, mode, submitted, None)
     diffs = differences(comparable(submitted), comparable(rederived))
-    problems = structure + diffs
+    problems = structure + ranks + diffs
     return report("rejected" if problems else "equal_to_rederived", problems, structure, m, mode, submitted, rederived)
 
 

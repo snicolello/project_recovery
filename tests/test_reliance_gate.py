@@ -13,6 +13,8 @@ import contextlib
 import copy
 import io
 import json
+import sys
+import tracemalloc
 import unittest
 
 from reliance_cases import (CASES, EMPTY_HIT, HITS, LIMIT_CASES, LINK_NOTE, assemble, build, make_env,  # sets sys.path
@@ -290,6 +292,79 @@ class ReviewRemediationTests(unittest.TestCase):
         r = self.check(p, HITS["cobalt"], "packet")
         self.assertEqual(r["result"], "not_rederivable")
         self.assertIn("atlas/Meeting Notes.md", r["problems"][-1]["reason"])
+
+
+class FourthReviewTests(unittest.TestCase):
+    """Fourth review of efcc4e7: F4-1 bounded replay, F4-2 oversized integers."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.env = make_env(packets=False)
+        cls.packet = assemble(cls.env, "cobalt")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.env.close()
+
+    def run_validate(self, data: bytes, mode: str) -> dict:
+        env = self.env
+        return rederive.validate(env.m, data, "snapshot", None, mode,
+                                 session_factory=lambda: rederive.VaultSession(env.m, "cobalt", HITS["cobalt"]))
+
+    def ranked(self, rank: int) -> bytes:
+        p = copy.deepcopy(self.packet)
+        p["query_hits"][0]["rank"] = rank
+        return json.dumps(p).encode("utf-8")
+
+    def test_f4_1_oversized_rank_is_rejected_without_proportional_allocation(self):
+        data = self.ranked(100_000)
+        for mode in rederive.MODES:
+            with self.subTest(mode=mode):
+                tracemalloc.start()
+                try:
+                    r = self.run_validate(data, mode)
+                    peak = tracemalloc.get_traced_memory()[1]
+                finally:
+                    tracemalloc.stop()
+                self.assertEqual(r["result"], "rejected")
+                self.assertEqual(r["problems"][0]["kind"], "rank_exceeds_search_limit")
+                self.assertLess(peak, 4_000_000, "replay allocation must not grow with the claimed rank")
+                self.assertEqual(r["checks"]["structure"]["failures"], 0)
+
+    def test_f4_1_replay_never_exceeds_the_search_limit(self):
+        # Run only against the fixed code: before the fix this rank would exhaust memory.
+        proj = self.env.m.projects["cobalt"]
+        indexed = set(recipe.load_generation(self.env.m)["files"])
+        for rank in (11, 10 ** 15):
+            p = json.loads(self.ranked(rank))
+            hits, _ = rederive.replay_hits(p, proj, indexed, self.env.m.search_limit)
+            self.assertLessEqual(len(hits), self.env.m.search_limit)
+        r = self.run_validate(self.ranked(10 ** 15), "packet")
+        self.assertEqual((r["result"], r["problems"][0]["kind"]), ("rejected", "rank_exceeds_search_limit"))
+
+    def test_f4_1_ranks_within_the_limit_still_validate(self):
+        for mode in rederive.MODES:
+            self.assertEqual(self.run_validate(json.dumps(self.packet).encode("utf-8"), mode)["result"],
+                             "equal_to_rederived")
+
+    def test_f4_2_oversized_integer_is_a_structured_rejection(self):
+        text = json.dumps(self.packet).replace(f'"tokens": {self.packet["budget"]["tokens"]}',
+                                               '"tokens": ' + "9" * 5000, 1)
+        for mode in rederive.MODES:
+            with self.subTest(mode=mode):
+                r = self.run_validate(text.encode("utf-8"), mode)
+                self.assertEqual((r["result"], r["packet"]), ("not_rederivable", None))
+                self.assertEqual(r["problems"][0]["kind"], "unparseable")
+        path = self.env.root.parent / "huge-int.json"
+        path.write_text(text, encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = recover.main(["validate", "--manifest", str(self.env.m.path), "--vault-root", str(self.env.root),
+                                 "--state-dir", str(self.env.state), "--packet", str(path), "--hits", "packet"])
+        result = json.loads(out.getvalue())
+        self.assertEqual((code, result["result"], result["packet"]), (1, "not_rederivable", None))
+        self.assertNotIn("Traceback", err.getvalue())
+        self.assertGreater(sys.get_int_max_str_digits(), 0, "the integer-conversion limit stays enabled")
 
 
 class DocumentationTests(unittest.TestCase):

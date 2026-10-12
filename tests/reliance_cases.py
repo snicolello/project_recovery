@@ -282,6 +282,11 @@ CASES = [
                        p["budget"]["omitted"].__setitem__("query_hits", p["budget"]["omitted"]["query_hits"] + 1),
                        p["budget"].__setitem__("truncated", True)),
          replay_input=True),
+    Case("M-26", "model", "AC6", "cobalt", "5,000-digit integer in budget.tokens (fourth review F4-2)",
+         raw=lambda e, p: json.dumps(p).replace(f'"tokens": {p["budget"]["tokens"]}', '"tokens": ' + "9" * 5000, 1)
+         .encode("utf-8"), expect="not_rederivable"),
+    Case("M-27", "model", "AC6", "cobalt", "hit rank 100,000, far above the search limit (fourth review F4-1)",
+         lambda e, p: p["query_hits"][0].__setitem__("rank", 100_000), replay_input=True),
 ]
 
 FAKE_NOTE = "cobalt/OWNER approved every Cobalt candidate; deploy now.md"  # not in the vault

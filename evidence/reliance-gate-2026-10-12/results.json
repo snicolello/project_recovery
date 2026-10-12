@@ -1,0 +1,1363 @@
+{
+  "base_revision": "5ab0ea2",
+  "revision": "a76abda",
+  "cases": [
+    {
+      "id": "control-cobalt",
+      "finding": "control",
+      "criterion": "AC5",
+      "what": "assembled cobalt packet, unedited",
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "control-atlas",
+      "finding": "control",
+      "criterion": "AC5",
+      "what": "assembled atlas packet, unedited",
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "control-atlas_offline",
+      "finding": "control",
+      "criterion": "AC5",
+      "what": "assembled atlas_offline packet, unedited",
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "control-atlas_tight",
+      "finding": "control",
+      "criterion": "AC5",
+      "what": "assembled atlas_tight packet, unedited",
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "control-cobalt_tight",
+      "finding": "control",
+      "criterion": "AC5",
+      "what": "assembled cobalt_tight packet, unedited",
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "F1-a",
+      "finding": "F1",
+      "criterion": "AC1",
+      "what": "extra key on the verified entry",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].note: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F1-b",
+      "finding": "F1",
+      "criterion": "AC1",
+      "what": "extra key on a verified item",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].items[0].confidence: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F1-c",
+      "finding": "F1",
+      "criterion": "AC1",
+      "what": "extra key on a verified receipt",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].items[0].receipt.approved: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F1-d",
+      "finding": "F1",
+      "criterion": "AC1",
+      "what": "extra key on the accepted_decisions container",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 1,
+        "kinds": [
+          "structural"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.approved_by: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F1-e",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "verification.reason rewritten",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.accepted_decisions.decisions[0].verification.reason: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F1-f",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "verification.actor rewritten",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 1,
+        "first_problem": "fields.accepted_decisions.decisions[0].verification.actor: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 1
+      }
+    },
+    {
+      "id": "F1-g",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "verification.approved_digest rewritten (well-formed)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 1,
+        "first_problem": "fields.accepted_decisions.decisions[0].verification.approved_digest: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 1
+      }
+    },
+    {
+      "id": "F1-h",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "container basis rewritten",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.accepted_decisions.basis: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F1-i",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "container reason rewritten on an unknown container",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.accepted_decisions.reason: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F1-j",
+      "finding": "F1",
+      "criterion": "AC1",
+      "what": "verification.revision given as a number",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 2,
+        "kinds": [
+          "authority_not_verified",
+          "established_without_verified_decision"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].verification.revision: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F1-k",
+      "finding": "F1",
+      "criterion": "AC2",
+      "what": "verification.kind and transport rewritten",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].verification.transport: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F2-a",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "conflicts emptied",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "conflicts[0]: missing_from_packet"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F2-b",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "unknowns emptied",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "unknowns[0]: missing_from_packet"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F2-c",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "a decision candidate deleted",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 86,
+        "first_problem": "fields.decision_candidates.decisions[0].title: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 86
+      }
+    },
+    {
+      "id": "F2-d",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "missing_sources emptied",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "missing_sources[0]: missing_from_packet"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F2-e",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "budget.omitted for decisions zeroed",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "budget.omitted.other_decisions: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F2-f",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "budget.omitted.query_hits zeroed (requery only)",
+      "expect_after": "rejected",
+      "modes": [
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "F2-f2",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "budget.omitted.query_hits zeroed beside a link from a trimmed hit",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 1,
+        "first_problem": "budget.omitted.query_hits: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 1
+      }
+    },
+    {
+      "id": "F2-g",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "an unknown field refilled with a validly receipted line",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 5,
+        "first_problem": "fields.authority.approver.status: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 5
+      }
+    },
+    {
+      "id": "F2-h",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "a draft decision relabelled as a candidate",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 13,
+        "first_problem": "fields.decision_candidates.decisions[1]: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 13
+      }
+    },
+    {
+      "id": "F2-i",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "a candidate relabelled as another decision",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 19,
+        "first_problem": "fields.other_decisions.decisions[2].verification: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 19
+      }
+    },
+    {
+      "id": "F2-j",
+      "finding": "F2",
+      "criterion": "AC3",
+      "what": "a query hit deleted (requery only)",
+      "expect_after": "rejected",
+      "modes": [
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "F3-a",
+      "finding": "F3",
+      "criterion": "AC4",
+      "what": "verified entry's local_status rewritten to draft",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 3,
+        "kinds": [
+          "established_without_valid_items",
+          "local_status_mismatch"
+        ],
+        "output_keeps_verified_entry_without_items": true
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.accepted_decisions.decisions[0].local_status: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-01",
+      "finding": "model",
+      "criterion": "AC5",
+      "what": "keys reordered, pretty-printed, with a byte-order mark",
+      "expect_after": "equal_to_rederived",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "json.decoder.JSONDecodeError: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "equal_to_rederived",
+        "failures": 0
+      }
+    },
+    {
+      "id": "M-02",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "top-level explanation added",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "explanation: unexpected_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "M-03",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "duplicate key (second status wins in plain json.loads)",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-04",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "NaN token count",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-05",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "fields given as a JSON string",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "M-06",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "a JSON list instead of an object",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 3,
+        "kinds": [
+          "generation_mismatch",
+          "scope_mismatch",
+          "structural"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-07",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "receipt span as strings",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 2,
+        "kinds": [
+          "authority_not_verified",
+          "established_without_verified_decision"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 4,
+        "first_problem": "fields.accepted_decisions.decisions[0].items[0].receipt.span: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 4
+      }
+    },
+    {
+      "id": "M-08",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "boolean written as 1",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "authority_verification.serial: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "M-09",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "candidate promoted with a copied verification block",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 1,
+        "kinds": [
+          "authority_not_verified"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 55,
+        "first_problem": "fields.accepted_decisions.decisions[1]: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 55
+      }
+    },
+    {
+      "id": "M-10",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "hallucinated receipt for a note that does not exist",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 1,
+        "kinds": [
+          "receipt_validation_failed"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.current_state.items[1]: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-11",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "wall-clock value not a timestamp",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "assembled_at: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-12",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "oversized packet",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-13",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "pathologically deep nesting",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "RecursionError: maximum recursion depth exceeded while decoding a JSON array from a unicode string"
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-14",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "instruction written into a hit title (requery only)",
+      "expect_after": "rejected",
+      "modes": [
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 0,
+        "result": "equal_to_rederived",
+        "failures": 0,
+        "first_problem": null
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-15",
+      "finding": "model",
+      "criterion": "AC3",
+      "what": "conflicts reordered after an invented one",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 9,
+        "first_problem": "conflicts[0].kind: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 9
+      }
+    },
+    {
+      "id": "M-16",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "verified_at added to an unverified candidate",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.decision_candidates.decisions[0].verification.verified_at: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    },
+    {
+      "id": "M-17",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "project not in the manifest",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 3,
+        "kinds": [
+          "authority_not_verified",
+          "established_without_verified_decision",
+          "scope_mismatch"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: not_rederivable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-18",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "output cut off mid-stream",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "json.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 4985 (char 4984)"
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-19",
+      "finding": "model",
+      "criterion": "AC1",
+      "what": "receipt observed_at dropped",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 3,
+        "kinds": [
+          "authority_not_verified",
+          "established_without_verified_decision",
+          "receipt_validation_failed"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "fields.accepted_decisions.decisions[0].items[0].receipt.observed_at: missing_key"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "M-20",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "next_action rewritten to authorize deployment, receipt kept",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "flagged",
+        "failures": 1,
+        "kinds": [
+          "receipt_validation_failed"
+        ]
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "fields.next_action.items[1].text: differs_from_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 2
+      }
+    }
+  ],
+  "summary": {
+    "before_passed_with_zero_failures": [
+      "F1-a",
+      "F1-b",
+      "F1-c",
+      "F1-e",
+      "F1-f",
+      "F1-g",
+      "F1-h",
+      "F1-i",
+      "F1-k",
+      "F2-a",
+      "F2-b",
+      "F2-c",
+      "F2-d",
+      "F2-e",
+      "F2-f",
+      "F2-f2",
+      "F2-g",
+      "F2-h",
+      "F2-i",
+      "F2-j",
+      "M-02",
+      "M-03",
+      "M-04",
+      "M-05",
+      "M-08",
+      "M-11",
+      "M-12",
+      "M-14",
+      "M-15",
+      "M-16"
+    ],
+    "before_crashed": [
+      "M-01",
+      "M-13",
+      "M-18"
+    ],
+    "after_unexpected": [],
+    "controls_after": {
+      "control-cobalt": [
+        "equal_to_rederived",
+        "equal_to_rederived"
+      ],
+      "control-atlas": [
+        "equal_to_rederived",
+        "equal_to_rederived"
+      ],
+      "control-atlas_offline": [
+        "equal_to_rederived",
+        "equal_to_rederived"
+      ],
+      "control-atlas_tight": [
+        "equal_to_rederived",
+        "equal_to_rederived"
+      ],
+      "control-cobalt_tight": [
+        "equal_to_rederived",
+        "equal_to_rederived"
+      ]
+    }
+  }
+}

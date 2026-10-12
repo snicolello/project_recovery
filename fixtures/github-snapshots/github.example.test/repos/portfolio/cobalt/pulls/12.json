@@ -1,0 +1,27 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/pulls/12",
+  "html_url": "https://github.example.test/portfolio/cobalt/pull/12",
+  "node_id": "PR_fixture_cobalt_12",
+  "number": 12,
+  "state": "closed",
+  "title": "Cobalt audit tweaks",
+  "body": "Small cleanup.",
+  "user": {
+    "login": "fixture-visitor"
+  },
+  "head": {
+    "ref": "visitor-12",
+    "sha": "fixture-commit-c12"
+  },
+  "base": {
+    "ref": "main"
+  },
+  "merged": true,
+  "merged_at": "2026-10-07T12:00:00Z",
+  "merged_by": {
+    "login": "fixture-owner"
+  },
+  "merge_commit_sha": "fixture-squash-c12"
+}

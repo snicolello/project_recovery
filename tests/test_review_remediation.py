@@ -145,7 +145,8 @@ class AuditTests(unittest.TestCase):
                 "authority": {"status": "established", "items": [self.item("atlas/Project.md", 3)],
                               "authority_state": "local_only",
                               "approvals": {"rollout_approval": {"status": "unknown", "items": []}}},
-                "accepted_decisions": {"status": "established", "decisions": [
+                "accepted_decisions": {"status": "unknown", "decisions": []},
+                "decision_candidates": {"status": "candidate", "decisions": [
                     {"title": "D", "local_status": "accepted", "authority_state": "local_only",
                      "status": "established", "items": [self.item("atlas/Project.md", 3)]}]},
             },
@@ -171,17 +172,27 @@ class AuditTests(unittest.TestCase):
         p["fields"]["objective"]["items"] = []
         self.assertEqual(self.kinds(p), ["established_without_valid_items"])
 
+    def test_decision_without_items_fails(self):
+        p = self.packet()
+        p["fields"]["decision_candidates"]["decisions"][0]["items"] = []
+        self.assertEqual(self.kinds(p), ["established_without_valid_items"])
+
     def test_decision_container_without_established_decision_fails(self):
         p = self.packet()
-        p["fields"]["accepted_decisions"]["decisions"][0]["items"] = []
-        self.assertEqual(self.kinds(p), ["established_without_valid_items", "established_without_valid_items"])
+        p["fields"]["accepted_decisions"] = {"status": "established", "decisions": []}
+        self.assertEqual(self.kinds(p), ["established_without_verified_decision"])
 
-    def test_authority_state_other_than_local_only_fails(self):
+    def test_verified_state_on_a_candidate_fails(self):
         p = self.packet()
-        p["fields"]["accepted_decisions"]["decisions"][0]["authority_state"] = "verified"
+        p["fields"]["decision_candidates"]["decisions"][0]["authority_state"] = "verified"
         out, problems = pk.audit(p, self.root)
         self.assertEqual([x["kind"] for x in problems], ["authority_state_not_permitted"])
-        self.assertEqual(out["fields"]["accepted_decisions"]["decisions"][0]["authority_state"], "local_only")
+        self.assertEqual(out["fields"]["decision_candidates"]["decisions"][0]["authority_state"], "unverified")
+
+    def test_state_outside_the_contract_fails(self):
+        p = self.packet()
+        p["fields"]["authority"]["authority_state"] = "approved"
+        self.assertEqual(self.kinds(p), ["authority_state_not_permitted"])
 
     def test_receipt_from_other_project_root_fails(self):
         p = self.packet()

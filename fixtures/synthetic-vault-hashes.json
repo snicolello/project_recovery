@@ -7,5 +7,12 @@
   "atlas/Release Checklist.md": "3bbbb7b124913f37ceb329a43bd242d758861fc3e88f965622e0d5009bd846e2",
   "atlas/Restart Runbook.md": "97824247827453266fd4aef151cc528344061dbdebbdf302c3c9b896df7eac82",
   "beacon/Project.md": "45fda02e53fb29f44a67175a1700d1ad4aaf84e1d6d6260e36204368176bd46e",
-  "beacon/Restart Runbook.md": "c71e600394d056aac957afa44c1da2dc8d63ad07eee65df919f79920f0662de7"
+  "beacon/Restart Runbook.md": "c71e600394d056aac957afa44c1da2dc8d63ad07eee65df919f79920f0662de7",
+  "cobalt/Cache Decision.md": "6aef3a345c51dc0d0de0e1545bd90914be54045d62a4f2021f415e1f153f38be",
+  "cobalt/Font Decision.md": "6c1e44eeae732354890fb02e054b8319f1358e1a881a420f88d5371148dc5ab5",
+  "cobalt/Hosting Decision.md": "5029526f76669069b6446971528c6d15c585d6935c3799a9a0c97a2aaadeeb15",
+  "cobalt/Ops Inbox.md": "60d0017f9ac9721f0c5637e9da7ad0d0abe7223ccaceadd72ce00b945ffdd7c4",
+  "cobalt/Project.md": "0c22f5d9b76d17a8148891a7bb18865f6f04a61963ee4ca9e01106cfa45d54e4",
+  "cobalt/Search Decision.md": "3ff9f53c971a2bb47c9188337d91f1d1af3ce532dd67522ff9bc8cc0ec948cc4",
+  "cobalt/Theme Decision.md": "fe06136859393bf64a08fb6dab7ae0d93c46602ac892e0ea6001af23beac73a9"
 }

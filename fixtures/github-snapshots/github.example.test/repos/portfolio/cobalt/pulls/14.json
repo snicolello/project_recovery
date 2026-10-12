@@ -1,0 +1,27 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/pulls/14",
+  "html_url": "https://github.example.test/portfolio/cobalt/pull/14",
+  "node_id": "PR_fixture_cobalt_14",
+  "number": 14,
+  "state": "closed",
+  "title": "Cobalt change 14",
+  "body": "",
+  "user": {
+    "login": "fixture-owner"
+  },
+  "head": {
+    "ref": "change-14",
+    "sha": "fixture-commit-c14"
+  },
+  "base": {
+    "ref": "main"
+  },
+  "merged": true,
+  "merged_at": "2026-10-08T12:00:00Z",
+  "merged_by": {
+    "login": "fixture-owner"
+  },
+  "merge_commit_sha": "fixture-merge-c14"
+}

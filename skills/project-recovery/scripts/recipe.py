@@ -6,7 +6,9 @@ assemble  reads the manifest's declared fields through QMD's read tools, cites e
           line with a receipt validated against the source bytes, and returns a
           bounded packet (recovery contract sections 1 to 3, 5 and 6).
 
-Authority verification is release R2: every decision is labelled ``local_only``.
+Release R2 (owner ruling B): a note whose frontmatter says ``status: accepted`` is a
+decision candidate. It becomes an accepted decision only when the acceptance record it
+cites is read and verified under the manifest's authority policy (``authority.py``).
 """
 from __future__ import annotations
 
@@ -19,15 +21,17 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+import authority as au
 import packet as pk
 from qmd_client import REPO, McpSession, QmdError, index_cli, installed_version
-from receipts import SourceError, make_receipt, normalize_text, safe_resolve, sha256_hex, validate_receipt
+from receipts import (SourceError, make_receipt, normalize_text, read_source, safe_resolve, sha256_hex,
+                      span_bytes, validate_receipt)
 
 CONTRACT_VERSION = "0.1"
-RECIPE_VERSION = "r1"
+RECIPE_VERSION = "r2"
 WIKILINK = re.compile(r"\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]")
-AUTHORITY_NOTE = ("not_performed: R1 labels every decision local_only; "
-                  "GitHub acceptance verification is release R2")
+AUTHORITY_NOTE = ("local_claim: the governing record's status is read from a local note; "
+                  "R2 verifies decision acceptance records, not the governing record")
 
 
 class RecipeError(RuntimeError):
@@ -84,8 +88,7 @@ def validate_manifest(raw: dict) -> list[str]:
     search = raw["index"].get("search", {})
     if search.get("type") != "lex" or search.get("rerank") is not False:
         errors.append("index.search must be lexical with rerank false")
-    if raw["authority_policy"].get("local_claims") != "local_only":
-        errors.append("authority_policy.local_claims must be local_only in R1")
+    errors.extend(au.validate_policy(raw["authority_policy"], list(raw["projects"])))
     for name, proj in raw["projects"].items():
         for key in ("collection", "root", "baseline_note", "fields", "authority", "decision_statuses"):
             if key not in proj:
@@ -278,9 +281,57 @@ def front_value(line: Line) -> str:
     return line.text.partition(":")[2].strip()
 
 
+def shared_notes(m: "Manifest", project: str) -> dict[str, dict]:
+    """Every note, read from disk, in ``project`` and in every project that shares one of its
+    allowlisted repositories: the scope of the one-note-per-record rule."""
+    repos = [r for r in m.raw["authority_policy"].get("repositories", []) if project in r.get("projects", [])]
+    names = {project} | {q for r in repos for q in r.get("projects", []) if q in m.projects}
+    notes: dict[str, dict] = {}
+    for name in sorted(names):
+        for src in disk_files(m, m.projects[name]):
+            try:
+                notes[src] = parse_note(read_source(m.vault_root, src).decode("utf-8"))
+            except (SourceError, UnicodeDecodeError):
+                continue
+    return notes
+
+
+def decision_title(note: dict) -> str | None:
+    """A decision's displayed title, from its hashed bytes only: the title line, else the
+    permalink. None when neither exists (such a note is never promoted)."""
+    for key in ("title", "permalink"):
+        line = note["front"].get(key)
+        if line and front_value(line):
+            return front_value(line)
+    return None
+
+
+def decision_lines(policy: dict, note: dict) -> list[int]:
+    """The lines a decision entry cites, in order: status, statement, acceptance reference.
+    Assembly cites exactly these; validate requires exactly these."""
+    lines = [note["front"]["status"].number] if note["front"].get("status") else []
+    if note["statement"]:
+        lines.append(note["statement"].number)
+    ref = au.reference_line(policy, note)
+    if ref is not None:
+        lines.append(ref.number)
+    return lines
+
+
+def mismatch_conflict(source: str, v: dict) -> dict:
+    """Conflict for a record whose approval text does not bind this note's current bytes
+    (``approved_text_mismatch``) or is not approver-authored (``approval_text_not_approver_authored``)."""
+    return {"field": "decisions", "kind": v["conflict"], "source": source,
+            "reference": v.get("reference"), "revision": v.get("revision"),
+            "approved_digest": v.get("approved_digest"), "current_digest": v.get("note_digest"),
+            "reason": v.get("reason", "the acceptance record does not approve this decision; not accepted")}
+
+
 class Assembler:
-    def __init__(self, m: Manifest, proj: Project, session: McpSession, generation: str):
-        self.m, self.proj, self.session, self.generation = m, proj, session, generation
+    def __init__(self, m: Manifest, proj: Project, session: McpSession, record: dict, verifier: au.Verifier):
+        self.m, self.proj, self.session = m, proj, session
+        self.generation, self.recorded = record["generation"], record["files"]
+        self.verifier, self.policy = verifier, m.raw["authority_policy"]
         self.conflicts: list[dict] = []
         self.unknowns: list[dict] = []
         self._docs: dict[str, str | None] = {}
@@ -364,43 +415,96 @@ class Assembler:
                              for a in spec.get("approvals", [])}
         return node
 
-    def decisions(self, listing: dict[str, str]) -> tuple[dict, dict]:
-        accepted, other = [], []
-        by_stem = {}
+    def decisions(self, listing: dict[str, str]) -> tuple[dict, dict, dict]:
+        """Split decision notes into verified accepted decisions, candidates and others.
+
+        Values that carry no receipt of their own (title, reference, binding) are parsed
+        only from listing bytes that equal both the bytes on disk and the recorded
+        generation; a note whose listing bytes do not is dropped with a conflict.
+        ``local_status`` is read from the cited, receipt-validated status line."""
+        accepted, candidates, other = [], [], []
+        citations = au.record_citations(self.policy, shared_notes(self.m, self.proj.name))
+        prefix = self.proj.source("")
+        for key, sources in citations.items():
+            if len(sources) > 1 and any(src.startswith(prefix) for src in sources):
+                host, repo, kind, number, record_id = key
+                self.conflicts.append({"field": "decisions", "kind": "acceptance_record_replayed",
+                                       "reference": f"{host}/{repo} {kind} {number}" + (f" #{record_id}" if record_id else ""),
+                                       "sources": sources,
+                                       "reason": "one acceptance record is cited by several notes; none is accepted"})
         for qpath in sorted(listing):
             rel = qpath[len(self.proj.collection) + 1:]
+            source = self.proj.source(rel)
             note = parse_note(listing[qpath])
             status_line = note["front"].get("status")
             if not status_line or front_value(status_line) not in self.proj.decision_statuses:
                 continue
-            status = front_value(status_line)
-            field = "accepted_decisions" if status == "accepted" else "other_decisions"
-            items = [self.cite(field, rel, status_line.number, status_line.number)]
+            served = sha256_hex(listing[qpath].encode("utf-8"))
+            try:
+                disk = sha256_hex(safe_resolve(self.m.vault_root, source).read_bytes())
+            except (SourceError, OSError):
+                disk = None
+            if served != disk or served != self.recorded.get(source):
+                self.conflicts.append({"field": "decisions", "kind": "decision_source_unvalidated", "source": source,
+                                       "reason": "served note bytes differ from the source or the recorded "
+                                                 "generation; not used as a decision source"})
+                continue
+            is_claim = front_value(status_line) == "accepted"
+            field = "decision_candidates" if is_claim else "other_decisions"
+            status_item = self.cite(field, rel, status_line.number, status_line.number)
+            items = [status_item]
             if note["statement"]:
                 items.append(self.cite(field, rel, note["statement"].number, note["statement"].number))
-            title_line = note["front"].get("title")
-            entry = {"title": front_value(title_line) if title_line else Path(rel).stem,
-                     "local_status": status, "authority_state": "local_only",
-                     **self.node(f"{field}:{rel}", items, "decision lines failed validation")}
-            (accepted if status == "accepted" else other).append(entry)
-            by_stem[Path(rel).stem] = entry
-        for item in self.labelled("accepted_decisions", self.proj.baseline_note,
-                                  self.proj.fields["accepted_decisions"]):
-            if not item:
-                continue
-            links = WIKILINK.findall(item["text"])
-            target = next((by_stem[l] for l in links if l in by_stem and by_stem[l] in accepted), None)
-            if target:
-                target["items"].append(item)
+            entry = {"title": decision_title(note), "source": source,
+                     "local_status": front_value(Line(0, status_item["text"])) if status_item else "unknown"}
+            if is_claim:
+                ref_line = au.reference_line(self.policy, note)
+                ref_item = self.cite(field, rel, ref_line.number, ref_line.number) if ref_line else None
+                items.append(ref_item)
+                if ref_line and not ref_item:
+                    v = {**self.verifier.verify(None, self.proj.name, None), "result": "invalid",
+                         "reason": "the reference line failed receipt validation"}
+                else:  # the reference is read from the cited, receipt-validated text
+                    v = au.verify_decision(self.verifier, note, source, self.proj.name, served, citations,
+                                           reference_text=ref_item["text"] if ref_item else None)
+                if v.get("conflict"):
+                    self.conflicts.append(mismatch_conflict(source, v))
+                entry.update({"authority_state": au.state_for(v["result"]), "verification": v})
             else:
-                accepted.append({"title": None, "local_status": "stated_in_baseline",
-                                 "authority_state": "local_only", "status": "established", "items": [item]})
-        acc = {"status": "established", "decisions": accepted} if accepted else None
-        if acc is None:
-            reason = "no decision with local status accepted and no baseline statement"
+                entry["authority_state"] = "local_only"
+            entry.update(self.node(f"{field}:{rel}", items, "decision lines failed validation"))
+            if is_claim and entry["verification"]["result"] == "verified" and entry["status"] == "established":
+                accepted.append(entry)
+            elif is_claim:
+                if entry["authority_state"] == "verified":  # record verified but local evidence failed
+                    entry["authority_state"] = "unverified"
+                candidates.append(entry)
+            else:
+                other.append(entry)
+        # Baseline "Accepted decision:" lines are local claims about decisions. The baseline
+        # note is not bound to any acceptance record, so its lines are never attached to a
+        # decision entry (verified or not): each stays its own local_only candidate.
+        for item in self.labelled("decision_candidates", self.proj.baseline_note,
+                                  self.proj.fields["accepted_decisions"]):
+            if item:
+                candidates.append({"title": None, "source": item["receipt"]["source"],
+                                   "local_status": "stated_in_baseline", "authority_state": "local_only",
+                                   "verification": self.verifier.verify(None, self.proj.name, None),
+                                   "status": "established", "items": [item]})
+        if any(d["status"] == "established" for d in accepted):
+            acc = {"status": "established", "basis": "verified acceptance records only", "decisions": accepted}
+        else:
+            tally: dict[str, int] = {}
+            for d in candidates:
+                tally[d["verification"]["result"]] = tally.get(d["verification"]["result"], 0) + 1
+            reason = "no decision has verified acceptance evidence"
+            if candidates:
+                reason += f"; {len(candidates)} candidate(s): " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items()))
             self.unknowns.append({"field": "accepted_decisions", "reason": reason})
-            acc = {"status": "unknown", "reason": reason, "decisions": []}
-        return acc, {"decisions": other}
+            acc = {"status": "unknown", "basis": "verified acceptance records only", "reason": reason,
+                   "decisions": accepted}
+        cand = {"status": "candidate", "basis": "local claims; not accepted until verified", "decisions": candidates}
+        return acc, cand, {"decisions": other}
 
     def query_hits(self, query: str) -> list[dict]:
         hits = []
@@ -438,24 +542,106 @@ class Assembler:
                 for t, src in sorted(linked.items()) if t not in stems]
 
 
-def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tokens: int | None = None) -> dict:
+def make_verifier(m: Manifest, transport: str | None = None, snapshot_dir: Path | None = None) -> au.Verifier:
+    """The manifest's verifier; ``transport`` (offline, snapshot, gh) and ``snapshot_dir`` override it."""
+    return au.build_verifier(m.raw["authority_policy"], m.path.parent, transport, snapshot_dir)
+
+
+def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
+    """``recheck(entry) -> (ok, reason)`` for packet.audit: re-derive the cited acceptance
+    reference and binding from the decision's source bytes and verify them again."""
+    proj = m.projects[project]
+    policy = m.raw["authority_policy"]
+    prefix = proj.source("")
+
+    def recheck(entry: dict) -> tuple[bool, str]:
+        source = entry.get("source")
+        if not isinstance(source, str) or not source.startswith(prefix):
+            return False, "decision source outside the project root"
+        try:
+            data = read_source(m.vault_root, source)
+            note = parse_note(data.decode("utf-8"))
+        except (SourceError, UnicodeDecodeError) as exc:
+            return False, f"decision source unreadable: {exc}"
+        status = note["front"].get("status")
+        if not status or front_value(status) != "accepted":
+            return False, "decision source does not claim status accepted"
+        # The entry must be exactly what assembly produces for this note: its title from the
+        # hashed bytes, and its items exactly the status, statement and reference lines, with
+        # no other cited content anywhere inside the entry.
+        title = decision_title(note)
+        if title is None:
+            return False, "the note's bytes carry no title or permalink; it cannot be promoted"
+        if entry.get("title") != title:
+            return False, "entry title differs from its source note"
+        if "evidence" in entry or any(node is not entry for _, node in pk.iter_nodes(entry)):
+            return False, "entry carries cited content outside its own items"
+        items = entry.get("items") if isinstance(entry.get("items"), list) else []
+        got = [(((i.get("receipt") or {}).get("source")), list((i.get("receipt") or {}).get("span") or []),
+                (i.get("receipt") or {}).get("content_sha")) if isinstance(i, dict) else None for i in items]
+        want = [(source, [n, n], sha256_hex(span_bytes(data, n, n))) for n in decision_lines(policy, note)]
+        if any(g and g[0] != source for g in got):
+            return False, "entry cites items from a note other than its own source"
+        if got != want:
+            return False, "entry items are not exactly the status, statement and reference lines of its source note"
+        v = au.verify_decision(verifier, note, source, proj.name, sha256_hex(data),
+                               au.record_citations(policy, shared_notes(m, project)))
+        if v.get("conflict"):
+            return False, v["reason"], v["conflict"]
+        claimed = entry.get("verification") or {}
+        if v["result"] != "verified":
+            return False, f"re-verification {v['result']}: {v['reason']}"
+        if (v["reference"], v["revision"]) != (claimed.get("reference"), claimed.get("revision")):
+            return False, "re-verified record differs from the packet's reference or revision"
+        return True, "ok"
+    return recheck
+
+
+def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tokens: int | None = None,
+             verifier: au.Verifier | None = None) -> dict:
     if project not in m.projects:
         raise RecipeError(f"project not in manifest: {project}")
     proj = m.projects[project]
+    verifier = verifier or make_verifier(m)
     record = load_generation(m)
     gap = generation_gap(m, proj, record)
-    a = Assembler(m, proj, session, record["generation"])
+    a = Assembler(m, proj, session, record, verifier)
     listing = session.multi_get(f"{proj.collection}/**/*.md")
-    accepted, other = a.decisions(listing)
+    accepted, candidates, other = a.decisions(listing)
     fields = {
         "objective": a.label_field("objective"),
         "authority": a.authority(),
         "accepted_decisions": accepted,
+        "decision_candidates": candidates,
         "other_decisions": other,
         "current_state": a.label_field("current_state"),
         "blockers": a.label_field("blockers"),
         "next_action": a.label_field("next_action"),
     }
+    hits = a.query_hits(query)
+    # Freshness is re-checked after assembly: a source edited, or a new generation
+    # recorded, while the packet was being assembled makes it incomplete, by name.
+    during = [dict(g, detected="during_assembly") for g in generation_gap(m, proj, record) if g not in gap]
+    try:
+        after = load_generation(m)["generation"]
+    except RecipeError:
+        after = None
+    if after != record["generation"]:
+        during.append({"source": None, "change": f"recorded generation changed to {after!r}",
+                       "detected": "during_assembly"})
+    gap = gap + during
+    results: dict[str, int] = {}
+    for d in accepted["decisions"] + candidates["decisions"]:
+        results[d["verification"]["result"]] = results.get(d["verification"]["result"], 0) + 1
+    summary = verifier.summary()
+    unread = results.get("unavailable", 0)
+    if unread:
+        statement = (f"{unread} acceptance record(s) could not be read ({summary['transport']}); the decisions "
+                     "citing them are unverified candidates, not accepted decisions")
+    elif summary["requests"]:
+        statement = f"every cited acceptance record that passed the policy was read serially ({summary['transport']})"
+    else:
+        statement = f"no acceptance record was read ({summary['transport']})"
     out = {
         "contract_version": CONTRACT_VERSION,
         "recipe_version": RECIPE_VERSION,
@@ -468,11 +654,13 @@ def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tok
             "generation": record["generation"],
             "refreshed_at": record["refreshed_at"],
             "generation_gap": gap,
-            "statement": ("sources changed after the recorded generation; run the refresh step"
-                          if gap else "every source in scope matches the recorded generation"),
+            "statement": (f"assembled from generation {record['generation']}; "
+                          + ("sources changed after it was recorded; run the refresh step" if gap
+                             else "every source in scope matches it")),
         },
+        "authority_verification": {**summary, "results": dict(sorted(results.items())), "statement": statement},
         "fields": fields,
-        "query_hits": a.query_hits(query),
+        "query_hits": hits,
         "missing_sources": [],
         "conflicts": a.conflicts,
         "unknowns": a.unknowns,

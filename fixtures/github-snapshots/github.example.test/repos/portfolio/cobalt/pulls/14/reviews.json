@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1401,
+    "node_id": "PRR_fixture_cobalt_1401",
+    "user": {
+      "login": "fixture-visitor"
+    },
+    "state": "APPROVED",
+    "commit_id": "fixture-commit-c14",
+    "body": "ACCEPTED: visitor-decision sha256:101496273a0759040d261b12da284cf060d4dd947d5c8a6318c73f4e0db79f00",
+    "submitted_at": "2026-10-01T14:00:00Z",
+    "html_url": "https://github.example.test/portfolio/cobalt/pull/14#pullrequestreview-1401"
+  }
+]

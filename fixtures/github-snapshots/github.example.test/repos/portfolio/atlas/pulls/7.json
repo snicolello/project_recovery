@@ -1,0 +1,27 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-11T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/atlas/pulls/7",
+  "html_url": "https://github.example.test/portfolio/atlas/pull/7",
+  "node_id": "PR_fixture_atlas_7",
+  "number": 7,
+  "state": "closed",
+  "title": "Atlas queue: adopt SQLite for one offline laptop",
+  "user": {
+    "login": "fixture-author"
+  },
+  "head": {
+    "ref": "queue-sqlite",
+    "sha": "fixture-commit-a1"
+  },
+  "base": {
+    "ref": "main"
+  },
+  "merged": true,
+  "merged_at": "2026-10-01T15:00:00Z",
+  "merged_by": {
+    "login": "fixture-owner"
+  },
+  "merge_commit_sha": "fixture-merge-a7",
+  "body": "Adopt SQLite for the offline queue."
+}

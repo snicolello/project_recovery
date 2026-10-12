@@ -170,7 +170,7 @@ class PacketTests(unittest.TestCase):
         self.assertEqual(p["conflicts"], full["conflicts"])
         self.assertEqual(p["unknowns"], full["unknowns"])
         self.assertEqual(p["fields"]["objective"], full["fields"]["objective"])
-        self.assertEqual(p["budget"]["omitted"], {"query_hits": 5, "other_decisions": 3})
+        self.assertEqual(p["budget"]["omitted"], {"query_hits": 5, "other_decisions": 3, "decision_candidates": 0})
 
     def test_canonical_ignores_wall_clock(self):
         a = sample_packet(self.root)

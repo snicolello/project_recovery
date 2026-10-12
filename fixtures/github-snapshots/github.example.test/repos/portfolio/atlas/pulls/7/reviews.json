@@ -1,0 +1,14 @@
+[
+  {
+    "id": 701,
+    "node_id": "PRR_fixture_atlas_701",
+    "user": {
+      "login": "fixture-owner"
+    },
+    "state": "APPROVED",
+    "commit_id": "fixture-commit-a1",
+    "body": "Looks right for one offline laptop.\n\nACCEPTED: queue-decision sha256:90c16e8bc87740db0fcd8038ca741e33e75e393d721199c3890d830324e68f48",
+    "submitted_at": "2026-10-01T14:00:00Z",
+    "html_url": "https://github.example.test/portfolio/atlas/pull/7#pullrequestreview-701"
+  }
+]

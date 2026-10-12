@@ -1,0 +1,17 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/git/commits/fixture-squash-c12",
+  "sha": "fixture-squash-c12",
+  "node_id": "C_fixture-squash-c12",
+  "author": {
+    "name": "fixture-owner",
+    "date": "2026-10-07T12:00:00Z"
+  },
+  "committer": {
+    "name": "fixture-owner",
+    "date": "2026-10-07T12:00:00Z"
+  },
+  "message": "Cobalt audit tweaks (#12)\n\nACCEPTED: squash-decision sha256:23e308a1a37ccf699c67b853945434ef4b53deacb159a99e1df80d10490334fd\n\nCo-authored-by: fixture-visitor",
+  "_note": "Present for the record; merge commit messages are never read for markers."
+}

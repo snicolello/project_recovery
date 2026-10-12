@@ -42,11 +42,14 @@ def _droppable_list(packet: dict, name: str) -> list:
     return packet[name]
 
 
-def bound(packet: dict, limit: int = DEFAULT_LIMIT) -> dict:
-    """Trim droppable lists until the packet fits, recording what was omitted."""
-    omitted = {name: 0 for name in DROPPABLE}
+def bound(packet: dict, limit: int = DEFAULT_LIMIT, omitted_hits: int = 0) -> dict:
+    """Trim droppable lists until the packet fits, recording what was omitted.
+
+    ``omitted_hits`` counts query hits already left out before bounding; only validate's
+    replay mode passes it (the hit count it cannot re-derive without QMD)."""
+    omitted = {name: 0 for name in DROPPABLE} | {"query_hits": omitted_hits}
     packet["budget"] = {"limit": limit, "tokenizer": TOKENIZER, "tokens": 0,
-                        "truncated": False, "omitted": omitted, "within_limit": True}
+                        "truncated": omitted_hits > 0, "omitted": omitted, "within_limit": True}
     for name in DROPPABLE:
         items = _droppable_list(packet, name)
         while items and estimate_tokens(packet) > limit:
@@ -182,6 +185,12 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
     the frontmatter status in its source bytes. ``conflicts`` and ``unknowns`` must exist.
     Each failure removes the claim (a demoted decision moves to ``decision_candidates`` as
     ``unverified``), sets the field ``unknown`` where it empties, and records a conflict.
+    An accepted entry whose ``local_status`` differs from its source is demoted too.
+
+    This is the claim-level check the scenario gates score as unsupported assertions on
+    packets the assembler produced. It checks cited and bound content only, not the
+    packet's other values or what it leaves out; ``recover.py validate`` decides whether
+    a received packet can be trusted, by re-derivation (``rederive.py``).
     """
     out = copy.deepcopy(packet) if isinstance(packet, dict) else {}
     problems: list[dict] = []
@@ -240,16 +249,31 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
             conflict(f"fields.accepted_decisions.{key}", "structural",
                      f"accepted_decisions may not carry {key!r}; only verified decisions")
             del acc[key]
+    def source_status(node: dict) -> str | None:
+        source = node.get("source")
+        try:
+            return (frontmatter_status(read_source(root, source))
+                    if isinstance(source, str) and prefix is not None and source.startswith(prefix) else None)
+        except SourceError:
+            return None
+
     first: dict = {}
     for i, entry in enumerate(accepted):
         if isinstance(entry, dict):
             first.setdefault(entry.get("source"), i)
+    status_checked: set = set()
     for i, entry in reversed(list(enumerate(accepted))):
         path = f"fields.accepted_decisions.decisions[{i}]"
         kind = "authority_not_verified"
         v = entry.get("verification") if isinstance(entry, dict) else None
         if not isinstance(entry, dict):
             ok, why = False, "entry is not an object"
+        elif entry.get("local_status") != source_status(entry):
+            # project_recovery #6 F3: a status mismatch demotes the entry; it never stays verified.
+            ok, why, kind = False, (f"local_status {entry.get('local_status')!r} differs from the source's "
+                                    f"{source_status(entry)!r}"), "local_status_mismatch"
+            status_checked.add(id(entry))
+            entry["local_status"], entry["items"] = "unknown", []
         elif first.get(entry.get("source")) != i:
             ok, why, kind = False, f"a second accepted entry for {entry.get('source')!r}", "duplicate_accepted_entry"
         elif entry.get("authority_state") != "verified" or not isinstance(v, dict) or v.get("result") != "verified":
@@ -295,12 +319,10 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
             node["authority_state"] = "unverified"
     for path, node in nodes:
         source, status = node.get("source"), node.get("local_status")
-        if not isinstance(source, str) or status in (None, "stated_in_baseline") or "authority_state" not in node:
+        if (not isinstance(source, str) or status in (None, "stated_in_baseline") or "authority_state" not in node
+                or id(node) in status_checked):
             continue
-        try:
-            actual = frontmatter_status(read_source(root, source)) if prefix is not None and source.startswith(prefix) else None
-        except SourceError:
-            actual = None
+        actual = source_status(node)
         if actual != status:
             conflict(path, "local_status_mismatch", f"local_status {status!r} differs from the source's {actual!r}")
             node["local_status"] = "unknown"

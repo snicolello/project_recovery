@@ -233,21 +233,25 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(kinds[0], "structural")
         self.assertIn("receipt_validation_failed", kinds)
 
-    def test_validate_cli_exit_codes(self):
+    def test_validate_cli_never_trusts_a_hand_built_packet(self):
+        """project_recovery #6: validate re-derives; a hand-built packet with no recorded
+        generation is never trusted, however clean its receipts (the positive CLI path is
+        in test_reliance_gate)."""
         state = recipe.STATE_BASE / f"test-{uuid.uuid4().hex[:8]}"
         try:
             good = self.packet()
             bad = copy.deepcopy(good)
             bad["fields"]["authority"]["approvals"]["rollout_approval"] = {"status": "established"}
-            for packet, expected in ((good, 0), (bad, 1)):
+            for packet in (good, bad):
                 path = self.root / "packet.json"
                 path.write_text(json.dumps(packet), encoding="utf-8")
                 buf = io.StringIO()
                 with contextlib.redirect_stdout(buf):
                     code = recover.main(["validate", "--manifest", str(MANIFEST), "--vault-root", str(self.root),
-                                         "--state-dir", str(state), "--packet", str(path)])
-                self.assertEqual(code, expected, buf.getvalue()[:300])
-                self.assertEqual(json.loads(buf.getvalue())["failures"], expected)
+                                         "--state-dir", str(state), "--packet", str(path), "--hits", "packet"])
+                result = json.loads(buf.getvalue())
+                self.assertEqual((code, result["result"], result["packet"]), (1, "not_rederivable", None))
+                self.assertGreater(result["failures"], 0)
             self.assertFalse(state.exists(), "validate writes nothing")
         finally:
             shutil.rmtree(state, ignore_errors=True)

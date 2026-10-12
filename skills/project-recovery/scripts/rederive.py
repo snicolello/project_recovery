@@ -1,0 +1,329 @@
+"""Validate a packet by re-deriving it (project_recovery #6, the R3 reliance gate).
+
+A packet received from elsewhere (another agent, a model, a file edited by hand) is
+trusted only as far as the deterministic assembler reproduces it. ``validate``:
+
+1. parses the packet strictly and checks its structure against an exact allowlist
+   (``shape.py``: required outcome 1);
+2. re-runs ``recipe.assemble`` for the packet's project, query and token limit, from the
+   vault bytes at the recorded generation, with the validator's own verifier, so every
+   acceptance record is read again (required outcome 2);
+3. compares the two packets value by value, so an added, rewritten, relabelled or deleted
+   value anywhere (conflicts, unknowns, candidates, missing sources, the generation gap,
+   the budget) is a failure (required outcome 3).
+
+The packet validate returns is the re-derived one; nothing from the submitted packet is
+kept. Wall-clock values (``observed_at``, ``assembled_at``, ``verified_at``, ``refreshed_at``) are compared
+for presence and format, not value.
+
+Query hits, two modes. ``requery`` (the default) runs the packet's query through QMD again,
+so hit selection, order, titles and the omitted-hit count are re-derived too. ``packet``
+replays the packet's own hit selection (sources, ranks, titles, the omitted-hit count)
+through a vault-backed reader with no QMD; every replayed hit is re-cited from the vault
+bytes, but which hits were chosen, their order and titles are the packet's claim and are
+reported as not re-derived.
+
+What a pass means, and what it does not, is stated in every result (``GUARANTEE``).
+"""
+from __future__ import annotations
+
+import copy
+import json
+from pathlib import Path
+
+import packet as pk
+import recipe
+import shape
+from qmd_client import McpSession, QmdError
+from receipts import SourceError, read_source
+
+WALL_CLOCK = frozenset({"observed_at", "assembled_at", "verified_at", "refreshed_at"})
+MAX_DIFFERENCES = 100
+MODES = ("requery", "packet")
+
+GUARANTEE = {
+    "established": (
+        "The packet is well-formed under the exact packet allowlist and equals, value for value "
+        "(wall-clock times excepted), the packet the deterministic assembler produces from the vault "
+        "bytes at the recorded generation, for the same project, query and token limit, with this "
+        "validator's acceptance-record verifier."),
+    "not_established": [
+        "that the notes in the vault are true, current or written by whom they say: the vault bytes "
+        "are the trust root, and byte equality is integrity, not approval",
+        "anything beyond the verifier's trust root: snapshot files are operator-supplied and trusted "
+        "as given; live records trust the approvers' GitHub accounts",
+        "who produced the submitted packet, or how: validate carries no signature or provenance "
+        "for the submitter",
+        "that the query was a good question to ask, or that the packet is the right one for a task",
+        "that the vault or the acceptance records stay as they were after validation",
+    ],
+    "not_rederived_in_packet_mode": [
+        "which query hits were selected, their order and titles, and budget.omitted.query_hits: "
+        "taken from the packet, not from QMD (each replayed hit is still re-cited from vault bytes)",
+        "missing_sources entries that come only from query hits the packet leaves out: one the packet "
+        "names is re-derived from that note's bytes, but one the packet deletes is not detected",
+    ],
+}
+
+
+class VaultSession:
+    """Stand-in for QMD's read tools, used only by validate's ``packet`` mode.
+
+    ``get`` and ``multi_get`` serve the bytes on disk for the documents indexed at the
+    recorded generation (validate first checks the vault still matches it, so these are
+    the bytes QMD would serve). ``query`` returns the replayed hit list for the packet's
+    collection and nothing for any other."""
+
+    def __init__(self, m: recipe.Manifest, collection: str, hits: list[dict]):
+        self.m = m
+        self.hits, self.collection = hits, collection
+        self.by_collection = {p.collection: p for p in m.projects.values()}
+
+    def _documents(self, proj: recipe.Project) -> dict[str, str]:
+        prefix = proj.source("")
+        return {src[len(prefix):]: src for src in recipe.disk_files(self.m, proj)}
+
+    def _read(self, qmd_path: str) -> bytes | None:
+        collection, _, rel = qmd_path.partition("/")
+        proj = self.by_collection.get(collection)
+        if proj is None:
+            return None
+        source = self._documents(proj).get(rel)
+        if source is None:
+            return None
+        try:
+            return read_source(self.m.vault_root, source)
+        except SourceError:
+            return None
+
+    def get(self, path: str, from_line: int | None = None, max_lines: int | None = None) -> str | None:
+        data = self._read(path)
+        if data is None:
+            return None
+        if from_line is None:
+            return data.decode("utf-8", errors="replace")
+        lines = data.split(b"\n")
+        end = len(lines) if max_lines is None else min(len(lines), from_line + max_lines - 1)
+        if not 1 <= from_line <= end:
+            return None
+        return b"\n".join(lines[from_line - 1:end]).decode("utf-8", errors="replace")
+
+    def multi_get(self, pattern: str, max_bytes: int = 1_000_000) -> dict[str, str]:
+        collection = pattern.partition("/")[0]
+        proj = self.by_collection.get(collection)
+        if proj is None:
+            return {}
+        out = {}
+        for rel in sorted(self._documents(proj)):
+            text = self.get(proj.qmd_path(rel))
+            if text is not None:
+                out[proj.qmd_path(rel)] = text
+        return out
+
+    def query(self, text: str, collection: str, limit: int = 10) -> list[dict]:
+        return [dict(h) for h in self.hits[:limit]] if collection == self.collection else []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc) -> None:
+        return None
+
+
+def replay_hits(packet: dict, proj: recipe.Project) -> tuple[list[dict], int]:
+    """The QMD result list a packet's hits imply, and its claimed omitted-hit count.
+
+    A kept hit sits at its rank; a hit QMD returned but assembly dropped (a
+    ``query_hits`` ``scope_violation`` conflict) fills the next free rank. A rank that
+    neither accounts for is replayed as an unresolvable result, so the re-derived packet
+    gains a conflict the submitted one lacks and the difference is reported."""
+    prefix = proj.source("")
+    kept: dict[int, dict] = {}
+    for h in packet.get("query_hits") if isinstance(packet.get("query_hits"), list) else []:
+        if not isinstance(h, dict) or not isinstance(h.get("source"), str):
+            continue
+        rank = h.get("rank")
+        if not isinstance(rank, int) or isinstance(rank, bool) or rank < 1 or rank in kept:
+            continue
+        source = h["source"]
+        file = proj.qmd_path(source[len(prefix):]) if source.startswith(prefix) else source
+        kept[rank] = {"file": file, "title": h.get("title") if isinstance(h.get("title"), str) else None}
+    dropped = [c["source"] for c in (packet.get("conflicts") if isinstance(packet.get("conflicts"), list) else [])
+               if isinstance(c, dict) and c.get("field") == "query_hits" and c.get("kind") == "scope_violation"
+               and isinstance(c.get("source"), str)]
+    out, i = [], 0
+    for pos in range(1, max(kept, default=0) + 1):
+        if pos in kept:
+            out.append(kept[pos])
+        elif i < len(dropped):
+            out.append({"file": dropped[i], "title": None})
+            i += 1
+        else:
+            out.append({"file": "", "title": None})
+    out.extend({"file": d, "title": None} for d in dropped[i:])
+    budget = packet.get("budget") if isinstance(packet.get("budget"), dict) else {}
+    omitted = budget["omitted"].get("query_hits") if isinstance(budget.get("omitted"), dict) else 0
+    return out, omitted if isinstance(omitted, int) and not isinstance(omitted, bool) and omitted >= 0 else 0
+
+
+def link_sources(packet: dict) -> set[str]:
+    """Every source a packet names in ``missing_sources[].linked_from``."""
+    out = set()
+    for e in packet.get("missing_sources") if isinstance(packet.get("missing_sources"), list) else []:
+        if isinstance(e, dict) and isinstance(e.get("linked_from"), list):
+            out.update(s for s in e["linked_from"] if isinstance(s, str))
+    return out
+
+
+def comparable(value):
+    """The packet with wall-clock values replaced by a marker: presence counts, value does not."""
+    if isinstance(value, dict):
+        return {k: ("<wall-clock>" if k in WALL_CLOCK else comparable(v)) for k, v in value.items()}
+    if isinstance(value, list):
+        return [comparable(v) for v in value]
+    return value
+
+
+def differences(submitted, rederived, path: str = "", out: list | None = None) -> list[dict]:
+    """Every value where the submitted packet differs from the re-derived one."""
+    out = [] if out is None else out
+    if len(out) >= MAX_DIFFERENCES:
+        return out
+    if isinstance(submitted, dict) and isinstance(rederived, dict):
+        for key in list(rederived) + [k for k in submitted if k not in rederived]:
+            sub = shape.join(path, key)
+            if key not in submitted:
+                add(out, sub, "missing_from_packet", f"re-derived packet has {brief(rederived[key])}; packet has none")
+            elif key not in rederived:
+                add(out, sub, "not_rederived", f"packet has {brief(submitted[key])}; re-derived packet has none")
+            else:
+                differences(submitted[key], rederived[key], sub, out)
+    elif isinstance(submitted, list) and isinstance(rederived, list):
+        for i in range(max(len(submitted), len(rederived))):
+            sub = f"{path}[{i}]"
+            if i >= len(submitted):
+                add(out, sub, "missing_from_packet", f"re-derived packet has {brief(rederived[i])}; packet has none")
+            elif i >= len(rederived):
+                add(out, sub, "not_rederived", f"packet has {brief(submitted[i])}; re-derived packet has none")
+            else:
+                differences(submitted[i], rederived[i], sub, out)
+    elif type(submitted) is not type(rederived) or submitted != rederived:
+        add(out, path, "differs_from_rederived", f"packet has {brief(submitted)}; re-derived {brief(rederived)}")
+    return out
+
+
+def add(out: list, path: str, kind: str, reason: str) -> None:
+    if len(out) < MAX_DIFFERENCES:
+        out.append({"check": "rederivation", "field": path or "packet", "kind": kind, "reason": reason})
+    elif len(out) == MAX_DIFFERENCES:
+        out.append({"check": "rederivation", "field": "packet", "kind": "truncated",
+                    "reason": f"more than {MAX_DIFFERENCES} differences; the rest are not listed"})
+
+
+def brief(value) -> str:
+    text = json.dumps(value, ensure_ascii=False)
+    return text if len(text) <= 120 else text[:117] + "..."
+
+
+def not_rederivable(reason: str) -> dict:
+    return {"check": "rederivation", "field": "packet", "kind": "not_rederivable", "reason": reason}
+
+
+def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, snapshot_dir: Path | None = None,
+             mode: str = "requery", session_factory=None) -> tuple[dict | None, list[dict]]:
+    """(re-derived packet or None, problems that prevent re-derivation). The verifier is
+    built fresh from the manifest (``transport`` and ``snapshot_dir`` override it), so
+    every acceptance record is read again and request counts start at zero."""
+    if mode not in MODES:
+        return None, [not_rederivable(f"unknown hits mode {mode!r}")]
+    project = packet.get("project")
+    if not isinstance(project, str) or project not in m.projects:
+        return None, [not_rederivable(f"packet project {project!r} is not in the manifest")]
+    query = packet.get("query")
+    if not isinstance(query, str):
+        return None, [not_rederivable("packet query is not a string")]
+    proj = m.projects[project]
+    try:
+        record = recipe.load_generation(m)
+    except recipe.RecipeError as exc:
+        return None, [not_rederivable(f"{exc}: nothing to re-derive against")]
+    gap = recipe.generation_gap(m, proj, record)
+    if gap:
+        return None, [not_rederivable(
+            f"the vault differs from the recorded generation {record['generation']} "
+            f"({len(gap)} source(s): {', '.join(str(g['source']) for g in gap[:3])}); run refresh, then assemble")]
+    budget = packet.get("budget") if isinstance(packet.get("budget"), dict) else {}
+    limit = budget.get("limit")
+    limit = limit if isinstance(limit, int) and not isinstance(limit, bool) and limit >= 1 else m.max_tokens
+    def verifier():
+        return recipe.make_verifier(m, transport, snapshot_dir)
+    try:
+        if mode == "requery":
+            factory = session_factory or (lambda: McpSession(m.state_dir))
+            with factory() as session:
+                return recipe.assemble(m, project, query, session, limit, verifier()), []
+        hits, omitted = replay_hits(packet, proj)
+        with VaultSession(m, proj.collection, hits) as session:
+            first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted)
+        # missing_sources is computed before the budget trims hits, so a link may come from a
+        # hit the packet no longer shows. Each claimed link source that the replay did not
+        # reproduce is re-cited as a hidden, already-trimmed hit and its links read from the
+        # vault bytes; a claimed link those bytes do not carry still differs.
+        hidden = sorted(link_sources(packet) - link_sources(first))
+        if not hidden:
+            return first, []
+        prefix = proj.source("")
+        tail = [{"file": proj.qmd_path(s[len(prefix):]) if s.startswith(prefix) else s, "title": None}
+                for s in hidden]
+        with VaultSession(m, proj.collection, hits + tail) as session:
+            return recipe.assemble(m, project, query, session, limit, verifier(),
+                                   omitted_hits=max(omitted - len(tail), 0), hidden_from_rank=len(hits) + 1), []
+    except (QmdError, OSError, recipe.RecipeError) as exc:
+        hint = "; use --hits packet to replay the packet's hits without QMD" if mode == "requery" else ""
+        return None, [not_rederivable(f"re-assembly failed: {exc}{hint}")]
+
+
+def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snapshot_dir: Path | None = None,
+             mode: str = "requery", session_factory=None) -> dict:
+    """Validation result for packet bytes. ``result`` is ``equal_to_rederived`` only when the
+    packet is well-formed and equals its re-derivation; ``packet`` is the re-derived packet
+    (None when it could not be re-derived)."""
+    try:
+        submitted = shape.parse(data)
+    except shape.ParseError as exc:
+        problems = [{"check": "input", "field": "packet", "kind": "unparseable", "reason": str(exc)}]
+        return report("not_rederivable", problems, [], m, mode, None, None)
+    structure = shape.check(submitted)
+    rederived, blocked = rederive(m, submitted, transport, snapshot_dir, mode, session_factory)
+    if rederived is None:
+        return report("not_rederivable", structure + blocked, structure, m, mode, submitted, None)
+    diffs = differences(comparable(submitted), comparable(rederived))
+    problems = structure + diffs
+    return report("rejected" if problems else "equal_to_rederived", problems, structure, m, mode, submitted, rederived)
+
+
+def report(result: str, problems: list, structure: list, m: recipe.Manifest, mode: str,
+           submitted: dict | None, rederived: dict | None) -> dict:
+    try:
+        recorded = recipe.load_generation(m)["generation"]
+    except recipe.RecipeError:
+        recorded = None
+    guarantee = {"established": GUARANTEE["established"] if result == "equal_to_rederived" else None,
+                 "not_established": list(GUARANTEE["not_established"])
+                 + (GUARANTEE["not_rederived_in_packet_mode"] if mode == "packet" else [])}
+    return {
+        "result": result,
+        "failures": len(problems),
+        "checks": {
+            "structure": {"failures": len(structure)},
+            "rederivation": {"performed": rederived is not None, "hits": mode,
+                             "differences": sum(1 for p in problems if p["check"] == "rederivation"
+                                                and p["kind"] != "not_rederivable"),
+                             "submitted_digest": pk.digest(submitted) if isinstance(submitted, dict) else None,
+                             "rederived_digest": pk.digest(rederived) if rederived is not None else None},
+        },
+        "guarantee": guarantee,
+        "problems": problems,
+        "recorded_generation": recorded,
+        "packet": copy.deepcopy(rederived) if rederived is not None else None,
+    }

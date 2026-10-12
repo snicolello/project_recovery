@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/snicolello/project_recovery/manifest/schema.json",
   "title": "Project Recovery manifest",
-  "description": "Declares a vault's project roots, the baseline note and labelled lines that answer each recovery field, the decision sources, and the authority policy. Version 0.1 (release R1). recipe.validate_manifest enforces the required keys and the R1 constraints marked below.",
+  "description": "Declares a vault's project roots, the baseline note and labelled lines that answer each recovery field, the decision sources, and the authority policy. Version 0.1 (releases R1 and R2). recipe.validate_manifest and authority.validate_policy enforce the required keys and the constraints marked below.",
   "type": "object",
   "required": ["manifest_version", "name", "vault", "index", "budget", "authority_policy", "projects"],
   "properties": {
@@ -44,11 +44,62 @@
     },
     "authority_policy": {
       "type": "object",
-      "required": ["local_claims"],
+      "description": "R2 (owner ruling B). Which GitHub acceptance records can turn a local decision claim into an accepted decision, and how they are read.",
+      "required": ["local_claims", "verifier", "acceptance_records", "repositories", "reference"],
       "properties": {
-        "local_claims": {"const": "local_only", "description": "R1: every decision is labelled local_only."},
-        "verifier": {"type": "null", "description": "R2 placeholder for the serial GitHub verifier."},
-        "acceptance_records": {"type": "array", "description": "R2 placeholder: allowlisted repositories and record types."},
+        "local_claims": {"const": "decision_candidates", "description": "A note whose frontmatter status is accepted, or a baseline 'Accepted decision:' line, is a decision candidate, never an accepted decision by itself."},
+        "verifier": {
+          "type": "object",
+          "required": ["transport", "serial"],
+          "properties": {
+            "transport": {"enum": ["offline", "snapshot", "gh"], "description": "Default transport; recover.py --verifier overrides it. offline reads nothing (every referenced record is unverified); snapshot reads fixed REST response files; gh runs read-only gh api GET requests."},
+            "serial": {"const": true, "description": "Requests run one at a time; a concurrent request is refused."},
+            "snapshot_dir": {"type": "string", "description": "Snapshot root relative to this file, laid out as <host>/<api_path>.json."}
+          }
+        },
+        "acceptance_records": {
+          "type": "array",
+          "description": "Record kinds that count as acceptance.",
+          "items": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {
+              "kind": {"enum": ["pull_merge", "pull_review", "issue_comment"]},
+              "rule": {"type": "string"},
+              "body_marker": {"type": "string", "description": "issue_comment only: text the comment body must contain."}
+            }
+          }
+        },
+        "repositories": {
+          "type": "array",
+          "description": "Allowlisted repositories. A record counts only for the projects listed and only when made by an approver.",
+          "items": {
+            "type": "object",
+            "required": ["host", "repo", "projects", "approvers"],
+            "properties": {
+              "host": {"type": "string"},
+              "repo": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+              "projects": {"type": "array", "items": {"type": "string"}},
+              "approvers": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+            }
+          }
+        },
+        "reference": {
+          "type": "object",
+          "description": "How a decision note names its one acceptance record: a frontmatter key, else the first body line starting with a label. The line is cited with a receipt.",
+          "properties": {
+            "frontmatter_key": {"type": "string"},
+            "body_labels": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "binding": {
+          "type": "object",
+          "description": "When the note declares this frontmatter key, the record's subject revision (pull request head or reviewed commit) must equal it.",
+          "properties": {
+            "frontmatter_key": {"type": "string"},
+            "record_field": {"const": "subject_revision"}
+          }
+        },
         "note": {"type": "string"}
       }
     },
@@ -67,7 +118,7 @@
             "required": ["objective", "current_state", "blockers", "next_action", "accepted_decisions"],
             "additionalProperties": {"type": "array", "items": {"type": "string"}, "description": "Line prefixes in the baseline note that answer this field. Each matching line is cited verbatim."}
           },
-          "decision_statuses": {"type": "array", "items": {"type": "string"}, "description": "Frontmatter status values that mark a note as a decision source. 'accepted' goes to accepted_decisions (still local_only); others to other_decisions."},
+          "decision_statuses": {"type": "array", "items": {"type": "string"}, "description": "Frontmatter status values that mark a note as a decision source. 'accepted' makes a decision candidate (accepted_decisions only after verification); others go to other_decisions."},
           "authority": {
             "type": "object",
             "properties": {

@@ -6,7 +6,7 @@ A fresh agent session that resumes an interrupted project needs five things: the
 
 ## Status
 
-Release R1 is merged: a manifest and a read-only read, refresh, assemble recipe over pinned QMD 2.8.3 (lexical only), shipped as the agent skill in `skills/project-recovery/`, passing scenarios S1 to S5 with zero unsupported assertions. R2 (authority and freshness, GitHub verification) is contracted in [stephen-project-hub#119](https://github.com/snicolello/stephen-project-hub/issues/119); every decision is labelled `local_only` until it lands. Try it: [`docs/quickstart.md`](docs/quickstart.md). The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
+Release R1 is merged: a manifest and a read-only read, refresh, assemble recipe over pinned QMD 2.8.3 (lexical only), shipped as the agent skill in `skills/project-recovery/`. Release R2 (authority and freshness) is in review under [stephen-project-hub#119](https://github.com/snicolello/stephen-project-hub/issues/119): frontmatter-accepted notes are decision candidates, `accepted_decisions` holds only decisions whose GitHub acceptance record was read and verified serially (offline they stay unverified, and the packet says so), every packet states its index generation, and scenarios S1 to S8 pass offline with zero unsupported assertions. Try it: [`docs/quickstart.md`](docs/quickstart.md). The release roadmap and owner rulings live on the coordination Epic, [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 
@@ -18,11 +18,12 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 |---|---|
 | `docs/recovery-contract.md` | The product contract: recovery fields, evidence receipt, authority and freshness states, read-only rules, acceptance tests. |
 | `docs/discovery/` | Phase 0 decision brief, MVP (minimum viable product) acceptance criteria, and the hand-trial gap list. |
-| `fixtures/synthetic-vault/` | Nine fictional Markdown notes across two projects (Atlas, Beacon). SHA-256 digests in `fixtures/synthetic-vault-hashes.json`. |
-| `fixtures/scenario-plan.json` | Five restart scenarios with expectations written before execution. |
-| `manifest/` | Manifest schema, the fixture vault's manifest, and pinned tool versions. |
-| `skills/project-recovery/` | The R1 recipe as an agent skill: `SKILL.md`, the pinned QMD lockfile, and stdlib Python scripts. |
-| `scripts/run_scenarios.py` | Runs S1 to S5 and scores every gate; exits non-zero on any failure. |
+| `fixtures/synthetic-vault/` | Sixteen fictional Markdown notes across three projects (Atlas, Beacon, and Cobalt for R2's adversarial scenario). SHA-256 digests in `fixtures/synthetic-vault-hashes.json`. |
+| `fixtures/github-snapshots/` | Fictional GitHub REST responses on the reserved `github.example.test` domain, read by the offline snapshot verifier. |
+| `fixtures/scenario-plan.json` | Eight restart scenarios with expectations written before execution. |
+| `manifest/` | Manifest schema, the fixture and scenario manifests (with their authority policies), and pinned tool versions. |
+| `skills/project-recovery/` | The recipe as an agent skill: `SKILL.md`, the pinned QMD lockfile, and stdlib Python scripts. |
+| `scripts/run_scenarios.py` | Runs S1 to S8 offline and scores every gate; exits non-zero on any failure. `scripts/live_gh_smoke.py` is an optional live check of the GitHub verifier. |
 | `evidence/scoped-evaluation-2026-10-10/` | Executed tool responses, source-integrity checks, versions, tool schemas, MCP (Model Context Protocol) request logs, and the harness scripts. Workspace paths are replaced with `<workspace>`. |
 
 ## Roadmap

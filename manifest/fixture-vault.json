@@ -16,10 +16,19 @@
     "tokenizer": "approx-utf8-bytes-div-3"
   },
   "authority_policy": {
-    "local_claims": "local_only",
-    "verifier": null,
-    "acceptance_records": [],
-    "note": "R2 placeholder. R2 adds allowlisted repositories and acceptance record types (issue comment, PR review, merge) and verifies them serially. Until then no decision is verified."
+    "local_claims": "decision_candidates",
+    "verifier": {"transport": "offline", "serial": true, "snapshot_dir": "../fixtures/github-snapshots"},
+    "acceptance_records": [
+      {"kind": "pull_merge", "rule": "merged is true and merged_by is an approver"},
+      {"kind": "pull_review", "rule": "state is APPROVED and the reviewer is an approver"},
+      {"kind": "issue_comment", "rule": "the author is an approver and the body contains body_marker", "body_marker": "ACCEPTED:"}
+    ],
+    "repositories": [
+      {"host": "github.example.test", "repo": "portfolio/atlas", "projects": ["atlas"], "approvers": ["fixture-owner"]}
+    ],
+    "reference": {"frontmatter_key": "acceptance_record", "body_labels": ["Authority fixture:"]},
+    "binding": {"frontmatter_key": "source_revision", "record_field": "subject_revision"},
+    "note": "R2, owner ruling B. A note with status accepted is a decision candidate. It is an accepted decision only when the one acceptance record it cites (frontmatter acceptance_record, or a body line starting with a body label) is read serially from a repository allowlisted for that project, is a configured kind, was made by an approver, and, when the note declares source_revision, names that revision as its subject. The default transport is offline, so every referenced record is unverified; --verifier snapshot reads fixed synthetic responses, --verifier gh reads live GitHub (optional)."
   },
   "projects": {
     "atlas": {

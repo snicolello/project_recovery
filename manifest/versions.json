@@ -1,6 +1,6 @@
 {
   "recorded": "2026-10-11",
-  "release": "R1",
+  "release": "R2",
   "qmd": {
     "package": "@tobilu/qmd",
     "version": "2.8.3",
@@ -13,5 +13,7 @@
   "npm": "11.6.2",
   "python": "3.11.9 (3.11+ required; stdlib only)",
   "platform_tested": "Windows 11",
-  "tokenizer": "approx-utf8-bytes-div-3"
+  "tokenizer": "approx-utf8-bytes-div-3",
+  "tokenizer_check": "2026-10-11, R2 packets S1 to S8: estimate / real tokens >= 1.002 (o200k_base) and >= 1.014 (cl100k_base), tiktoken 0.8.0 in a throwaway virtualenv; never under-counts, divisor kept",
+  "gh_smoke": "optional; gh CLI with an existing session, read-only GET (scripts/live_gh_smoke.py)"
 }

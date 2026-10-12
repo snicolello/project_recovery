@@ -4,12 +4,16 @@
     python -I recover.py query    --manifest M --project P --text "restart"
     python -I recover.py fetch    --manifest M --project P --source "atlas/Project.md" --start 9 --end 10
     python -I recover.py assemble --manifest M --project P --query "Atlas project" [--max-tokens 4000] [--out F]
-    python -I recover.py validate --manifest M --packet packet.json
+                                  [--verifier offline|snapshot|gh] [--snapshots DIR]
+    python -I recover.py validate --manifest M --packet packet.json [--verifier ...] [--snapshots DIR]
 
 Every command prints JSON on stdout. ``assemble`` prints compact JSON, the exact form
 the 4,000-token bound is counted on; the other commands print indented JSON. Only
 ``refresh`` changes anything, and only the derived index under <repo>/.qmd/.
-``validate`` exits 1 when any claim fails (see packet.audit).
+``validate`` exits 1 when any claim fails (see packet.audit). ``--verifier`` chooses how
+acceptance records are read: ``offline`` (nothing is read; every referenced record is
+unverified), ``snapshot`` (fixed response files), or ``gh`` (live, read-only ``gh api``
+GET requests, one at a time). The default is the manifest's ``authority_policy.verifier``.
 """
 from __future__ import annotations
 
@@ -60,6 +64,10 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--out", type=Path, help="also write the packet to this file (UTF-8)")
         if name == "validate":
             p.add_argument("--packet", required=True, type=Path)
+        if name in ("assemble", "validate"):
+            p.add_argument("--verifier", choices=("offline", "snapshot", "gh"),
+                           help="acceptance-record transport (default: the manifest's)")
+            p.add_argument("--snapshots", type=Path, help="snapshot directory for --verifier snapshot")
     args = ap.parse_args(argv)
     m = recipe.load_manifest(args.manifest, args.vault_root, args.state_dir)
 
@@ -74,7 +82,11 @@ def main(argv: list[str] | None = None) -> int:
             expected = recipe.load_generation(m)["generation"]
         except recipe.RecipeError:
             expected = None
-        checked, problems = pk.audit(original, m.vault_root, expected, project.root if project else None)
+        recheck = None
+        if project is not None:
+            verifier = recipe.make_verifier(m, args.verifier, args.snapshots)
+            recheck = recipe.make_rechecker(m, original["project"], verifier)
+        checked, problems = pk.audit(original, m.vault_root, expected, project.root if project else None, recheck)
         if project is None:
             problems.append({"field": "project", "kind": "scope_mismatch", "reason": "packet project not in manifest"})
         emit({"failures": len(problems), "problems": problems, "recorded_generation": expected, "packet": checked})
@@ -108,7 +120,8 @@ def main(argv: list[str] | None = None) -> int:
             ok, why = validate_receipt(receipt, m.vault_root, cited)
             emit({"text": normalize_text(cited), "receipt": receipt, "valid": ok, "reason": why})
             return 0 if ok else 1
-        result = recipe.assemble(m, args.project, args.query, session, args.max_tokens)
+        verifier = recipe.make_verifier(m, args.verifier, args.snapshots)
+        result = recipe.assemble(m, args.project, args.query, session, args.max_tokens, verifier)
         if args.out:
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(pk.compact(result).decode("utf-8") + "\n", encoding="utf-8")

@@ -1,8 +1,8 @@
-# Quickstart (draft, release R1, Windows)
+# Quickstart (draft, release R2, Windows)
 
-Reproduce the R1 result: recover the synthetic Atlas and Beacon projects through QMD and pass scenarios S1 to S5. About ten minutes on Windows. Linux instructions arrive with release R5.
+Reproduce the R2 result: recover the synthetic Atlas, Beacon and Cobalt projects through QMD, see a decision move from candidate to accepted only when its acceptance record is verified, and pass scenarios S1 to S8. About ten minutes on Windows. Linux instructions arrive with release R5.
 
-Everything stays inside the clone. QMD is installed into the git-ignored `qmd-runtime/`; its index lives in the git-ignored `.qmd/`; the S4 scenario edits a throwaway copy in the git-ignored `runtime-vaults/`. Nothing is installed globally, no hooks are added, no model is downloaded, and `fixtures/` is never written.
+Everything stays inside the clone. QMD is installed into the git-ignored `qmd-runtime/`; its index lives in the git-ignored `.qmd/`; scenarios S4, S6, S7 and S8 edit throwaway copies in the git-ignored `runtime-vaults/`. Nothing is installed globally, no hooks are added, no model is downloaded, and `fixtures/` is never written. Acceptance records are read from fixed synthetic snapshots or not at all; only the optional step 7 reads GitHub.
 
 ## 1. Prerequisites
 
@@ -25,7 +25,7 @@ cd project_recovery
 python -I scripts/verify_fixture_hashes.py
 ```
 
-Expected last line: `ok 9 bad 0`.
+Expected last line: `ok 16 bad 0` (the nine R0 notes plus seven Cobalt notes added in R2).
 
 ## 4. Install QMD 2.8.3, pinned, scripts disabled
 
@@ -53,13 +53,27 @@ Assemble the Atlas packet:
 python -I skills/project-recovery/scripts/recover.py assemble --manifest manifest/fixture-vault.json --project atlas --query "Atlas project" --out .scratch/atlas-packet.json
 ```
 
-The packet is printed as compact JSON (the form its token budget is counted on) and also written, as UTF-8, to `.scratch/atlas-packet.json` (git-ignored). Open it. You should see the objective, current state, blocker and next action from `atlas/Project.md`, the accepted SQLite decision labelled `local_only`, the draft PostgreSQL and superseded Redis decisions under `other_decisions`, and `unknowns` for the approver, the rollout approval and the rollout owner. Every item has a receipt. Check one by hand:
+The packet is printed as compact JSON (the form its token budget is counted on) and also written, as UTF-8, to `.scratch/atlas-packet.json` (git-ignored). Open it. You should see:
+
+- `freshness.statement` naming the generation the packet was assembled from;
+- the objective, current state, blocker and next action from `atlas/Project.md`;
+- `accepted_decisions` `unknown`, and the SQLite decision under `decision_candidates` with `local_status` `accepted`, `authority_state` `unverified` and `verification.result` `unavailable`: the manifest's default transport is `offline`, so the acceptance record the note cites was not read, and `authority_verification.statement` says so;
+- the draft PostgreSQL and superseded Redis decisions under `other_decisions`, and `unknowns` for the accepted decisions, the approver, the rollout approval and the rollout owner.
+
+Every item has a receipt. Now read the cited record from the fixed synthetic snapshot instead:
+
+```powershell
+python -I skills/project-recovery/scripts/recover.py assemble --manifest manifest/fixture-vault.json --project atlas --query "Atlas project" --verifier snapshot --out .scratch/atlas-verified.json
+```
+
+The SQLite decision is now under `accepted_decisions`, `verified`, with `revision` `fixture-merge-a7` and a `verified_at` time. Check both packets by hand:
 
 ```powershell
 python -I skills/project-recovery/scripts/recover.py validate --manifest manifest/fixture-vault.json --packet .scratch/atlas-packet.json
+python -I skills/project-recovery/scripts/recover.py validate --manifest manifest/fixture-vault.json --packet .scratch/atlas-verified.json --verifier snapshot
 ```
 
-Expected: `"failures": 0`. Edit one `content_sha` in the file, or change an `authority_state` to `verified`, and run it again: the claim is rejected, the field becomes `unknown`, a conflict appears, and the exit code is 1.
+Expected: `"failures": 0` for both. Run the second command without `--verifier snapshot`: offline, the accepted decision cannot be re-verified, so it is demoted to a candidate and the exit code is 1. Edit one `content_sha`, change a candidate's `authority_state` to `verified`, or change the verified `revision`, and the claim is rejected the same way.
 
 ## 6. Run all scenarios and gates
 
@@ -69,11 +83,21 @@ python -I -m unittest discover -s tests
 python -I scripts/verify_fixture_hashes.py
 ```
 
-`run_scenarios.py` takes about 20 seconds. Its last line must be `ALL GATES PASS (60 checks; ...)` and it exits 0. It scores, for each scenario, recovery completeness, unsupported assertions, abstention, isolation, freshness and the token budget; then the S4 changed-source sequence on a copy (before edit, immediately after, after 3 seconds, after an explicit refresh); the negative tests (corrupted receipt, altered text, traversal locators, missing note, a Beacon query under Atlas scope, budget trimming); the read-only tool surface; 20 repeat runs with an index rebuild before run 11; and fixture integrity before and after. The packets it produced are in `.scratch/run_scenarios/packets/`.
+`run_scenarios.py` takes about 35 seconds and needs no network. Its last line must be `ALL GATES PASS (114 checks; ...)` and it exits 0. It scores, for each scenario, recovery completeness, unsupported assertions, abstention, isolation, freshness (generation stated) and the token budget; the S2 decisions offline (candidate, unverified) and through the snapshot verifier (accepted, verified); the S4 changed-source sequence on a copy; S6 edits and a refresh made while a packet is being assembled; S7 budget stress on a generated vault; S8 adversarial instructions in a Cobalt note, compared with the same vault without that note, plus replayed, unmerged, non-approver and unreadable acceptance records; the negative tests (corrupted receipt, altered text, traversal locators, missing note, out-of-scope query, budget trimming, forged revision, hand-promoted candidate, rate-limited transport); the read-only tool surface; 20 repeat runs of eight packets with an index rebuild before run 11; and fixture integrity before and after. The packets it produced are in `.scratch/run_scenarios/packets/`.
 
 The unit tests print `OK` (one symlink test is skipped when Windows does not allow unprivileged symlinks; the junction test still runs).
 
-## 7. Clean up
+## 7. Optional: verify one record live
+
+Not needed for any gate. If the GitHub CLI `gh` is installed and signed in, read one real acceptance record with one read-only request:
+
+```powershell
+python -I scripts/live_gh_smoke.py --reference https://github.com/snicolello/project_recovery/pull/1 --approver snicolello
+```
+
+Expected: `"result": "verified"` with the merge commit as `revision`. Offline, or without `gh`, the result is `unavailable` and the exit code is 1; nothing fails silently.
+
+## 8. Clean up
 
 Everything the run created is git-ignored and can be deleted:
 
@@ -88,4 +112,5 @@ The `\\?\` prefix lets Python delete `node_modules` paths longer than the classi
 - `QMD not installed`: run step 4.
 - `no recorded generation`: run the `refresh` command in step 5.
 - Redirecting output with `>` in Windows PowerShell 5.1 writes UTF-16, which `validate` cannot read. Use `--out` as shown.
-- A packet with `"status": "incomplete"`: a note changed after the last refresh. Run `refresh` again, then `assemble`.
+- A packet with `"status": "incomplete"`: a note changed after the last refresh, or during assembly. Run `refresh` again, then `assemble`.
+- No accepted decisions: expected offline. Use `--verifier snapshot` for the fixtures, or `--verifier gh` for a real allowlisted repository.

@@ -15,14 +15,14 @@ import math
 from pathlib import Path
 from typing import Iterator
 
-from receipts import cited_text, validate_receipt
+from receipts import SourceError, cited_text, read_source, validate_receipt
 
 TOKENIZER = "approx-utf8-bytes-div-3"
 DEFAULT_LIMIT = 4000
-VOLATILE_KEYS = frozenset({"observed_at", "refreshed_at", "assembled_at"})
+VOLATILE_KEYS = frozenset({"observed_at", "refreshed_at", "assembled_at", "verified_at"})
 # Droppable lists, in the order they are trimmed (last element first).
-# conflicts, unknowns and the mandatory fields are never dropped.
-DROPPABLE = ("query_hits", "other_decisions")
+# conflicts, unknowns, the mandatory fields and accepted_decisions are never dropped.
+DROPPABLE = ("query_hits", "other_decisions", "decision_candidates")
 
 
 def compact(packet: dict) -> bytes:
@@ -34,8 +34,9 @@ def estimate_tokens(packet: dict) -> int:
 
 
 def _droppable_list(packet: dict, name: str) -> list:
-    if name == "other_decisions":
-        return packet["fields"]["other_decisions"]["decisions"]
+    if name in ("other_decisions", "decision_candidates"):
+        node = packet.get("fields", {}).get(name)
+        return node["decisions"] if isinstance(node, dict) and isinstance(node.get("decisions"), list) else []
     return packet[name]
 
 
@@ -100,7 +101,22 @@ def ordered_receipts(packet: dict) -> list[dict]:
     return out
 
 
-R1_AUTHORITY_STATES = frozenset({"local_only"})
+AUTHORITY_STATES = frozenset({"verified", "unverified", "local_only", "superseded"})
+
+
+def frontmatter_status(data: bytes) -> str | None:
+    """The ``status`` value in a note's frontmatter, read from source bytes."""
+    lines = data.decode("utf-8", errors="replace").split("\n")
+    if not lines or lines[0].rstrip("\r") != "---":
+        return None
+    for raw in lines[1:]:
+        line = raw.rstrip("\r")
+        if line == "---":
+            return None
+        key, sep, value = line.partition(":")
+        if sep and key.strip() == "status":
+            return value.strip()
+    return None
 
 
 def all_dicts(value, path: str = "") -> list[tuple[str, dict]]:
@@ -150,13 +166,19 @@ def check_item(item: dict, root: Path, prefix: str | None = "", generations: fro
 
 
 def audit(packet: dict, root: Path, expected_generation: str | None = None,
-          scope_root: str | None = None) -> tuple[dict, list[dict]]:
+          scope_root: str | None = None, recheck=None) -> tuple[dict, list[dict]]:
     """Revalidate a packet. Returns (corrected copy, problems).
 
     Checks: every cited item (receipt bytes, text, scope root, generation); every
     ``established`` node has at least one validating item (or established child decision);
-    every ``authority_state`` is ``local_only`` (R1); ``conflicts`` and ``unknowns`` exist.
-    Each failure removes the claim, sets the field ``unknown`` and records a conflict.
+    every ``authority_state`` is one of the four contract states, and ``verified`` appears
+    only on an entry of ``fields.accepted_decisions``; every accepted decision carries a
+    verified result with revision and ``verified_at`` and passes ``recheck(entry) ->
+    (ok, reason)`` (re-verification through a verifier). Without ``recheck`` an accepted
+    decision cannot be confirmed and is demoted. A decision's ``local_status`` must equal
+    the frontmatter status in its source bytes. ``conflicts`` and ``unknowns`` must exist.
+    Each failure removes the claim (a demoted decision moves to ``decision_candidates`` as
+    ``unverified``), sets the field ``unknown`` where it empties, and records a conflict.
     """
     out = copy.deepcopy(packet) if isinstance(packet, dict) else {}
     problems: list[dict] = []
@@ -206,12 +228,58 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
                              item.get("receipt") if isinstance(item, dict) and isinstance(item.get("receipt"), dict) else {})
             node[key] = kept
 
+    fields = out.get("fields") if isinstance(out.get("fields"), dict) else {}
+    acc = fields.get("accepted_decisions") if isinstance(fields.get("accepted_decisions"), dict) else None
+    accepted = acc.get("decisions") if acc is not None and isinstance(acc.get("decisions"), list) else []
+    for i, entry in reversed(list(enumerate(accepted))):
+        path = f"fields.accepted_decisions.decisions[{i}]"
+        v = entry.get("verification") if isinstance(entry, dict) else None
+        if not isinstance(entry, dict):
+            ok, why = False, "entry is not an object"
+        elif entry.get("authority_state") != "verified" or not isinstance(v, dict) or v.get("result") != "verified":
+            ok, why = False, "accepted decision without a verified acceptance result"
+        elif not v.get("revision") or not v.get("verified_at") or not v.get("reference"):
+            ok, why = False, "verified result lacks reference, revision or verified_at"
+        elif recheck is None:
+            ok, why = False, "verified authority not re-checked: no verifier given (offline)"
+        else:
+            ok, why = recheck(entry)
+        if ok:
+            continue
+        conflict(path, "authority_not_verified", why)
+        accepted.pop(i)
+        if isinstance(entry, dict):
+            entry["authority_state"] = "unverified"
+            entry["verification"] = {**(v if isinstance(v, dict) else {}), "result": "invalid",
+                                     "reason": f"demoted by validate: {why}"}
+            cands = fields.setdefault("decision_candidates", {"status": "candidate", "decisions": []})
+            cands.setdefault("decisions", []).append(entry)
+    accepted_ids = {id(e) for e in accepted}
+
     nodes = all_dicts(out)
     for path, node in nodes:
-        if "authority_state" in node and node["authority_state"] not in R1_AUTHORITY_STATES:
+        if "authority_state" not in node:
+            continue
+        if node["authority_state"] not in AUTHORITY_STATES:
             conflict(path, "authority_state_not_permitted",
-                     f"authority_state {node['authority_state']!r} is not permitted in R1 (only local_only)")
-            node["authority_state"] = "local_only"
+                     f"authority_state {node['authority_state']!r} is not a contract state")
+            node["authority_state"] = "unverified"
+        elif node["authority_state"] == "verified" and id(node) not in accepted_ids:
+            conflict(path, "authority_state_not_permitted",
+                     "verified is permitted only on an accepted decision with a verified acceptance record")
+            node["authority_state"] = "unverified"
+    for path, node in nodes:
+        source, status = node.get("source"), node.get("local_status")
+        if not isinstance(source, str) or status in (None, "stated_in_baseline") or "authority_state" not in node:
+            continue
+        try:
+            actual = frontmatter_status(read_source(root, source)) if prefix is not None and source.startswith(prefix) else None
+        except SourceError:
+            actual = None
+        if actual != status:
+            conflict(path, "local_status_mismatch", f"local_status {status!r} differs from the source's {actual!r}")
+            node["local_status"] = "unknown"
+            node["items"] = []
     for path, node in reversed(nodes):  # children before parents
         if node.get("status") != "established":
             continue
@@ -228,12 +296,12 @@ def audit(packet: dict, root: Path, expected_generation: str | None = None,
 
 
 def unsupported_assertions(packet: dict, root: Path, expected_generation: str | None = None,
-                           scope_root: str | None = None) -> list[dict]:
+                           scope_root: str | None = None, recheck=None) -> list[dict]:
     """Every claim in the packet that does not validate (see ``audit``)."""
-    return audit(packet, root, expected_generation, scope_root)[1]
+    return audit(packet, root, expected_generation, scope_root, recheck)[1]
 
 
 def revalidate(packet: dict, root: Path, expected_generation: str | None = None,
-               scope_root: str | None = None) -> dict:
+               scope_root: str | None = None, recheck=None) -> dict:
     """Corrected copy: failing claims removed, their fields ``unknown``, conflicts recorded."""
-    return audit(packet, root, expected_generation, scope_root)[0]
+    return audit(packet, root, expected_generation, scope_root, recheck)[0]

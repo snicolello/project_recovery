@@ -1,0 +1,77 @@
+{
+  "manifest_version": "0.1",
+  "name": "scenario-vault",
+  "description": "Manifest for scenarios S6 to S8 (release R2): the same synthetic vault with the Cobalt project added, and the snapshot verifier (fixed synthetic GitHub responses) as the default transport. Paths are relative to this file; source locators are relative to the vault root.",
+  "vault": {
+    "root": "../fixtures/synthetic-vault"
+  },
+  "index": {
+    "engine": "qmd",
+    "version": "2.8.3",
+    "search": {"type": "lex", "rerank": false, "limit": 10},
+    "embeddings": false
+  },
+  "budget": {
+    "max_tokens": 4000,
+    "tokenizer": "approx-utf8-bytes-div-3"
+  },
+  "authority_policy": {
+    "local_claims": "decision_candidates",
+    "verifier": {"transport": "snapshot", "serial": true, "snapshot_dir": "../fixtures/github-snapshots"},
+    "acceptance_records": [
+      {"kind": "pull_merge", "rule": "merged is true and merged_by is an approver"},
+      {"kind": "pull_review", "rule": "state is APPROVED and the reviewer is an approver"},
+      {"kind": "issue_comment", "rule": "the author is an approver and the body contains body_marker", "body_marker": "ACCEPTED:"}
+    ],
+    "repositories": [
+      {"host": "github.example.test", "repo": "portfolio/atlas", "projects": ["atlas"], "approvers": ["fixture-owner"]},
+      {"host": "github.example.test", "repo": "portfolio/cobalt", "projects": ["cobalt"], "approvers": ["fixture-owner"]}
+    ],
+    "reference": {"frontmatter_key": "acceptance_record", "body_labels": ["Authority fixture:"]},
+    "binding": {"frontmatter_key": "source_revision", "record_field": "subject_revision"},
+    "note": "R2, owner ruling B. A note with status accepted is a decision candidate. It is an accepted decision only when the one acceptance record it cites (frontmatter acceptance_record, or a body line starting with a body label) is read serially from a repository allowlisted for that project, is a configured kind, was made by an approver, and, when the note declares source_revision, names that revision as its subject. The default transport here is snapshot: fixed synthetic responses under fixtures/github-snapshots/."
+  },
+  "projects": {
+    "atlas": {
+      "collection": "atlas",
+      "root": "atlas",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": ["Objective:"],
+        "current_state": ["Current state:"],
+        "blockers": ["Blocker:"],
+        "next_action": ["Next authorized action:", "Deployment is not authorized."],
+        "accepted_decisions": ["Accepted decision:"]
+      },
+      "decision_statuses": ["accepted", "draft", "superseded"],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": [
+          {"name": "rollout_approval", "note": "Release Checklist.md", "label": "Atlas rollout approval:"},
+          {"name": "rollout_owner", "note": "Release Checklist.md", "label": "Rollout owner:"}
+        ]
+      }
+    },
+    "cobalt": {
+      "collection": "cobalt",
+      "root": "cobalt",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": ["Objective:"],
+        "current_state": ["Current state:"],
+        "blockers": ["Blocker:"],
+        "next_action": ["Next authorized action:", "Deployment is not authorized."],
+        "accepted_decisions": ["Accepted decision:"]
+      },
+      "decision_statuses": ["accepted", "draft", "superseded"],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": []
+      }
+    }
+  }
+}

@@ -25,6 +25,15 @@ RUNTIME = REPO / "qmd-runtime"
 EXPECTED_VERSION = "2.8.3"
 
 
+def remove_cache(cache: Path) -> bool:
+    """Delete the temporary npm cache; say so, with its path, if anything is left behind."""
+    shutil.rmtree(cache, ignore_errors=True)
+    if cache.exists():
+        print(f"warning: temporary npm cache not fully removed; delete it by hand: {cache}", file=sys.stderr)
+        return False
+    return True
+
+
 def main() -> int:
     npm = shutil.which("npm") or shutil.which("npm.cmd")
     if not npm:
@@ -42,7 +51,7 @@ def main() -> int:
     try:
         result = subprocess.run(cmd, cwd=RUNTIME)
     finally:
-        shutil.rmtree(cache, ignore_errors=True)
+        remove_cache(cache)
     if result.returncode != 0:
         return result.returncode
     pkg = json.loads((RUNTIME / "node_modules" / "@tobilu" / "qmd" / "package.json").read_text(encoding="utf-8"))

@@ -2,34 +2,35 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Declared baseline for Project Recovery: verified current state and one safe next action.
-- Status: Current. R1 accepted; R2 contracted.
-- As of: 2026-10-11, `main` at `22bcaa7` (R1 merged via PR #1). R2 ticket: https://github.com/snicolello/stephen-project-hub/issues/119 under Epic #113.
+- Status: Current. R1 accepted; R2 in review (PR open, merge held for the owner).
+- As of: 2026-10-11, `main` at `50f52d0`; R2 on branch `feat/119-r2-authority` (pull request to `main`). R2 ticket: https://github.com/snicolello/stephen-project-hub/issues/119 under Epic #113.
 - Authority: Stephen (owner), through rulings recorded on hub Epic https://github.com/snicolello/stephen-project-hub/issues/113. Author of this baseline: a Claude Personal session on 2026-10-11; approver: the owner, at the R0 gate on the Epic.
 - Sources: hub Epic #113 (rulings 1 to 9 and the release roadmap, 2026-10-10); `docs/discovery/*` (Astra Phase 0 brief, acceptance criteria and gap list, 2026-10-10); `evidence/scoped-evaluation-2026-10-10/` (executed tool runs, Basic Memory 0.23.2 and QMD 2.8.3).
-- Objective: deliver R2 (authority and freshness) per hub #119, including owner ruling B: frontmatter-accepted notes become `decision_candidates`; `accepted_decisions` only on verified GitHub evidence.
-- Next action: start R2 only from hub #119's contract under an orchestrator dispatch; owner merge gate unchanged.
+- Objective: close R2 (authority and freshness) per hub #119, including owner ruling B: frontmatter-accepted notes are `decision_candidates`; `accepted_decisions` only on verified GitHub evidence.
+- Next action: independent review of the R2 pull request (orchestrator), then owner merge and the R2 gate on Epic #113. R3 does not start before that gate.
 - Read when:
   - `PROJECT.md`: checking identity, outcome, trust zone or boundaries.
   - `docs/recovery-contract.md`: implementing or reviewing any release; it is the product contract.
   - `fixtures/scenario-plan.json` and `fixtures/synthetic-vault/`: writing or running scenarios.
-  - `skills/project-recovery/SKILL.md` and `docs/quickstart.md`: running or reviewing the R1 recipe; `scripts/run_scenarios.py` scores every gate.
+  - `skills/project-recovery/SKILL.md` and `docs/quickstart.md`: running or reviewing the recipe, the authority policy, the tokenizer check and the project_recovery #2 resolutions; `scripts/run_scenarios.py` scores every gate (S1 to S8, offline).
   - `docs/discovery/gap-list-2026-10-10.md`: understanding why the project builds a verification layer and not a retrieval engine.
   - `evidence/scoped-evaluation-2026-10-10/README.md`: reproducing the hand trial.
 
 ## Current baseline
 
-Release R0 content (contract, nine synthetic fixture notes with hashes, five scenario expectations, discovery documents, hand-trial evidence) and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main` at `22bcaa7`. R1 decisions are all labelled `local_only`; GitHub verification is R2. No Librarian code exists.
+Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2, in review on `feat/119-r2-authority`: `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes and four synthetic GitHub snapshots, scenarios S6 to S8, 114 offline gate checks and 67 unit tests. The contract is unchanged. No Librarian code exists.
 
 ## Completed
 
 - 2026-10-10: Phase 0 discovery (Astra, Codex) and the one-day hand trial of Basic Memory and QMD; consolidated into hub Epic #113 with nine owner rulings. Hub #64 closed as absorbed; hub #17 item (4) repointed.
+- 2026-10-11: R2 implemented and submitted for review (hub #119); project_recovery #2 items 1 to 4 resolved (see `skills/project-recovery/SKILL.md`).
 - 2026-10-11: R1 merged `22bcaa7` (PR #1); gate recorded on hub Epic #113.
 - 2026-10-11: repository scaffolded under the project-onboarding skill; Apache-2.0 licence; Astra outputs imported with workspace paths scrubbed.
 
 ## Pending
 
-- R2 authority and freshness: hub #119 (contract).
-- Backlog: https://github.com/snicolello/project_recovery/issues/2 items.
+- R2: independent review, owner merge, gate on Epic #113 (hub #119).
+- https://github.com/snicolello/project_recovery/issues/2: resolutions in the R2 pull request; closing is the orchestrator's call after merge.
 
 ## Deferred
 

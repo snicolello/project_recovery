@@ -15,7 +15,8 @@ import io
 import json
 import unittest
 
-from reliance_cases import CASES, HITS, LIMIT_CASES, assemble, build, make_env, record_generation  # sets sys.path
+from reliance_cases import (CASES, EMPTY_HIT, HITS, LIMIT_CASES, LINK_NOTE, assemble, build, make_env,  # sets sys.path
+                            record_generation, resettle)
 
 import packet as pk  # noqa: E402
 import recipe  # noqa: E402
@@ -212,6 +213,74 @@ class FailClosedTests(unittest.TestCase):
         recipe.generation_path(self.env.m).unlink()
         r = self.run_validate(self.env.packets["cobalt"])
         self.assertEqual((r["result"], r["recorded_generation"]), ("not_rederivable", None))
+
+
+class ReviewRemediationTests(unittest.TestCase):
+    """Independent review of a76abda: R1 to R3 (packet mode) and R8 (staleness scope)."""
+
+    def tearDown(self):
+        self.env.close()
+
+    def check(self, p: dict, hits: list, mode: str) -> dict:
+        env = self.env
+        return rederive.validate(env.m, json.dumps(p).encode("utf-8"), "snapshot", None, mode,
+                                 session_factory=lambda: rederive.VaultSession(env.m, "cobalt", hits))
+
+    def trimmed(self, hits: list) -> dict:
+        """The cobalt packet with the last hit trimmed by the budget, and nothing else."""
+        tokens = assemble(self.env, "cobalt", hits=hits)["budget"]["tokens"]
+        for k in range(1, 400):
+            p = assemble(self.env, "cobalt", hits=hits, limit=tokens - k)
+            if p["budget"]["omitted"] == {"query_hits": 1, "other_decisions": 0, "decision_candidates": 0}:
+                self.assertEqual(len(p["query_hits"]), len(hits) - 1)
+                return p
+        self.fail("no limit trims exactly the last hit")
+
+    def test_r1_dropped_results_are_requery_only(self):
+        self.env = make_env(packets=False)
+        hits = HITS["cobalt"] + [{"file": "beacon/Project.md", "title": "Beacon"}]
+        honest = assemble(self.env, "cobalt", hits=hits)
+        self.assertEqual(honest["conflicts"][-1]["kind"], "scope_violation")
+        self.assertEqual(self.check(honest, hits, "requery")["result"], "equal_to_rederived")
+        r = self.check(honest, hits, "packet")
+        self.assertEqual(r["result"], "rejected")
+        self.assertIn(rederive.GUARANTEE["not_rederived_in_packet_mode"][2], r["guarantee"]["not_established"])
+        self.assertFalse(any("Beacon" in json.dumps(c) for c in r["packet"]["conflicts"]))
+
+    def test_r2_unknown_left_by_a_trimmed_uncitable_hit(self):
+        self.env = make_env(extra={"cobalt/Empty Hit.md": EMPTY_HIT}, packets=False)
+        hits = HITS["cobalt"] + [{"file": "cobalt/Empty Hit.md", "title": "Empty Hit"}]
+        honest = self.trimmed(hits)
+        self.assertIn("query_hits:cobalt/Empty Hit.md", [u["field"] for u in honest["unknowns"]])
+        for mode in rederive.MODES:
+            self.assertEqual(self.check(honest, hits, mode)["result"], "equal_to_rederived", mode)
+        forged = copy.deepcopy(honest)
+        forged["unknowns"] = [u for u in forged["unknowns"] if not u["field"].startswith("query_hits:")]
+        resettle(forged)
+        self.assertEqual(self.check(forged, hits, "requery")["result"], "rejected")
+        r = self.check(forged, hits, "packet")  # a stated limit of packet mode
+        self.assertEqual(r["result"], "equal_to_rederived")
+        self.assertIn(rederive.GUARANTEE["not_rederived_in_packet_mode"][1], r["guarantee"]["not_established"])
+
+    def test_r3_body_link_of_a_trimmed_hit_already_cited_as_a_decision(self):
+        self.env = make_env(extra={"cobalt/Link Note.md": LINK_NOTE}, packets=False)
+        hits = HITS["cobalt"] + [{"file": "cobalt/Link Note.md", "title": "Link Note"}]
+        honest = self.trimmed(hits)
+        self.assertEqual([e["link"] for e in honest["missing_sources"]], ["Missing Alpha", "Missing Beta"])
+        for mode in rederive.MODES:
+            self.assertEqual(self.check(honest, hits, mode)["result"], "equal_to_rederived", mode)
+
+    def test_r8_staleness_covers_projects_sharing_a_repository(self):
+        self.env = make_env(packets=False)
+        for repo in self.env.m.raw["authority_policy"]["repositories"]:
+            repo["projects"] = sorted(set(repo["projects"]) | {"atlas", "cobalt"})
+        self.assertEqual(rederive.scope_projects(self.env.m, "cobalt"), ["atlas", "cobalt"])
+        p = assemble(self.env, "cobalt")
+        note = self.env.root / "atlas" / "Meeting Notes.md"
+        note.write_bytes(note.read_bytes() + b"Edited after refresh.\r\n")
+        r = self.check(p, HITS["cobalt"], "packet")
+        self.assertEqual(r["result"], "not_rederivable")
+        self.assertIn("atlas/Meeting Notes.md", r["problems"][-1]["reason"])
 
 
 class DocumentationTests(unittest.TestCase):

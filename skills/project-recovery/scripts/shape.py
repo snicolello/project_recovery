@@ -12,14 +12,26 @@ or Infinity, bounded size and depth.
 """
 from __future__ import annotations
 
+import datetime as dt
 import json
 import re
 
 MAX_PACKET_BYTES = 4_000_000
 MAX_PROBLEMS = 100
 
-TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z")
+TIMESTAMP = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z")
 HEX64 = re.compile(r"[0-9a-f]{64}")
+
+
+def _timestamp(v) -> bool:
+    """A real UTC time, written as the assembler writes it, in ASCII digits (review R7)."""
+    if not isinstance(v, str) or not TIMESTAMP.fullmatch(v):
+        return False
+    try:
+        dt.datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError:
+        return False
+    return True
 
 
 class Spec:
@@ -48,7 +60,7 @@ STR = Scalar("a string", lambda v: isinstance(v, str))
 BOOL = Scalar("a boolean", lambda v: isinstance(v, bool))
 COUNT = Scalar("an integer >= 0", lambda v: _int(v) and v >= 0)
 POSITIVE = Scalar("an integer >= 1", lambda v: _int(v) and v >= 1)
-TS = Scalar("a UTC timestamp YYYY-MM-DDTHH:MM:SS.mmmZ", lambda v: isinstance(v, str) and TIMESTAMP.fullmatch(v))
+TS = Scalar("a UTC timestamp YYYY-MM-DDTHH:MM:SS.mmmZ", _timestamp)
 SHA = Scalar("a lowercase SHA-256 hex digest", lambda v: isinstance(v, str) and HEX64.fullmatch(v))
 SPAN = Scalar("[start, end] with 1 <= start <= end",
               lambda v: isinstance(v, list) and len(v) == 2 and all(_int(x) for x in v) and 1 <= v[0] <= v[1])

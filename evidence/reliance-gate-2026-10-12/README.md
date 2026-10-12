@@ -16,11 +16,11 @@ python -I evidence/reliance-gate-2026-10-12/before_after.py --before-repo PATH
 
 ## Result at the time of recording
 
-Base `5ab0ea2`; this revision `bc791ee` (the code commit after the independent review's remediation; `results.json` records both).
+Base `5ab0ea2`; this revision `5ae8a9b` (the code commit after the independent review and re-review remediations; `results.json` records both).
 
 | | Count | Cases |
 |---|---|---|
-| Edited cases the base validator passed with 0 failures | 33 of 46 (10 flagged, 3 crashed) | F1-a to c, e to i, k; F2-a to j (including f2); M-02 to 05, 08, 11, 12, 14 to 16, 21 to 23 |
+| Edited cases the base validator passed with 0 failures | 35 of 48 (10 flagged, 3 crashed) | F1-a to c, e to i, k; F2-a to j (including f2); M-02 to 05, 08, 11, 12, 14 to 16, 21 to 25 |
 | Inputs that crashed the base validator | 3 | M-01 (byte-order mark), M-13 (deep nesting), M-18 (truncated output) |
 | Base validator flagged, but kept a `verified` entry with no items | 1 | F3-a |
 | Cases with an unexpected result after the fix | 0 | |

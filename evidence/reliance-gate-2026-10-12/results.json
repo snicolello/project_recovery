@@ -1,6 +1,6 @@
 {
   "base_revision": "5ab0ea2",
-  "revision": "bc791ee",
+  "revision": "5ae8a9b",
   "cases": [
     {
       "id": "control-cobalt",
@@ -1377,6 +1377,60 @@
         "result": "rejected",
         "failures": 3
       }
+    },
+    {
+      "id": "M-24",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "hit naming a note that does not exist, with its unknown (re-review R11, N1)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 4,
+        "first_problem": "query_hits[1]: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
+    },
+    {
+      "id": "M-25",
+      "finding": "model",
+      "criterion": "AC2",
+      "what": "omitted-hit unknown naming a note that does not exist (re-review R11, N2)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 2,
+        "first_problem": "unknowns[1]: not_rederived"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 4
+      }
     }
   ],
   "summary": {
@@ -1413,7 +1467,9 @@
       "M-16",
       "M-21",
       "M-22",
-      "M-23"
+      "M-23",
+      "M-24",
+      "M-25"
     ],
     "before_crashed": [
       "M-01",

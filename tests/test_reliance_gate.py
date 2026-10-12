@@ -25,6 +25,7 @@ import packet as pk  # noqa: E402
 import recipe  # noqa: E402
 import recover  # noqa: E402
 import rederive  # noqa: E402
+import shape  # noqa: E402
 
 LIMIT_TEXT = rederive.GUARANTEE["not_rederived_in_packet_mode"][0]
 
@@ -418,12 +419,56 @@ class FourthReviewFollowUpTests(unittest.TestCase):
 
     def test_rederivation_fails_closed_on_an_unexpected_value_error(self):
         env = self.env
-
-        def broken():
-            raise ValueError("simulated")
         with unittest.mock.patch.object(rederive.recipe, "assemble", side_effect=ValueError("simulated")):
             r = rederive.validate(env.m, json.dumps(self.packet).encode("utf-8"), "snapshot", None, "packet")
         self.assertEqual((r["result"], r["packet"]), ("not_rederivable", None))
+
+
+class NestingAndLimitTests(unittest.TestCase):
+    """Re-check of f159446: moderate nesting and the assemble limit."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.env = make_env(packets=False)
+        cls.packet = assemble(cls.env, "cobalt")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.env.close()
+
+    def nested(self, levels: int) -> bytes:
+        return json.dumps(self.packet)[:-1].encode("utf-8") + b', "x": ' + b"[" * levels + b"]" * levels + b"}"
+
+    def test_moderate_nesting_is_a_structured_rejection(self):
+        env = self.env
+        for levels in (65, 500, 900):
+            for mode in rederive.MODES:
+                with self.subTest(levels=levels, mode=mode):
+                    r = rederive.validate(env.m, self.nested(levels), "snapshot", None, mode,
+                                          session_factory=lambda: rederive.VaultSession(env.m, "cobalt", HITS["cobalt"]))
+                    self.assertEqual((r["result"], r["packet"], r["problems"][0]["kind"]),
+                                     ("not_rederivable", None, "unparseable"))
+        path = env.root.parent / "nested.json"
+        path.write_bytes(self.nested(500))
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = recover.main(["validate", "--manifest", str(env.m.path), "--vault-root", str(env.root),
+                                 "--state-dir", str(env.state), "--packet", str(path), "--hits", "packet"])
+        self.assertEqual((code, json.loads(out.getvalue())["result"]), (1, "not_rederivable"))
+        self.assertNotIn("Traceback", err.getvalue())
+
+    def test_shallow_nesting_still_validates(self):
+        self.assertLess(shape.depth(self.packet), shape.MAX_DEPTH // 4)
+
+    def test_assemble_refuses_limits_validate_would_refuse(self):
+        for bad in ("0", "-5", str(shape.MAX_INT + 1)):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = recover.main(["assemble", "--manifest", str(self.env.m.path), "--vault-root", str(self.env.root),
+                                     "--state-dir", str(self.env.state), "--project", "cobalt", "--query", "q",
+                                     "--max-tokens", bad])
+            self.assertEqual(code, 2, bad)
+            self.assertIn("--max-tokens", json.loads(out.getvalue())["error"])
 
 
 class DocumentationTests(unittest.TestCase):

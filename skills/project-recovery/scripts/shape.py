@@ -9,8 +9,7 @@ are what the vault and the acceptance records support is decided by re-derivatio
 
 ``parse`` reads packet text strictly: UTF-8 JSON, one object, no duplicate keys, no NaN,
 no infinite number (``1e400`` included), no lone surrogate, no integer beyond Python's
-conversion limit
-or Infinity, bounded size and depth.
+conversion limit, at most ``MAX_PACKET_BYTES`` bytes and ``MAX_DEPTH`` levels of nesting.
 """
 from __future__ import annotations
 
@@ -25,6 +24,9 @@ MAX_PROBLEMS = 100
 # assembly produces, small enough that arithmetic on it never nears the integer-conversion
 # limit (fourth-review follow-up: a 4,300-digit count plus one could not be printed).
 MAX_INT = 10 ** 15
+# Deepest nesting a packet may have. Assembled packets nest about a dozen levels; recursive
+# checks and comparisons stay far from Python's recursion limit (re-check of f159446).
+MAX_DEPTH = 64
 
 TIMESTAMP = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z")
 HEX64 = re.compile(r"[0-9a-f]{64}")
@@ -231,6 +233,17 @@ def _no_constant(name: str):
     raise ParseError(f"non-finite number {name} is not JSON")
 
 
+def depth(value) -> int:
+    """Nesting depth of a parsed JSON value, computed without recursion."""
+    deepest, stack = 0, [(value, 1)]
+    while stack:
+        node, level = stack.pop()
+        if isinstance(node, (dict, list)):
+            deepest = max(deepest, level)
+            stack.extend((child, level + 1) for child in (node.values() if isinstance(node, dict) else node))
+    return deepest
+
+
 def _finite_float(text: str) -> float:
     value = float(text)
     if not math.isfinite(value):
@@ -263,6 +276,8 @@ def parse(data: bytes) -> dict:
         raise ParseError(f"packet holds a value JSON parsing refuses: {str(exc)[:120]}") from None
     if not isinstance(value, dict):
         raise ParseError(f"packet is a JSON {type(value).__name__}, not an object")
+    if depth(value) > MAX_DEPTH:
+        raise ParseError(f"packet nests more than {MAX_DEPTH} levels")
     try:  # a \ud800-style escape decodes to a lone surrogate, which no output can encode
         json.dumps(value, ensure_ascii=False).encode("utf-8")
     except UnicodeEncodeError:

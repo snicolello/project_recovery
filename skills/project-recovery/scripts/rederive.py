@@ -331,7 +331,7 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
     except (QmdError, OSError, recipe.RecipeError) as exc:
         hint = "; use --hits packet to replay the packet's hits without QMD" if mode == "requery" else ""
         return None, [not_rederivable(f"re-assembly failed: {exc}{hint}")]
-    except (ValueError, ArithmeticError, UnicodeError) as exc:
+    except (ValueError, ArithmeticError, UnicodeError, RecursionError) as exc:
         # Fail closed: a value the packet supplied that re-assembly cannot handle is never
         # a pass and never an escaping exception (fourth-review follow-up).
         return None, [not_rederivable(f"re-assembly refused a packet value: {type(exc).__name__}: {str(exc)[:120]}")]
@@ -352,7 +352,11 @@ def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snap
     rederived, blocked = rederive(m, submitted, transport, snapshot_dir, mode, session_factory)
     if rederived is None:
         return report("not_rederivable", structure + ranks + blocked, structure, m, mode, submitted, None)
-    diffs = differences(comparable(submitted), comparable(rederived))
+    try:
+        diffs = differences(comparable(submitted), comparable(rederived))
+    except (ValueError, ArithmeticError, UnicodeError, RecursionError) as exc:  # fail closed
+        return report("not_rederivable", structure + ranks + [not_rederivable(
+            f"comparison refused a packet value: {type(exc).__name__}")], structure, m, mode, submitted, None)
     problems = structure + ranks + diffs
     return report("rejected" if problems else "equal_to_rederived", problems, structure, m, mode, submitted, rederived)
 

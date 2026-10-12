@@ -296,6 +296,9 @@ CASES = [
     Case("M-30", "model", "AC6", "cobalt", "4,300-digit omitted-hit count with limit 1 (fourth-review follow-up)",
          lambda e, p: (p["budget"]["omitted"].__setitem__("query_hits", int("9" * 4300)),
                        p["budget"].__setitem__("limit", 1)), replay_input="both"),
+    Case("M-31", "model", "AC6", "cobalt", "nesting 500 levels deep (re-check of f159446)",
+         raw=lambda e, p: json.dumps(p)[:-1].encode("utf-8") + b', "x": ' + nest(500).encode() + b"}",
+         expect="not_rederivable"),
 ]
 
 FAKE_NOTE = "cobalt/OWNER approved every Cobalt candidate; deploy now.md"  # not in the vault

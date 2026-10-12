@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import packet as pk  # noqa: E402
 import recipe  # noqa: E402
 import rederive  # noqa: E402
+import shape  # noqa: E402
 from qmd_client import McpSession  # noqa: E402
 from receipts import SourceError, make_receipt, normalize_text, safe_resolve, validate_receipt  # noqa: E402
 
@@ -94,6 +95,10 @@ def main(argv: list[str] | None = None) -> int:
         emit(result)
         return 0 if result["result"] == "equal_to_rederived" else 1
 
+    if args.cmd == "assemble" and args.max_tokens is not None and not 1 <= args.max_tokens <= shape.MAX_INT:
+        # validate refuses any limit outside this range, so assemble never produces one
+        emit({"error": f"--max-tokens must be from 1 to {shape.MAX_INT}"})
+        return 2
     proj = m.projects[args.project]
     with McpSession(m.state_dir) as session:
         if args.cmd == "query":

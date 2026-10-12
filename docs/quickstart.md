@@ -75,6 +75,8 @@ python -I skills/project-recovery/scripts/recover.py validate --manifest manifes
 
 Expected: `"failures": 0` for both. Run the second command without `--verifier snapshot`: offline, the accepted decision cannot be re-verified, so it is demoted to a candidate and the exit code is 1. Edit one `content_sha`, change a candidate's `authority_state` to `verified`, or change the verified `revision`, and the claim is rejected the same way.
 
+These checks cover the cited and bound content, not the whole packet. `validate` does not re-assemble, so a deleted conflict, unknown or candidate, or an edited value that carries no receipt inside a verified entry, is not detected. R2 supports `validate` on these fixtures and on packets `assemble` produced; a packet edited afterwards or produced by a model is outside that boundary (owner-accepted exception, [hub #119](https://github.com/snicolello/stephen-project-hub/issues/119#issuecomment-6127543062); R3 gate project_recovery #6; the skill's "What validate does not establish" lists the limits).
+
 ## 6. Run all scenarios and gates
 
 ```powershell

@@ -44,7 +44,14 @@ Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 
    - every decision's `local_status` equals the frontmatter status in its source bytes;
    - `conflicts` and `unknowns` are present (missing lists are treated as empty).
 
-   Each failure turns the field `unknown` (or demotes the decision) and adds a conflict. The output reports `failures` and `problems`; exit code 1 means at least one failure. It does not check a decision's `title`, which carries no receipt.
+   Each failure turns the field `unknown` (or demotes the decision) and adds a conflict. The output reports `failures` and `problems`; exit code 1 means at least one failure. A decision's `title` is checked against its note's hashed bytes (title line, else permalink).
+
+   **What validate does not establish (R2 accepted exception).** A passing `validate` does not establish that a packet received from another agent is complete or trustworthy. R2 supports `validate` on the synthetic fixtures and on packets directly produced by `assemble`; a packet modified after assembly, or produced by a model, is outside that boundary. The owner ruling of 2026-10-12 ([hub #113](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6127542754), recorded on [hub #119](https://github.com/snicolello/stephen-project-hub/issues/119#issuecomment-6127543062)) accepts the following as a temporary exception, not as resolved defects; project_recovery #6 is the R3 reliance gate that must close before any model-produced packet is relied on:
+   - validate checks key names and the bound items of a verified accepted entry, not its other values: an added entry, item or receipt key, a rewritten `verification.reason`, `actor` or `approved_digest`, or a rewritten container `basis` or `reason` passes with 0 failures (fifth review F1);
+   - validate does not re-assemble, so it does not detect deletions or omissions: an emptied `conflicts`, `unknowns`, `missing_sources` or `generation_gap`, a deleted candidate, a zeroed `budget.omitted`, or an unknown field refilled with another validly receipted line is silent (F2);
+   - after a `local_status_mismatch`, the emptied entry stays under `accepted_decisions` as `verified` with no items; the exit code is 1, so this is not silent (F3).
+
+   Until #6 closes, treat a packet from a model as untrusted: re-run `assemble` yourself from the same manifest and compare, rather than relying on `validate` alone.
 
 ## Scripts
 
@@ -76,15 +83,16 @@ Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and j
   - For a pull merge, the reviews list is read once, as its first page.
   - The approver comment may sit on any issue in an allowlisted repository; no particular issue is configured.
   - The login is checked against the approvers list; GitHub's `author_association` is not checked.
-  - Only the first body line of a decision note (its statement) is displayed and cited.
+  - Only the first body line of a decision note (its statement) is displayed and cited. The approval digest binds the whole note's bytes, so a statement that runs onto a second line is approved in full but shown truncated; a blank or label line in first position is what gets shown.
   - A `pull_review` record does not require the pull request to be merged; the digest binds the approved bytes.
   - The REST API does not reveal comment edits by collaborators, and an agent using the owner's `gh` session can post as the owner. That is the inherent limit of the trust root: the approvers' GitHub accounts.
-- `validate` accepts under `accepted_decisions` only what assembly would produce:
+- `validate` checks that the bound content under `accepted_decisions` is what assembly would produce:
   - one entry per source note;
   - the title read from the note's hashed bytes (title line, else permalink; a note with neither is never promoted);
   - items that are exactly that note's status, statement and reference lines, compared by span and digest;
   - no other cited content anywhere in the entry;
   - nothing on the `accepted_decisions` node except `status`, `basis`, `reason` and `decisions`, which is `established` only while a verified decision survives.
+  It does not check the entry's other values or the rest of the packet; see "What validate does not establish" under step 6.
 - `verifier`: default `transport` and `serial: true`. Requests run one at a time behind a lock that refuses a second concurrent request; each distinct record is read at most once per run.
 
 ## Live GitHub smoke test (optional)

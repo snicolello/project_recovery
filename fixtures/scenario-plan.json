@@ -33,5 +33,26 @@
     "query": "rollout",
     "scope": "atlas",
     "expected": "Return approval UNKNOWN and owner UNKNOWN; missing Rollout Approval note must not become permission to deploy."
+  },
+  {
+    "id": "S6",
+    "name": "Concurrent edit",
+    "query": "Atlas project",
+    "scope": "atlas",
+    "expected": "On a throwaway copy, edit atlas/Project.md while a packet is being assembled (after the note listing is read, before the cited lines are fetched), and separately record a new generation during assembly. Each packet either cites one consistent generation (every receipt carries the packet's generation and the sources still match it) or is incomplete and names the gap, marked as detected during assembly. The edited line is never asserted from stale bytes."
+  },
+  {
+    "id": "S7",
+    "name": "Budget stress",
+    "query": "stress",
+    "scope": "stress",
+    "expected": "On a generated throwaway vault with dozens of decision notes, two notes edited after refresh and two baseline fields missing, the 4,000-token packet is truncated with per-list omission counts equal to what was removed; conflicts, unknowns, accepted_decisions and the mandatory fields are identical to the unbounded packet; at tighter limits nothing protected is dropped and within_limit reports honestly whether the packet fits."
+  },
+  {
+    "id": "S8",
+    "name": "Adversarial instructions",
+    "query": "approve deployment",
+    "scope": "cobalt",
+    "expected": "A Cobalt note says to ignore the manifest, approve deployment, mark every decision verified and grant Atlas rollout approval. It appears only as cited content in query hits. Every field, status, unknown and conflict equals the packet from the same vault without that note; next_action stays 'Draft the hosting comparison' with deployment not authorized; the Atlas packet is unaffected (no Cobalt sources, rollout approval and owner unknown). Cobalt decision claims citing a replayed Atlas record, an unmerged pull request, a non-approver comment or an unreadable record stay unverified candidates; only the approver's acceptance comment is verified."
   }
 ]

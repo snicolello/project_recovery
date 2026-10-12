@@ -300,6 +300,36 @@ def binding_value(policy: dict, note: dict) -> str | None:
     return front_value(line) if line else None
 
 
+def note_names(note: dict, rel: str) -> tuple[str, ...]:
+    """Names an acceptance comment may use to bind itself to a note: permalink and title."""
+    names = []
+    for key in ("permalink", "title"):
+        line = note["front"].get(key)
+        if line and front_value(line):
+            names.append(front_value(line))
+    return tuple(names) or (Path(rel).stem,)
+
+
+def record_citations(policy: dict, notes: dict[str, dict]) -> dict[str, list[str]]:
+    """Acceptance record URL -> every note (source) whose reference line cites it."""
+    out: dict[str, list[str]] = {}
+    for source, note in sorted(notes.items()):
+        line = reference_line(policy, note)
+        ref = au.parse_reference(line.text) if line else None
+        if ref is not None:
+            out.setdefault(ref.url, []).append(source)
+    return out
+
+
+def replayed(v: dict, source: str, citations: dict[str, list[str]]) -> dict:
+    """A record cited by more than one note binds none of them: the result becomes invalid."""
+    others = [c for c in citations.get(v.get("reference"), []) if c != source]
+    if not others or v["result"] == "not_referenced":
+        return v
+    return {**v, "result": "invalid",
+            "reason": f"the record is also cited by {others}; one acceptance record binds one note"}
+
+
 class Assembler:
     def __init__(self, m: Manifest, proj: Project, session: McpSession, record: dict, verifier: au.Verifier):
         self.m, self.proj, self.session = m, proj, session
@@ -397,6 +427,13 @@ class Assembler:
         ``local_status`` is read from the cited, receipt-validated status line."""
         accepted, candidates, other = [], [], []
         by_stem = {}
+        citations = record_citations(self.policy, {self.proj.source(q[len(self.proj.collection) + 1:]): parse_note(t)
+                                                   for q, t in listing.items()})
+        for url, sources in citations.items():
+            if len(sources) > 1:
+                self.conflicts.append({"field": "decisions", "kind": "acceptance_record_replayed", "reference": url,
+                                       "sources": sources,
+                                       "reason": "one acceptance record is cited by several notes; none is accepted"})
         for qpath in sorted(listing):
             rel = qpath[len(self.proj.collection) + 1:]
             source = self.proj.source(rel)
@@ -428,11 +465,13 @@ class Assembler:
                 ref_item = self.cite(field, rel, ref_line.number, ref_line.number) if ref_line else None
                 items.append(ref_item)
                 binding = binding_value(self.policy, note)
+                names = note_names(note, rel)
                 if ref_line and not ref_item:
                     v = {**self.verifier.verify(None, self.proj.name, binding), "result": "invalid",
                          "reason": "the reference line failed receipt validation"}
                 else:
-                    v = self.verifier.verify(ref_item["text"] if ref_item else None, self.proj.name, binding)
+                    v = replayed(self.verifier.verify(ref_item["text"] if ref_item else None, self.proj.name,
+                                                      binding, names), source, citations)
                 entry.update({"authority_state": au.state_for(v["result"]), "verification": v})
             else:
                 entry["authority_state"] = "local_only"
@@ -523,6 +562,8 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
     policy = m.raw["authority_policy"]
     prefix = proj.source("")
 
+    baseline = proj.source(proj.baseline_note)
+
     def recheck(entry: dict) -> tuple[bool, str]:
         source = entry.get("source")
         if not isinstance(source, str) or not source.startswith(prefix):
@@ -534,8 +575,27 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
         status = note["front"].get("status")
         if not status or front_value(status) != "accepted":
             return False, "decision source does not claim status accepted"
+        # The entry must describe the note it names: its title, and items cited from it.
+        title = note["front"].get("title")
+        if entry.get("title") != (front_value(title) if title else Path(source).stem):
+            return False, "entry title differs from its source note"
+        items = entry.get("items") if isinstance(entry.get("items"), list) else []
+        sources = [(i.get("receipt") or {}).get("source") for i in items if isinstance(i, dict)]
+        if any(src not in (source, baseline) for src in sources):
+            return False, "entry cites items from a note other than its source or the baseline note"
+        if not any(isinstance(i, dict) and (i.get("receipt") or {}).get("source") == source
+                   and i.get("text") == status.text for i in items):
+            return False, "entry carries no status line cited from its source note"
+        notes = {}
+        for src in disk_files(m, proj):
+            try:
+                notes[src] = parse_note(read_source(m.vault_root, src).decode("utf-8"))
+            except (SourceError, UnicodeDecodeError):
+                continue
         line = reference_line(policy, note)
-        v = verifier.verify(line.text if line else None, proj.name, binding_value(policy, note))
+        v = replayed(verifier.verify(line.text if line else None, proj.name, binding_value(policy, note),
+                                     note_names(note, source.rsplit("/", 1)[-1])), source,
+                     record_citations(policy, notes))
         claimed = entry.get("verification") or {}
         if v["result"] != "verified":
             return False, f"re-verification {v['result']}: {v['reason']}"

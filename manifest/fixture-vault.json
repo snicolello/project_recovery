@@ -19,16 +19,16 @@
     "local_claims": "decision_candidates",
     "verifier": {"transport": "offline", "serial": true, "snapshot_dir": "../fixtures/github-snapshots"},
     "acceptance_records": [
-      {"kind": "pull_merge", "rule": "merged is true and merged_by is an approver"},
-      {"kind": "pull_review", "rule": "state is APPROVED and the reviewer is an approver"},
-      {"kind": "issue_comment", "rule": "the author is an approver and the body contains body_marker", "body_marker": "ACCEPTED:"}
+      {"kind": "pull_merge", "rule": "merged is true, merged_by is an approver, and the head revision equals the note's source_revision"},
+      {"kind": "pull_review", "rule": "state is APPROVED, the reviewer is an approver, and the reviewed commit equals the note's source_revision"},
+      {"kind": "issue_comment", "rule": "the author is an approver and the body contains body_marker followed by the citing note's permalink or title", "body_marker": "ACCEPTED:"}
     ],
     "repositories": [
       {"host": "github.example.test", "repo": "portfolio/atlas", "projects": ["atlas"], "approvers": ["fixture-owner"]}
     ],
     "reference": {"frontmatter_key": "acceptance_record", "body_labels": ["Authority fixture:"]},
     "binding": {"frontmatter_key": "source_revision", "record_field": "subject_revision"},
-    "note": "R2, owner ruling B. A note with status accepted is a decision candidate. It is an accepted decision only when the one acceptance record it cites (frontmatter acceptance_record, or a body line starting with a body label) is read serially from a repository allowlisted for that project, is a configured kind, was made by an approver, and, when the note declares source_revision, names that revision as its subject. The default transport is offline, so every referenced record is unverified; --verifier snapshot reads fixed synthetic responses, --verifier gh reads live GitHub (optional)."
+    "note": "R2, owner ruling B. A note with status accepted is a decision candidate. It is an accepted decision only when the one acceptance record it cites (frontmatter acceptance_record, or a body line starting with a body label) is read serially from a repository allowlisted for that project, is a configured kind, was made by an approver, and is bound to the citing note: a pull merge or review must name the note's source_revision as its subject (a note without one cannot be promoted), an issue comment must say ACCEPTED: followed by the note's permalink or title, and a record cited by more than one note binds none of them. The default transport is offline, so every referenced record is unverified; --verifier snapshot reads fixed synthetic responses, --verifier gh reads live GitHub (optional)."
   },
   "projects": {
     "atlas": {

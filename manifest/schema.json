@@ -94,7 +94,7 @@
         },
         "binding": {
           "type": "object",
-          "description": "When the note declares this frontmatter key, the record's subject revision (pull request head or reviewed commit) must equal it.",
+          "description": "Binds a record to the citing note. A pull merge or review promotes only when the note declares this frontmatter key and the record's subject revision (pull request head or reviewed commit) equals it. An issue comment must contain body_marker followed by the note's permalink or title. A record cited by more than one note in the project binds none of them.",
           "properties": {
             "frontmatter_key": {"type": "string"},
             "record_field": {"const": "subject_revision"}

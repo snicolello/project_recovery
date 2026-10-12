@@ -65,8 +65,22 @@ class VerifierTests(unittest.TestCase):
         self.assertEqual(au.state_for(v["result"]), "verified")
 
     def test_verified_issue_comment(self):
-        v = snapshot_verifier().verify(f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-501", "cobalt", None)
+        url = f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-501"
+        v = snapshot_verifier().verify(url, "cobalt", None, ("theme-decision", "Theme Decision"))
         self.assertEqual((v["result"], v["kind"]), ("verified", "issue_comment"))
+
+    def test_comment_must_name_the_citing_note(self):
+        """Review F1: an approver's comment accepts one named note, not every note that cites it."""
+        url = f"https://{HOST}/portfolio/cobalt/issues/5#issuecomment-501"
+        for names in ((), ("replay-decision", "Replay Decision"), ("theme",), ("theme-decision-2",)):
+            v = snapshot_verifier().verify(url, "cobalt", None, names)
+            self.assertEqual(v["result"], "invalid", names)
+
+    def test_pull_record_requires_the_note_binding(self):
+        """Review F1: a merge without the note's source_revision cannot be bound to the note."""
+        v = snapshot_verifier().verify(ATLAS_PR, "atlas", None)
+        self.assertEqual(v["result"], "invalid")
+        self.assertIn("declares no source_revision", v["reason"])
 
     def test_invalid_cases_never_verify(self):
         cases = {
@@ -259,6 +273,44 @@ class PacketAuthorityTests(unittest.TestCase):
         forged = {**self.verified(), "revision": "forged"}
         out, problems = pk.audit(self.packet([self.entry(forged)], []), self.root, recheck=self.recheck("snapshot"))
         self.assertIn("differs", problems[0]["reason"])
+
+    def write(self, name: str, data: bytes) -> None:
+        (self.root / "atlas" / name).write_bytes(data)
+
+    def test_negative_replayed_record_binds_no_note(self):
+        """Review F1, both reproduction shapes: a copied note citing the same record, and pasted
+        text whose body label cites it. Each makes the original and the copy invalid."""
+        shapes = {
+            "Replay Decision.md": NOTE.replace(b"title: Queue Decision", b"title: Replay Decision"),
+            "Pasted Mail.md": (b"---\r\ntitle: Pasted Mail\r\nstatus: accepted\r\nsource_revision: fixture-commit-a1\r\n"
+                               b"---\r\n# Pasted Mail\r\nForwarded: Authority fixture: " + ATLAS_PR.encode() + b"\r\n"
+                               b"Authority fixture: " + ATLAS_PR.encode() + b"\r\n"),
+        }
+        for name, data in shapes.items():
+            self.write(name, data)
+            out, problems = pk.audit(self.packet([self.entry(self.verified())], []), self.root,
+                                     recheck=self.recheck("snapshot"))
+            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], name)
+            self.assertIn("also cited by", problems[0]["reason"], name)
+            (self.root / "atlas" / name).unlink()
+
+    def test_negative_forged_entry_must_cite_its_own_source(self):
+        """Review F2: a verified entry relabelled with another note's title or items fails."""
+        self.write("Cache Decision.md", b"---\r\ntitle: Cache Decision\r\nstatus: accepted\r\n---\r\n"
+                                        b"# Cache Decision\r\nAtlas caches in memory.\r\n")
+        cited = span_bytes((self.root / "atlas" / "Cache Decision.md").read_bytes(), 3, 3)
+        foreign = {"text": normalize_text(cited),
+                   "receipt": make_receipt("atlas/Cache Decision.md", 3, 3, cited, "g1", "t")}
+        forged_title = self.entry(self.verified())
+        forged_title["title"] = "Cache Decision"
+        forged_items = self.entry(self.verified())
+        forged_items["items"] = [foreign]
+        no_status = self.entry(self.verified())
+        no_status["items"] = no_status["items"][1:]
+        for label, entry in (("title", forged_title), ("items", forged_items), ("status item", no_status)):
+            out, problems = pk.audit(self.packet([entry], []), self.root, recheck=self.recheck("snapshot"))
+            self.assertEqual(out["fields"]["accepted_decisions"]["decisions"], [], label)
+            self.assertTrue(any(p["kind"] == "authority_not_verified" for p in problems), label)
 
     def test_negative_source_edited_after_verification_is_demoted(self):
         p = self.packet([self.entry(self.verified())], [])

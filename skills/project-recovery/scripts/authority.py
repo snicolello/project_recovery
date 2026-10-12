@@ -282,11 +282,19 @@ class Verifier:
         finally:
             self._lock.release()
 
-    def verify(self, reference_text: str | None, project: str, binding: str | None) -> dict:
-        """Verification result for the reference text cited by a decision note (null keys omitted)."""
-        return {k: v for k, v in self._verify(reference_text, project, binding).items() if v is not None}
+    def verify(self, reference_text: str | None, project: str, binding: str | None,
+               note_names: tuple = ()) -> dict:
+        """Verification result for the reference text cited by a decision note (null keys omitted).
 
-    def _verify(self, reference_text: str | None, project: str, binding: str | None) -> dict:
+        The record must be bound to the citing note: a pull merge or review must name the
+        note's declared ``binding`` (``source_revision``) as its subject revision; an issue
+        comment must contain the acceptance marker followed by one of ``note_names`` (the
+        note's permalink or title). A record that satisfies everything else but is not bound
+        to this note is ``invalid``."""
+        return {k: v for k, v in self._verify(reference_text, project, binding, tuple(note_names)).items()
+                if v is not None}
+
+    def _verify(self, reference_text: str | None, project: str, binding: str | None, note_names: tuple) -> dict:
         base = {"transport": self.transport_name, "reference": None, "kind": None,
                 "revision": None, "verified_at": None, "actor": None}
         if reference_text is None:
@@ -313,16 +321,23 @@ class Verifier:
             problems.append("record does not match the cited number or id")
         if ref.kind == "issue_comment":
             marker = rule.get("body_marker")
-            if not marker or marker not in rec.get("body", ""):
+            body = rec.get("body", "")
+            if not marker or marker not in body:
                 problems.append(f"comment does not contain the acceptance marker {marker!r}")
+            elif not any(re.search(re.escape(f"{marker} {n}") + r"(?![\w-])", body) for n in note_names if n):
+                problems.append(f"comment accepts no record named {list(n for n in note_names if n)}; "
+                                "it is not bound to this note")
         elif rec.get("accepted") is not True:
             problems.append("pull request not merged" if ref.kind == "pull_merge" else "review state is not APPROVED")
         if rec.get("actor") not in repo["approvers"]:
             problems.append(f"actor {rec.get('actor')!r} is not an approver for {ref.repo}")
         if not rec.get("revision"):
             problems.append("record carries no revision")
-        if binding is not None and rec.get("subject_revision") != binding:
-            problems.append(f"record subject revision {rec.get('subject_revision')!r} differs from the note's {binding!r}")
+        if ref.kind != "issue_comment":
+            if binding is None:
+                problems.append("the note declares no source_revision, so the record cannot be bound to it")
+            elif rec.get("subject_revision") != binding:
+                problems.append(f"record subject revision {rec.get('subject_revision')!r} differs from the note's {binding!r}")
         base.update({"revision": rec.get("revision"), "actor": rec.get("actor")})
         if problems:
             return {**base, "result": "invalid", "reason": "; ".join(problems)}

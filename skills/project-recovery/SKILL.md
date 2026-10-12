@@ -25,7 +25,7 @@ Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 
    Refresh reads every indexed document back through QMD and fails if any differs from the bytes on disk. `--rebuild` deletes and rebuilds the derived index.
 3. **Assemble** a packet for one project and the question at hand:
    `python -I skills/project-recovery/scripts/recover.py assemble --manifest manifest/fixture-vault.json --project atlas --query "Atlas project"`
-   `--verifier` picks how acceptance records are read: `offline` (the fixture manifest's default; nothing is read), `snapshot` (fixed synthetic responses in `fixtures/github-snapshots/`; add `--snapshots DIR` for another set), or `gh` (live; see "Live GitHub smoke test" below).
+   `--verifier` picks how acceptance records are read: `offline` (the fixture manifest's default; nothing is read), `snapshot` (fixed synthetic responses in `fixtures/github-snapshots/`; add `--snapshots DIR` for another set), or `gh` (live; see "Live GitHub smoke test" below). A snapshot directory is an operator-supplied trust root: a forged snapshot there is trusted by design, so point `--snapshots` only at files you control; the gates use the committed fixtures.
 4. **Read the packet** in this order:
    1. `status` and `freshness`. `freshness.generation` is the index generation the packet was assembled from, and `freshness.statement` says so. `incomplete` means a source changed after the recorded generation, either before assembly or while it ran (entries marked `"detected": "during_assembly"`), or a new generation was recorded during assembly; `freshness.generation_gap` names each. Run step 2 again, then step 3. Do not act on an incomplete packet's stale fields.
    2. `authority_verification`: transport, request count (serial; `overlapping_requests` is always false), results by kind, and a statement. Unread records are counted here, never hidden.
@@ -63,9 +63,9 @@ Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and j
 ## Authority policy (manifest `authority_policy`)
 
 - `repositories`: allowlisted `host` and `owner/repo`, the `projects` each may accept for, and the `approvers` whose action counts. A record from another repository, or for another project, is `invalid` and no request is made.
-- `acceptance_records`: the kinds that count. `pull_merge` (merged, by an approver), `pull_review` (state `APPROVED`, by an approver), `issue_comment` (by an approver, body contains `body_marker`).
+- `acceptance_records`: the kinds that count. `pull_merge` (merged, by an approver), `pull_review` (state `APPROVED`, by an approver), `issue_comment` (by an approver, body contains `body_marker` followed by the citing note's permalink or title, for example `ACCEPTED: theme-decision`).
 - `reference`: how a note names its one record, by frontmatter key (`acceptance_record`) or the first body line starting with a label (`Authority fixture:` in the fixtures). The line is cited with a receipt; the URL is read from the cited text.
-- `binding`: when the note declares `source_revision`, the record's subject revision (pull request head or reviewed commit) must equal it.
+- `binding`: a record must be bound to the note that cites it. A pull merge or review promotes only when the note declares `source_revision` and the record's subject revision (pull request head or reviewed commit) equals it; a note without one stays a candidate. A comment must name the note (above). A record cited by more than one note in the project binds none of them: every citing note is `invalid` and a conflict `acceptance_record_replayed` names them all. `validate` applies the same rules from the source bytes, and also requires an accepted entry's title to match its source note and its items to come from that note (with its status line) or the baseline note.
 - `verifier`: default `transport` and `serial: true`. Requests run one at a time behind a lock that refuses a second concurrent request; each distinct record is read at most once per run.
 
 ## Live GitHub smoke test (optional)

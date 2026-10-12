@@ -10,6 +10,7 @@ import copy
 import hashlib
 import io
 import json
+import shutil
 import sys
 import tempfile
 import threading
@@ -165,6 +166,70 @@ class VerifierTests(unittest.TestCase):
         with mock.patch.object(au.shutil, "which", return_value=None):
             self.assertEqual(au.Verifier(policy(), au.GhTransport()).verify(ATLAS_PR, "atlas", None)["result"],
                              "unavailable")
+
+
+BORROW = REPO / "fixtures" / "borrow-notes" / "cobalt"
+
+
+def borrow(title: str) -> tuple[str, tuple, str]:
+    """(digest, names, permalink) of a committed borrow-path note."""
+    data = (BORROW / f"{title}.md").read_bytes()
+    perm = title.lower().replace(" ", "-")
+    return hashlib.sha256(data).hexdigest(), (perm, title), perm
+
+
+class BorrowPathTests(unittest.TestCase):
+    """Re-review 2026-10-12: approval text that is quoted, negated, fenced, or written by a
+    non-approver never binds, even when it names the note and its exact digest."""
+
+    COBALT = f"https://{HOST}/portfolio/cobalt"
+
+    def verify(self, url: str, title: str, binding: str | None = None, directory: Path = SNAPSHOTS) -> dict:
+        digest, names, _ = borrow(title)
+        return snapshot_verifier(directory).verify(url, "cobalt", binding, names, digest)
+
+    def test_quoted_negated_and_fenced_markers_do_not_bind(self):
+        for n, title in ((503, "Quote Decision"), (504, "Refused Decision"), (505, "Fenced Decision")):
+            v = self.verify(f"{self.COBALT}/issues/5#issuecomment-{n}", title)
+            self.assertEqual((v["result"], v.get("conflict")), ("invalid", "approved_text_mismatch"), title)
+
+    def test_marker_parser_takes_only_whole_lines(self):
+        d = "a" * 64
+        self.assertEqual(au.approval_markers(f"x\r\nACCEPTED: n sha256:{d}\r\n", "ACCEPTED:"), [("n", d)])
+        for text in (f"> ACCEPTED: n sha256:{d}", f"NOT ACCEPTED: n sha256:{d}", f"  ACCEPTED: n sha256:{d}",
+                     f"```\nACCEPTED: n sha256:{d}\n```", f"~~~\nACCEPTED: n sha256:{d}\n~~~",
+                     f"```\nunterminated\nACCEPTED: n sha256:{d}", f"ACCEPTED: n sha256:{d} but no",
+                     f"ACCEPTED: n sha256:{d}0"):
+            self.assertEqual(au.approval_markers(text, "ACCEPTED:"), [], text)
+
+    def test_merge_message_from_a_non_approver_author_is_refused(self):
+        for n, title, rev in ((11, "Banner Decision", "fixture-commit-c11"), (12, "Squash Decision", "fixture-commit-c12")):
+            v = self.verify(f"{self.COBALT}/pull/{n}", title, rev)
+            self.assertEqual((v["result"], v.get("conflict")), ("invalid", "approval_text_not_approver_authored"), title)
+            self.assertIn("not an approver", v["reason"])
+
+    def edited_snapshots(self, tmp: str, number: int, **changes) -> Path:
+        root = Path(tmp) / "snaps"
+        shutil.copytree(SNAPSHOTS, root)
+        path = root / HOST / "repos" / "portfolio" / "cobalt" / "pulls" / f"{number}.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body.update(changes)
+        path.write_text(json.dumps(body), encoding="utf-8")
+        return root
+
+    def test_marker_in_the_pull_request_title_is_refused_even_for_an_approver_author(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.edited_snapshots(tmp, 11, user={"login": "fixture-owner"})
+            v = self.verify(f"{self.COBALT}/pull/11", "Banner Decision", "fixture-commit-c11", root)
+            self.assertEqual(v.get("conflict"), "approval_text_not_approver_authored")
+            self.assertIn("title or body", v["reason"])
+
+    def test_control_squash_by_an_approver_author_verifies(self):
+        """The squash negative fails only on authorship: with an approver author it verifies."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.edited_snapshots(tmp, 12, user={"login": "fixture-owner"})
+            v = self.verify(f"{self.COBALT}/pull/12", "Squash Decision", "fixture-commit-c12", root)
+            self.assertEqual(v["result"], "verified")
 
 
 class SerialTests(unittest.TestCase):

@@ -282,11 +282,12 @@ def front_value(line: Line) -> str:
 
 
 def mismatch_conflict(source: str, v: dict) -> dict:
-    """Conflict for a record whose approval text does not name this note's current bytes."""
-    return {"field": "decisions", "kind": "approved_text_mismatch", "source": source,
+    """Conflict for a record whose approval text does not bind this note's current bytes
+    (``approved_text_mismatch``) or is not approver-authored (``approval_text_not_approver_authored``)."""
+    return {"field": "decisions", "kind": v["conflict"], "source": source,
             "reference": v.get("reference"), "revision": v.get("revision"),
             "approved_digest": v.get("approved_digest"), "current_digest": v.get("note_digest"),
-            "reason": "the acceptance record does not approve the decision's current bytes; not accepted"}
+            "reason": v.get("reason", "the acceptance record does not approve this decision; not accepted")}
 
 
 class Assembler:
@@ -429,7 +430,7 @@ class Assembler:
                 else:  # the reference is read from the cited, receipt-validated text
                     v = au.verify_decision(self.verifier, note, source, self.proj.name, served, citations,
                                            reference_text=ref_item["text"] if ref_item else None)
-                if v.get("mismatch"):
+                if v.get("conflict"):
                     self.conflicts.append(mismatch_conflict(source, v))
                 entry.update({"authority_state": au.state_for(v["result"]), "verification": v})
             else:
@@ -554,8 +555,8 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
                 continue
         v = au.verify_decision(verifier, note, source, proj.name, sha256_hex(data),
                                au.record_citations(policy, notes))
-        if v.get("mismatch"):
-            return False, v["reason"], "approved_text_mismatch"
+        if v.get("conflict"):
+            return False, v["reason"], v["conflict"]
         claimed = entry.get("verification") or {}
         if v["result"] != "verified":
             return False, f"re-verification {v['result']}: {v['reason']}"

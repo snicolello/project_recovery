@@ -52,6 +52,21 @@ REF = re.compile(
     r"(?:#(?P<frag>pullrequestreview|issuecomment)-(?P<id>\d+))?(?![\w/#-])")
 
 
+FENCE = re.compile(r"(?ms)^[ \t]{0,3}(`{3,}|~{3,})[^\n]*\n.*?(?:^[ \t]{0,3}\1[ \t]*$|\Z)")
+
+
+def approval_markers(text: str, marker: str) -> list[tuple[str, str]]:
+    """``(name, digest)`` for every whole-line ``<marker> <name> sha256:<digest>`` in ``text``.
+
+    Only a line that starts at column zero with the marker counts: quoted lines (``> ...``),
+    negations (``NOT ACCEPTED: ...``) and any text inside fenced code blocks are ignored."""
+    if not marker:
+        return []
+    plain = FENCE.sub("", (text or "").replace("\r\n", "\n"))
+    line = re.compile(r"(?m)^" + re.escape(marker) + r" (\S+) sha256:([0-9a-f]{64})[ \t]*$")
+    return [(m.group(1), m.group(2)) for m in line.finditer(plain)]
+
+
 class Unavailable(RuntimeError):
     """The record could not be read now. Never a reason to promote."""
 
@@ -307,7 +322,12 @@ class Verifier:
                                               note_digest).items() if v is not None}
 
     def approval_text(self, ref: Reference, body: dict, rec: dict) -> str | None:
-        """The approver-authored text that names what was accepted, or None if unreadable."""
+        """The text that names what was accepted, or None if unreadable.
+
+        A comment body or a review body is written by the actor already checked to be an
+        approver. A merge commit message is not necessarily: GitHub fills it from the pull
+        request title, body or the author's commits. Its markers are trusted only by the
+        caller's author check (``merge_text_authored_by_approver``)."""
         if ref.kind == "issue_comment":
             return rec.get("body", "")
         if ref.kind == "pull_review":
@@ -319,6 +339,21 @@ class Verifier:
         if not isinstance(commit, dict) or commit.get("sha") != sha:
             return None
         return commit.get("message") or ""
+
+    @staticmethod
+    def merge_text_refusal(body: dict, repo: dict, marker: str, matched: tuple) -> str | None:
+        """Why a merge commit message cannot carry this approval, or None if it can.
+
+        The pull request's author must be an approver (the message derives from the author's
+        title, body and commits) and the matching marker must not appear in the pull
+        request title or body, which the author controls. The merger was checked already."""
+        author = _login(body.get("user"))
+        if author not in repo["approvers"]:
+            return f"the merge message derives from {author!r}, who is not an approver"
+        surfaces = "\n".join(str(body.get(k) or "") for k in ("title", "body"))
+        if matched in approval_markers(surfaces, marker):
+            return "the marker appears in the pull request title or body, which the author controls"
+        return None
 
     def _verify(self, reference_text: str | None, project: str, binding: str | None, note_names: tuple,
                 note_digest: str | None) -> dict:
@@ -366,14 +401,19 @@ class Verifier:
         except Unavailable as exc:
             return {**base, "result": "unavailable", "reason": f"approval text unreadable: {exc}"}
         marker = rule.get("body_marker") or ""
-        approved = [(m.group(1).strip(), m.group(2)) for m in
-                    re.finditer(re.escape(marker) + r" +(.+?) +sha256:([0-9a-f]{64})(?![0-9a-f])", text or "")] \
-            if marker else []
+        approved = approval_markers(text, marker)
         names = [n for n in note_names if n]
-        if not any(name in names and digest == note_digest for name, digest in approved):
+        matched = next(((n, d) for n, d in approved if n in names and d == note_digest), None)
+        if matched and ref.kind == "pull_merge":
+            refusal = self.merge_text_refusal(body, repo, marker, matched)
+            if refusal:
+                return {**base, "result": "invalid", "conflict": "approval_text_not_approver_authored",
+                        "approved_digest": matched[1], "note_digest": note_digest,
+                        "reason": f"approval_text_not_approver_authored: {refusal}"}
+        if not matched:
             shown = [f"{n} sha256:{d[:12]}" for n, d in approved] or ["no marker with a digest"]
             current = f"{names} sha256:{(note_digest or 'unknown')[:12]}"
-            return {**base, "result": "invalid", "mismatch": True,
+            return {**base, "result": "invalid", "mismatch": True, "conflict": "approved_text_mismatch",
                     "approved_digest": next((d for n, d in approved if n in names), approved[0][1] if approved else None),
                     "note_digest": note_digest,
                     "reason": (f"approved_text_mismatch: the record approves {shown}; this note is {current}; "
@@ -449,9 +489,14 @@ def verify_decision(verifier: "Verifier", note: dict, source: str, project: str,
     2. for a pull merge or review, the note declares ``source_revision`` and it equals the
        record's subject revision;
     3. the record's approval text (comment body, review body, or merge commit message)
-       contains ``<body_marker> <note permalink or title> sha256:<note_digest>``, where
-       ``note_digest`` is SHA-256 of the note's current, validated bytes; otherwise
-       ``invalid`` with ``mismatch`` (``approved_text_mismatch``);
+       contains a whole line, at column zero, outside fenced code blocks,
+       ``<body_marker> <note permalink> sha256:<note_digest>``, where ``note_digest`` is
+       SHA-256 of the note's current, validated bytes (``approval_markers``); quoted lines
+       and negations never count; otherwise ``invalid`` (``approved_text_mismatch``);
+    3a. for a pull merge, the merge commit message counts only when the pull request's
+       author is an approver (the merger was checked in 1) and the matching marker does not
+       appear in the pull request title or body; otherwise ``invalid``
+       (``approval_text_not_approver_authored``);
     4. no other note in the project cites the same record (``citations``); otherwise
        ``invalid`` for every citing note.
 

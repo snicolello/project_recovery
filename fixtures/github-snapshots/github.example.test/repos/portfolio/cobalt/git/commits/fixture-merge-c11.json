@@ -1,0 +1,16 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/git/commits/fixture-merge-c11",
+  "sha": "fixture-merge-c11",
+  "node_id": "C_fixture-merge-c11",
+  "author": {
+    "name": "fixture-owner",
+    "date": "2026-10-07T12:00:00Z"
+  },
+  "committer": {
+    "name": "fixture-owner",
+    "date": "2026-10-07T12:00:00Z"
+  },
+  "message": "Merge pull request #11 from visitor/banner\n\nACCEPTED: banner-decision sha256:b4ba8733230712ed1d62c2884b8d55e6f0ec117bb79a7553c997601468aaadee"
+}

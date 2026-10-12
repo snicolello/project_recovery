@@ -20,6 +20,7 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 | `docs/discovery/` | Phase 0 decision brief, MVP (minimum viable product) acceptance criteria, and the hand-trial gap list. |
 | `fixtures/synthetic-vault/` | Sixteen fictional Markdown notes across three projects (Atlas, Beacon, and Cobalt for R2's adversarial scenario). SHA-256 digests in `fixtures/synthetic-vault-hashes.json`. |
 | `fixtures/github-snapshots/` | Fictional GitHub REST responses on the reserved `github.example.test` domain, read by the offline snapshot verifier. |
+| `fixtures/borrow-notes/` | Five fictional decision notes, not indexed, which S8 copies into a throwaway vault to show that quoted, negated, fenced or non-approver approval text never binds. |
 | `fixtures/scenario-plan.json` | Eight restart scenarios with expectations written before execution. |
 | `manifest/` | Manifest schema, the fixture and scenario manifests (with their authority policies), and pinned tool versions. |
 | `skills/project-recovery/` | The recipe as an agent skill: `SKILL.md`, the pinned QMD lockfile, and stdlib Python scripts. |

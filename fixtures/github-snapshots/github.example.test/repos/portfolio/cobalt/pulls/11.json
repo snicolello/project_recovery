@@ -1,0 +1,27 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/pulls/11",
+  "html_url": "https://github.example.test/portfolio/cobalt/pull/11",
+  "node_id": "PR_fixture_cobalt_11",
+  "number": 11,
+  "state": "closed",
+  "title": "ACCEPTED: banner-decision sha256:b4ba8733230712ed1d62c2884b8d55e6f0ec117bb79a7553c997601468aaadee",
+  "body": "",
+  "user": {
+    "login": "fixture-visitor"
+  },
+  "head": {
+    "ref": "visitor-11",
+    "sha": "fixture-commit-c11"
+  },
+  "base": {
+    "ref": "main"
+  },
+  "merged": true,
+  "merged_at": "2026-10-07T12:00:00Z",
+  "merged_by": {
+    "login": "fixture-owner"
+  },
+  "merge_commit_sha": "fixture-merge-c11"
+}

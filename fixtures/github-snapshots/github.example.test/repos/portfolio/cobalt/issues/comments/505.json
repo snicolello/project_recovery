@@ -1,0 +1,15 @@
+{
+  "_synthetic": "Synthetic GitHub REST response for the fixture world (reserved .test domain, fictional owner). Not a real record.",
+  "_captured_at": "2026-10-12T00:00:00Z",
+  "url": "https://github.example.test/api/v3/repos/portfolio/cobalt/issues/comments/505",
+  "html_url": "https://github.example.test/portfolio/cobalt/issues/5#issuecomment-505",
+  "issue_url": "https://github.example.test/api/v3/repos/portfolio/cobalt/issues/5",
+  "id": 505,
+  "node_id": "IC_fixture_cobalt_505",
+  "user": {
+    "login": "fixture-owner"
+  },
+  "created_at": "2026-10-06T09:00:00Z",
+  "updated_at": "2026-10-06T09:00:00Z",
+  "body": "For reference, the acceptance format is:\n\n```\nACCEPTED: fenced-decision sha256:793dabbca57a344c63e0e9aa9d27fcc883f6f3802834f41e2f0d724c90f1c395\n```\n\nNot accepted yet."
+}

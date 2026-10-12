@@ -3,7 +3,7 @@
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Declared baseline for Project Recovery: verified current state and one safe next action.
 - Status: Current. R1 accepted; R2 in review (PR open, merge held for the owner).
-- As of: 2026-10-11, `main` at `50f52d0`; R2 on branch `feat/119-r2-authority` (pull request to `main`). R2 ticket: https://github.com/snicolello/stephen-project-hub/issues/119 under Epic #113.
+- As of: 2026-10-12, `main` at `6863db9` (PR #4, outcome ledger); R2 on branch `feat/119-r2-authority`, rebased onto it (pull request #5 to `main`). R2 ticket: https://github.com/snicolello/stephen-project-hub/issues/119 under Epic #113.
 - Authority: Stephen (owner), through rulings recorded on hub Epic https://github.com/snicolello/stephen-project-hub/issues/113. Author of this baseline: a Claude Personal session on 2026-10-11; approver: the owner, at the R0 gate on the Epic.
 - Sources: hub Epic #113 (rulings 1 to 9 and the release roadmap, 2026-10-10); `docs/discovery/*` (Astra Phase 0 brief, acceptance criteria and gap list, 2026-10-10); `evidence/scoped-evaluation-2026-10-10/` (executed tool runs, Basic Memory 0.23.2 and QMD 2.8.3).
 - Objective: close R2 (authority and freshness) per hub #119, including owner ruling B: frontmatter-accepted notes are `decision_candidates`; `accepted_decisions` only on verified GitHub evidence.
@@ -18,7 +18,7 @@
 
 ## Current baseline
 
-Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2, in review on `feat/119-r2-authority`: `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes and four synthetic GitHub snapshots, scenarios S6 to S8, 124 offline gate checks and 75 unit tests, remediated after independent review (records bound to the citing note) and owner review (records bound to the approved note bytes by digest). The contract is unchanged. No Librarian code exists.
+Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2, in review on `feat/119-r2-authority`: `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes and four synthetic GitHub snapshots, scenarios S6 to S8, 135 offline gate checks and 80 unit tests, remediated after independent review (records bound to the citing note), owner review (records bound to the approved note bytes by digest) and re-review (whole-line, approver-authored approval text only). The contract is unchanged. No Librarian code exists.
 
 ## Completed
 

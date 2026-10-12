@@ -51,6 +51,9 @@ S7_DIR = REPO / "runtime-vaults" / "s7"
 S8_COPY = REPO / "runtime-vaults" / "s8"
 S8_REPLAY = REPO / "runtime-vaults" / "s8-replay"
 S8_OWNER = REPO / "runtime-vaults" / "s8-owner"
+S8_BORROW = REPO / "runtime-vaults" / "s8-borrow"
+STATE_S8B = REPO / ".qmd" / "run-s8-borrow"
+BORROW_NOTES = FIXTURES / "borrow-notes" / "cobalt"
 STATE_S8O = REPO / ".qmd" / "run-s8-owner"
 STATE_S8R = REPO / ".qmd" / "run-s8-replay"
 THEME_RECORD = "https://github.example.test/portfolio/cobalt/issues/5#issuecomment-501"
@@ -671,6 +674,52 @@ def run_s8_owner_cases(g: Gates, cobalt_verified: dict, atlas_verified: dict, ou
                 f"problems {[x['kind'] for x in problems]}")
 
 
+BORROW_CASES = {  # note title -> expected conflict kind (re-review 2026-10-12)
+    "Quote Decision": "approved_text_mismatch",      # approver quote-replies the marker, then refuses
+    "Refused Decision": "approved_text_mismatch",    # NOT ACCEPTED: <name> sha256:<digest>
+    "Fenced Decision": "approved_text_mismatch",     # marker inside a fenced code block
+    "Banner Decision": "approval_text_not_approver_authored",  # non-approver PR title, default merge message
+    "Squash Decision": "approval_text_not_approver_authored",  # non-approver commits, squash merge message
+}
+
+
+def run_s8_borrow_paths(g: Gates, out_dir: Path) -> None:
+    """Approval text that names the note and its exact digest still binds only when it is a
+    whole, unquoted, unfenced line written by an approver."""
+    fresh_copy(S8_BORROW)
+    for title in BORROW_CASES:
+        shutil.copyfile(BORROW_NOTES / f"{title}.md", S8_BORROW / "cobalt" / f"{title}.md")
+    m = recipe.load_manifest(SCEN_MANIFEST, S8_BORROW, STATE_S8B)
+    recipe.refresh(m, rebuild=True)
+    with McpSession(m.state_dir) as s:
+        p = recipe.assemble(m, "cobalt", "approve deployment", s, max_tokens=10 ** 6)
+    (out_dir / "S8-borrow.json").write_text(json.dumps(p, indent=2, ensure_ascii=False), encoding="utf-8")
+    cand = decisions_by_title(p, "decision_candidates")
+    accepted = list(decisions_by_title(p, "accepted_decisions"))
+    for title, kind in BORROW_CASES.items():
+        entry = cand.get(title, {})
+        v = entry.get("verification", {})
+        conflict = next((c for c in p["conflicts"] if c.get("source") == f"cobalt/{title}.md"), {})
+        g.check("authority", f"S8 borrow path {title}: candidate with {kind}",
+                title not in accepted and v.get("result") == "invalid" and v.get("conflict") == kind
+                and conflict.get("kind") == kind,
+                v.get("reason", "")[:90])
+        forged = copy.deepcopy(p)
+        cands = forged["fields"]["decision_candidates"]["decisions"]
+        promoted = cands.pop(next(i for i, d in enumerate(cands) if d["title"] == title))
+        promoted.update({"authority_state": "verified",
+                         "verification": {**promoted["verification"], "result": "verified",
+                                          "verified_at": "claimed", "revision": promoted["verification"].get("revision")}})
+        forged["fields"]["accepted_decisions"]["decisions"].append(promoted)
+        forged["fields"]["accepted_decisions"]["status"] = "established"
+        out, problems = pk.audit(forged, m.vault_root, recheck=rechecker(m, "cobalt"))
+        g.check("negative", f"S8 borrow path {title}: promoted by hand -> demoted with {kind}",
+                title not in decisions_by_title(out, "accepted_decisions") and kind in [x["kind"] for x in problems],
+                f"problems {[x['kind'] for x in problems][:2]}")
+    g.check("authority", "S8 borrow paths: the unchanged Theme control still verifies beside them",
+            accepted == ["Theme Decision"], f"accepted {accepted}")
+
+
 def run_s8(g: Gates, scen, packets: dict, out_dir: Path) -> None:
     # The 4,000-token packet (scored above) may trim low-ranked query hits, including the Ops
     # Inbox; that is budget behaviour, reported in budget.omitted. The content and control
@@ -716,6 +765,7 @@ def run_s8(g: Gates, scen, packets: dict, out_dir: Path) -> None:
             f"{av['requests']} requests, overlapping={av['overlapping_requests']}")
     run_s8_replay(g, p, out_dir)
     run_s8_owner_cases(g, p, atlas, out_dir)
+    run_s8_borrow_paths(g, out_dir)
     ap = atlas["fields"]["authority"]["approvals"]
     g.check("adversarial", "S8 Atlas packet unaffected by the Cobalt instructions",
             not any(r["source"].startswith("cobalt/") for r in pk.ordered_receipts(atlas))

@@ -8,7 +8,7 @@
   "state": "closed",
   "title": "Atlas queue: adopt SQLite for one offline laptop",
   "user": {
-    "login": "fixture-author"
+    "login": "fixture-owner"
   },
   "head": {
     "ref": "queue-sqlite",
@@ -22,5 +22,6 @@
   "merged_by": {
     "login": "fixture-owner"
   },
-  "merge_commit_sha": "fixture-merge-a7"
+  "merge_commit_sha": "fixture-merge-a7",
+  "body": "Adopt SQLite for the offline queue."
 }

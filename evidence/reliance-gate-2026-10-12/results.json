@@ -1,6 +1,6 @@
 {
   "base_revision": "5ab0ea2",
-  "revision": "91adf78",
+  "revision": "ef1c962",
   "cases": [
     {
       "id": "control-cobalt",
@@ -1484,6 +1484,86 @@
         "result": "rejected",
         "failures": 3
       }
+    },
+    {
+      "id": "M-28",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "lone surrogate escape in the query (fourth-review follow-up)",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "UnicodeEncodeError: 'utf-8' codec can't encode character '\\ud800' in position 291: surrogates not allowed"
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-29",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "1e400 in budget.tokens, an infinite number (fourth-review follow-up)",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-30",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "4,300-digit omitted-hit count with limit 1 (fourth-review follow-up)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 13,
+        "first_problem": "budget.omitted.query_hits: wrong_type"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 13
+      }
     }
   ],
   "summary": {
@@ -1523,13 +1603,16 @@
       "M-23",
       "M-24",
       "M-25",
-      "M-27"
+      "M-27",
+      "M-29",
+      "M-30"
     ],
     "before_crashed": [
       "M-01",
       "M-13",
       "M-18",
-      "M-26"
+      "M-26",
+      "M-28"
     ],
     "after_unexpected": [],
     "controls_after": {

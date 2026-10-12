@@ -90,6 +90,15 @@ class RelianceGateTests(unittest.TestCase):
                         # nothing from the submitted packet is kept: the output is the re-derivation
                         self.assertEqual(pk.canonical(r["packet"]), pk.canonical(original))
 
+    def test_injected_text_never_reaches_the_output(self):
+        """Review R1 and re-review R11: a packet cannot write its own conflicts, hits or unknowns."""
+        for case in (c for c in CASES if c.id in ("M-23", "M-24", "M-25")):
+            for mode in rederive.MODES:
+                with self.subTest(case=case.id, mode=mode):
+                    r = self.validate(build(self.env, case), mode, "cobalt")
+                    self.assertEqual(r["result"], "rejected")
+                    self.assertNotIn("OWNER", json.dumps(r["packet"]))
+
     def test_case_ids_are_unique_and_traced(self):
         ids = [c.id for c in CASES]
         self.assertEqual(len(ids), len(set(ids)))

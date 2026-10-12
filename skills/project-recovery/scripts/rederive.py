@@ -134,7 +134,7 @@ class VaultSession:
         return None
 
 
-def replay_hits(packet: dict, proj: recipe.Project) -> tuple[list[dict], int]:
+def replay_hits(packet: dict, proj: recipe.Project, indexed: set) -> tuple[list[dict], int]:
     """The QMD result list a packet's hits imply, and its claimed omitted-hit count.
 
     Each kept hit sits at its rank. A rank with no kept hit (QMD returned something there
@@ -142,7 +142,12 @@ def replay_hits(packet: dict, proj: recipe.Project) -> tuple[list[dict], int]:
     gains a conflict and the difference is reported. Dropped results are never replayed
     from the packet's own ``scope_violation`` conflicts: their ``source`` is text the
     packet supplies, and replaying it would let the packet write its own conflicts (review
-    of a76abda, R1). Such a packet is validated only in requery mode."""
+    of a76abda, R1). Such a packet is validated only in requery mode.
+
+    QMD returns only documents indexed at the recorded generation, so a hit whose source is
+    not one of ``indexed`` is replayed as an unresolvable result too; otherwise a packet
+    could name a note that does not exist and carry its own text into the re-derived
+    ``query_hits`` and ``unknowns`` (re-review of bc791ee, R11)."""
     prefix = proj.source("")
     kept: dict[int, dict] = {}
     for h in packet.get("query_hits") if isinstance(packet.get("query_hits"), list) else []:
@@ -152,7 +157,7 @@ def replay_hits(packet: dict, proj: recipe.Project) -> tuple[list[dict], int]:
         if not isinstance(rank, int) or isinstance(rank, bool) or rank < 1 or rank in kept:
             continue
         source = h["source"]
-        file = proj.qmd_path(source[len(prefix):]) if source.startswith(prefix) else source
+        file = proj.qmd_path(source[len(prefix):]) if source.startswith(prefix) and source in indexed else ""
         kept[rank] = {"file": file, "title": h.get("title") if isinstance(h.get("title"), str) else None}
     out = [kept.get(pos, {"file": "", "title": None}) for pos in range(1, max(kept, default=0) + 1)]
     budget = packet.get("budget") if isinstance(packet.get("budget"), dict) else {}
@@ -176,15 +181,16 @@ def uncited_hits(packet: dict) -> list[str]:
             if isinstance(u, dict) and isinstance(u.get("field"), str) and u["field"].startswith("query_hits:")]
 
 
-def hidden_sources(packet: dict, first: dict) -> list[str]:
+def hidden_sources(packet: dict, first: dict, indexed: set) -> list[str]:
     """Notes the packet's traces say were query hits that the replay did not reproduce: an
     unknown for a hit that could not be cited, or a missing link, taken per (link, source)
     pair, since a note already cited as a decision may also have been a trimmed hit whose
     body carries further links (review of a76abda, R2 and R3). Uncitable hits keep the
-    packet's unknowns order; the rest follow, sorted."""
+    packet's unknowns order; the rest follow, sorted. Only documents indexed at the recorded
+    generation can have been hits (R11); a trace naming anything else stays unreproduced."""
     visible = {h.get("source") for h in first.get("query_hits", [])}
-    out = [s for s in uncited_hits(packet) if s not in uncited_hits(first) and s not in visible]
-    links = sorted({s for _, s in link_pairs(packet) - link_pairs(first)} - visible - set(out))
+    out = [s for s in uncited_hits(packet) if s not in uncited_hits(first) and s not in visible and s in indexed]
+    links = sorted(({s for _, s in link_pairs(packet) - link_pairs(first)} & indexed) - visible - set(out))
     return list(dict.fromkeys(out + links))
 
 
@@ -283,14 +289,15 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
             factory = session_factory or (lambda: McpSession(m.state_dir))
             with factory() as session:
                 return recipe.assemble(m, project, query, session, limit, verifier()), []
-        hits, omitted = replay_hits(packet, proj)
+        indexed = set(record["files"])
+        hits, omitted = replay_hits(packet, proj, indexed)
         with VaultSession(m, proj.collection, hits) as session:
             first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted)
         # missing_sources and the unknowns for uncitable hits are computed before the budget
         # trims hits, so they may come from a hit the packet no longer shows. Each note those
         # traces name that the replay did not reproduce is re-cited as a hidden, already-trimmed
         # hit, from the vault bytes; a trace those bytes do not support still differs.
-        hidden = hidden_sources(packet, first)
+        hidden = hidden_sources(packet, first, indexed)
         if not hidden:
             return first, []
         prefix = proj.source("")

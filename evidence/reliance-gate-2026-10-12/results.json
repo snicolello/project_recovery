@@ -1,6 +1,6 @@
 {
   "base_revision": "5ab0ea2",
-  "revision": "5ae8a9b",
+  "revision": "91adf78",
   "cases": [
     {
       "id": "control-cobalt",
@@ -1431,6 +1431,59 @@
         "result": "rejected",
         "failures": 4
       }
+    },
+    {
+      "id": "M-26",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "5,000-digit integer in budget.tokens (fourth review F4-2)",
+      "expect_after": "not_rederivable",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 1,
+        "verdict": "crashed",
+        "detail": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5000 digits; use sys.set_int_max_str_digits() to increase the limit"
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "not_rederivable",
+        "failures": 1,
+        "first_problem": "packet: unparseable"
+      },
+      "after_requery": {
+        "result": "not_rederivable",
+        "failures": 1
+      }
+    },
+    {
+      "id": "M-27",
+      "finding": "model",
+      "criterion": "AC6",
+      "what": "hit rank 100,000, far above the search limit (fourth review F4-1)",
+      "expect_after": "rejected",
+      "modes": [
+        "packet",
+        "requery"
+      ],
+      "before": {
+        "exit": 0,
+        "verdict": "passed",
+        "failures": 0,
+        "kinds": []
+      },
+      "after_packet_mode": {
+        "exit": 1,
+        "result": "rejected",
+        "failures": 3,
+        "first_problem": "query_hits[0].rank: rank_exceeds_search_limit"
+      },
+      "after_requery": {
+        "result": "rejected",
+        "failures": 3
+      }
     }
   ],
   "summary": {
@@ -1469,12 +1522,14 @@
       "M-22",
       "M-23",
       "M-24",
-      "M-25"
+      "M-25",
+      "M-27"
     ],
     "before_crashed": [
       "M-01",
       "M-13",
-      "M-18"
+      "M-18",
+      "M-26"
     ],
     "after_unexpected": [],
     "controls_after": {

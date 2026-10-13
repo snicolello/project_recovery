@@ -33,7 +33,7 @@ class StageAPureTests(unittest.TestCase):
         self.assertTrue({"S4-before", "S4-immediate", "S4-after-3s", "S4-after-refresh"} <= cases)
         self.assertTrue({"S6-control", "S6-baseline-edited", "S6-decision-edited",
                          "S6-refresh-recorded"} <= cases)
-        self.assertTrue({"S7-stale-4000", "S7-limit-4000", "S7-limit-2000",
+        self.assertTrue({"S7-stale-4000", "S7-unbounded", "S7-limit-4000", "S7-limit-2000",
                          "S7-limit-1000", "S7-limit-400"} <= cases)
         self.assertTrue({"S8-cobalt", "S8-atlas"} <= cases)
 
@@ -83,6 +83,58 @@ class StageAPureTests(unittest.TestCase):
             {"attempt": 2, "event": "stopped"},
         ]
         self.assertEqual(2, sum(1 for record in records if record["event"] == "started"))
+
+    def test_timing_and_concurrency_setups_are_fresh_per_query(self):
+        for setup in ("s4-immediate", "s4-after-3s", "s6-baseline-edited",
+                      "s6-decision-edited", "s6-refresh-recorded"):
+            self.assertTrue(stage_a.setup_requires_fresh_per_query(setup))
+        self.assertFalse(stage_a.setup_requires_fresh_per_query("s4-after-refresh"))
+
+    def test_every_expected_failure_has_a_specific_oracle(self):
+        failures = [case for scenario in self.data["scenarios"] for case in scenario["cases"]
+                    if case["expected_validation"] != "equal_to_rederived"]
+        self.assertTrue(failures)
+        for case in failures:
+            with self.subTest(case=case["id"]):
+                self.assertIn("submitted_status", case["failure_oracle"])
+                self.assertIn("gap_sources", case["failure_oracle"])
+
+    def test_s7_unbounded_is_reference_only(self):
+        s7 = next(s for s in self.data["scenarios"] if s["id"] == "S7")
+        reference = next(c for c in s7["cases"] if c["id"] == "S7-unbounded")
+        self.assertTrue(reference["reference_only"])
+        self.assertEqual(1_000_000_000, reference["max_tokens"])
+
+    def test_generated_source_projection_is_predeclared_bounded(self):
+        projected = stage_a.projected_generated_source_bytes(self.data)
+        self.assertLessEqual(projected, self.data["limits"]["max_generated_source_bytes"])
+
+    def test_s7_cross_budget_check_enforces_protected_and_omission_invariants(self):
+        base_projection = {"protected": {"objective": "same"}, "conflicts": ["same"],
+                           "unknowns": ["same"], "status": "complete", "freshness": {"generation": "g"},
+                           "droppable_counts": {"query_hits": 10, "other_decisions": 2,
+                                                "decision_candidates": 3},
+                           "budget": {"limit": 1_000_000_000, "tokens": 5000,
+                                      "truncated": False, "within_limit": True,
+                                      "omitted": {"query_hits": 0, "other_decisions": 0,
+                                                  "decision_candidates": 0}}}
+        bounded_projection = json.loads(json.dumps(base_projection))
+        bounded_projection["droppable_counts"].update({"query_hits": 8, "other_decisions": 1})
+        bounded_projection["budget"] = {"limit": 4000, "tokens": 3900, "truncated": True,
+                                        "within_limit": True,
+                                        "omitted": {"query_hits": 2, "other_decisions": 1,
+                                                    "decision_candidates": 0}}
+        rows = [
+            {"scenario": "S7", "query_id": "q", "case": "S7-unbounded", "eligible": True,
+             "s7_projection": base_projection, "oracle_problems": []},
+            {"scenario": "S7", "query_id": "q", "case": "S7-limit-4000", "eligible": True,
+             "s7_projection": bounded_projection, "oracle_problems": []},
+        ]
+        stage_a.apply_s7_budget_checks(rows)
+        self.assertTrue(rows[1]["eligible"])
+        rows[1]["s7_projection"]["protected"] = {"objective": "changed"}
+        stage_a.apply_s7_budget_checks(rows)
+        self.assertFalse(rows[1]["eligible"])
 
 
 if __name__ == "__main__":

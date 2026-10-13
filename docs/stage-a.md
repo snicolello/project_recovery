@@ -15,10 +15,21 @@ work and validator traffic are reported separately because the consumer does not
 receive them. Failed fetch envelopes are charged; zero-fetch cases remain explicit.
 
 S4 stale phases, S6 concurrent-change phases and the pre-refresh S7 phase are
-expected failure observations. They must fail closed and expose no trusted packet.
-They are reported with zero consumer bytes and cannot manufacture a saving. The
-stable S1-S8 cases must preserve the predeclared evidence coverage, answerable
-field completeness, abstention, isolation and zero-unsupported-assertion rules.
+expected failure observations. Each has a specific predeclared gap, conflict and
+stale-text oracle; an unrelated `not_rederivable` result is a failure. They must
+fail closed and expose no trusted packet. They are reported with zero consumer
+bytes and cannot manufacture a saving. S7 also builds one unbounded diagnostic
+reference per query plan and checks every bounded packet's protected fields,
+conflicts, unknowns, freshness, omission counts and fit report against it. The
+reference is not charged as another consumer case.
+
+The predeclaration binds the harness, accepted R2 assembly/validation seams and
+manifests by SHA-256. Launch refuses a changed or dirty method, a product baseline
+that is no longer an ancestor, or installed QMD other than 2.8.3. The attempt
+record captures the actual measurement revision. The runner also refuses
+preexisting over-cap scratch, checks a conservative generated-source bound, polls
+scratch use throughout execution and terminates the complete process tree on the
+250 MiB lane cap or 600-second time cap.
 
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:

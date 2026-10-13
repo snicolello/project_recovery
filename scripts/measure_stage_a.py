@@ -112,6 +112,12 @@ def validate_predeclaration(data: dict) -> list[str]:
     limits = data.get("limits", {})
     if limits.get("attempts") != 20 or limits.get("seconds_per_attempt") != 600:
         errors.append("attempt/runtime bounds differ from the ruling")
+    implementation = data.get("implementation", {})
+    if not implementation.get("files") or "scripts/measure_stage_a.py" not in implementation.get("files", {}):
+        errors.append("measurement implementation is not hash-bound")
+    for rel, digest in implementation.get("files", {}).items():
+        if not isinstance(digest, str) or len(digest) != 64:
+            errors.append(f"implementation hash is invalid: {rel}")
     evidence = data.get("evidence", {})
     for eid, item in evidence.items():
         if not isinstance(item.get("source"), str) or not isinstance(item.get("span"), list):
@@ -137,8 +143,10 @@ def validate_predeclaration(data: dict) -> list[str]:
             for eid in case.get("required_evidence", []):
                 if eid not in evidence:
                     errors.append(f"{cid} references unknown evidence {eid}")
-            if case.get("expected_validation") not in ("equal_to_rederived", "not_rederivable"):
+            if case.get("expected_validation") not in ("equal_to_rederived", "not_rederivable", "rejected"):
                 errors.append(f"{cid} has unsupported expected validation")
+            if case.get("expected_validation") != "equal_to_rederived" and not case.get("failure_oracle"):
+                errors.append(f"{cid} has no failure oracle")
     return errors
 
 
@@ -163,6 +171,44 @@ def semantic_projection(packet: dict) -> dict:
                               "unknowns": core_unknowns(packet),
                               "conflicts": [c for c in packet.get("conflicts", [])
                                             if c.get("field") != "query_hits"]})
+
+
+def all_packet_text(packet: dict) -> str:
+    return "\n".join(i.get("text", "") for _, node in pk.iter_nodes(packet)
+                      for key in ("items", "evidence") for i in node.get(key, []))
+
+
+def failure_oracle_problems(submitted: dict, validation: dict, oracle: dict) -> list[str]:
+    problems: list[str] = []
+    if submitted.get("status") != oracle.get("submitted_status"):
+        problems.append(f"submitted status {submitted.get('status')!r}")
+    gaps = submitted.get("freshness", {}).get("generation_gap", [])
+    actual_sources = sorted(str(g.get("source")) for g in gaps if g.get("source") is not None)
+    if actual_sources != sorted(oracle.get("gap_sources", [])):
+        problems.append(f"gap sources {actual_sources!r}")
+    during_sources = sorted(str(g.get("source")) for g in gaps
+                            if g.get("detected") == "during_assembly" and g.get("source") is not None)
+    if during_sources != sorted(oracle.get("during_assembly_sources", [])):
+        problems.append(f"during-assembly sources {during_sources!r}")
+    if oracle.get("generation_changed_during_assembly") and not any(
+            g.get("source") is None and g.get("detected") == "during_assembly"
+            and "generation" in g.get("change", "") for g in gaps):
+        problems.append("recorded generation change during assembly not named")
+    conflicts = submitted.get("conflicts", [])
+    for source in oracle.get("conflict_sources", []):
+        if not any(c.get("source") == source for c in conflicts):
+            problems.append(f"conflict source absent: {source}")
+    text = all_packet_text(submitted)
+    for stale in oracle.get("forbidden_stale_text", []):
+        if stale in text:
+            problems.append(f"stale assertion survived: {stale!r}")
+    reasons = "\n".join(str(p.get("reason", "")) for p in validation.get("problems", []))
+    for needle in oracle.get("validation_reason_contains", []):
+        if needle not in reasons:
+            problems.append(f"validation reason lacks {needle!r}")
+    if not validation.get("problems"):
+        problems.append("validation failure carried no diagnostic")
+    return problems
 
 
 def oracle_problems(packet: dict, oracle: dict, m: recipe.Manifest, project: str,
@@ -194,6 +240,54 @@ def oracle_problems(packet: dict, oracle: dict, m: recipe.Manifest, project: str
     if unsupported:
         problems.append(f"{len(unsupported)} unsupported assertion(s)")
     return problems
+
+
+def s7_projection(packet: dict) -> dict:
+    protected = ("objective", "authority", "accepted_decisions", "current_state", "blockers", "next_action")
+    return {"protected": pk.strip_volatile({name: packet["fields"][name] for name in protected}),
+            "conflicts": pk.strip_volatile(packet["conflicts"]),
+            "unknowns": pk.strip_volatile(packet["unknowns"]), "status": packet["status"],
+            "freshness": pk.strip_volatile(packet["freshness"]),
+            "droppable_counts": {name: len(pk._droppable_list(packet, name)) for name in pk.DROPPABLE},
+            "budget": copy.deepcopy(packet["budget"])}
+
+
+def apply_s7_budget_checks(rows: list[dict]) -> None:
+    query_ids = sorted({r["query_id"] for r in rows if r["scenario"] == "S7"})
+    for query_id in query_ids:
+        same = [r for r in rows if r["scenario"] == "S7" and r["query_id"] == query_id]
+        reference = next((r for r in same if r["case"] == "S7-unbounded"), None)
+        if not reference or not reference.get("eligible") or not reference.get("s7_projection"):
+            for row in same:
+                row["oracle_problems"].append("S7 unbounded reference unavailable")
+                row["eligible"] = False
+            continue
+        ref = reference["s7_projection"]
+        if ref["budget"]["truncated"] or ref["budget"]["tokens"] <= 4000:
+            reference["oracle_problems"].append("S7 unbounded reference is not unbounded/over 4000")
+            reference["eligible"] = False
+        for row in same:
+            if row["case"] in ("S7-unbounded", "S7-stale-4000") or not row.get("s7_projection"):
+                continue
+            got = row["s7_projection"]
+            for key in ("protected", "conflicts", "unknowns", "status", "freshness"):
+                if got[key] != ref[key]:
+                    row["oracle_problems"].append(f"S7 {key} differs from unbounded reference")
+            budget = got["budget"]
+            for name in pk.DROPPABLE:
+                expected = ref["droppable_counts"][name] - got["droppable_counts"][name]
+                if budget["omitted"][name] != expected:
+                    row["oracle_problems"].append(f"S7 omitted.{name} {budget['omitted'][name]} != {expected}")
+            honest = budget["within_limit"] == (budget["tokens"] <= budget["limit"])
+            honest = honest and budget["truncated"] == any(budget["omitted"].values())
+            if not honest:
+                row["oracle_problems"].append("S7 budget fit/truncation report is dishonest")
+            row["eligible"] = not row["oracle_problems"]
+
+
+def setup_requires_fresh_per_query(setup: str) -> bool:
+    return setup in {"s4-immediate", "s4-after-3s", "s6-baseline-edited",
+                     "s6-decision-edited", "s6-refresh-recorded"}
 
 
 class TraceSession:
@@ -397,7 +491,9 @@ def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, w
     if expected != "equal_to_rederived":
         # Expected stale/concurrent failure: no packet is trusted or shown to the
         # consumer, so its charged bytes are explicitly zero.
-        result["eligible"] = True
+        result["oracle_problems"].extend(failure_oracle_problems(
+            submitted, validation, case["failure_oracle"]))
+        result["eligible"] = not result["oracle_problems"]
         result["expected_failure_observation"] = True
         return result
     trusted = validation["packet"]
@@ -430,6 +526,7 @@ def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, w
                    "total_consumer_bytes": packet_bytes + fetch_bytes,
                    "estimated_tokens": estimate_bytes(packet_bytes + fetch_bytes),
                    "packet_digest": pk.digest(trusted), "semantic_projection": semantic_projection(trusted),
+                   "s7_projection": s7_projection(trusted) if scenario["id"] == "S7" else None,
                    "eligible": not result["oracle_problems"]})
     return result
 
@@ -446,8 +543,7 @@ def run_worker(predecl_path: Path, attempt_dir: Path) -> int:
                 work.mkdir(parents=True)
                 try:
                     setup = case["setup"]
-                    mutable_during_assembly = setup in {
-                        "s6-baseline-edited", "s6-decision-edited", "s6-refresh-recorded"}
+                    mutable_during_assembly = setup_requires_fresh_per_query(setup)
                     cache_key = setup if not mutable_during_assembly else ""
                     if cache_key and cache_key not in prepared_cache:
                         shared = attempt_dir / "work" / "shared" / setup
@@ -466,6 +562,10 @@ def run_worker(predecl_path: Path, attempt_dir: Path) -> int:
                 rows.append(row)
                 with (attempt_dir / "candidate-results.jsonl").open("a", encoding="utf-8") as fh:
                     fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    apply_s7_budget_checks(rows)
+    with (attempt_dir / "candidate-results-final.jsonl").open("w", encoding="utf-8") as fh:
+        for row in rows:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     scenario_results = []
     for scenario in predecl["scenarios"]:
         plans = []
@@ -479,13 +579,14 @@ def run_worker(predecl_path: Path, attempt_dir: Path) -> int:
                                  or r.get("semantic_projection") == control_projection.get(r["case"])
                                  for r in selected) if plan["role"] != "control" else True
             eligible = all(r["eligible"] for r in selected) and semantic_equal
-            tokens = sum(r["estimated_tokens"] for r in selected
-                         if r["expected_validation"] == "equal_to_rederived")
+            consuming = [r for r in selected if r["expected_validation"] == "equal_to_rederived"
+                         and not next(c for c in scenario["cases"] if c["id"] == r["case"]).get("reference_only")]
+            tokens = sum(r["estimated_tokens"] for r in consuming)
             plans.append({"id": plan["id"], "query": plan["query"], "role": plan["role"],
                           "eligible": eligible, "semantic_equal_to_control": semantic_equal,
                           "estimated_tokens": tokens,
-                          "fetches": sum(len(r["fetches"]) for r in selected),
-                          "zero_fetch_cases": [r["case"] for r in selected if not r["fetches"]],
+                          "fetches": sum(len(r["fetches"]) for r in consuming),
+                          "zero_fetch_cases": [r["case"] for r in consuming if not r["fetches"]],
                           "failed_cases": [r["case"] for r in selected if not r["eligible"]]})
         control = plans[0]
         best = select_best(plans[1:])
@@ -531,7 +632,26 @@ def append_attempt(ledger: Path, value: dict) -> None:
         fh.write(json.dumps(value, ensure_ascii=False) + "\n")
 
 
-def run_bounded(cmd: list[str], timeout: int) -> tuple[int, bool, str | None]:
+def terminate_process_tree(proc: subprocess.Popen) -> str | None:
+    detail = None
+    if os.name == "nt":
+        killed = subprocess.run(["taskkill.exe", "/PID", str(proc.pid), "/T", "/F"],
+                                capture_output=True, text=True, check=False)
+        detail = (killed.stdout or killed.stderr).strip()[-500:]
+    else:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+    return detail
+
+
+def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int) -> tuple[int, bool, str | None, str | None]:
     """Run one attempt and terminate its process tree if the hard cap expires."""
     kwargs = {"cwd": REPO}
     if os.name == "nt":
@@ -539,25 +659,64 @@ def run_bounded(cmd: list[str], timeout: int) -> tuple[int, bool, str | None]:
     else:
         kwargs["start_new_session"] = True
     proc = subprocess.Popen(cmd, **kwargs)
-    try:
-        return proc.wait(timeout=timeout), False, None
-    except subprocess.TimeoutExpired:
-        detail = None
-        if os.name == "nt":
-            killed = subprocess.run(["taskkill.exe", "/PID", str(proc.pid), "/T", "/F"],
-                                    capture_output=True, text=True, check=False)
-            detail = (killed.stdout or killed.stderr).strip()[-500:]
-        else:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        try:
-            proc.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
-        return 124, True, detail
+    deadline = time.monotonic() + timeout
+    while proc.poll() is None:
+        if time.monotonic() >= deadline:
+            return 124, True, terminate_process_tree(proc), "time_cap"
+        if dir_size(scratch) > scratch_cap:
+            return 125, False, terminate_process_tree(proc), "scratch_cap"
+        time.sleep(0.25)
+    return proc.returncode, False, None, None
+
+
+def git_result(args: list[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, check=False)
+
+
+def verify_launch_environment(predecl: dict, predecl_path: Path) -> tuple[list[str], dict]:
+    problems: list[str] = []
+    observed: dict = {"qmd": installed_version()}
+    if observed["qmd"] != "2.8.3":
+        problems.append(f"installed QMD is {observed['qmd']!r}, expected '2.8.3'")
+    for rel, expected in predecl["implementation"]["files"].items():
+        path = REPO / rel
+        actual = file_sha256(path) if path.is_file() else None
+        if actual != expected:
+            problems.append(f"implementation hash mismatch: {rel}")
+    head = git_result(["rev-parse", "HEAD"])
+    observed["measurement_revision"] = head.stdout.strip() if head.returncode == 0 else None
+    if head.returncode != 0:
+        problems.append("cannot resolve measurement revision")
+    ancestor = git_result(["merge-base", "--is-ancestor", predecl["source_revision"], "HEAD"])
+    if ancestor.returncode != 0:
+        problems.append("accepted source revision is not an ancestor of measurement HEAD")
+    relevant = sorted(set(predecl["implementation"]["files"]) | {
+        predecl_path.resolve().relative_to(REPO.resolve()).as_posix()})
+    status = git_result(["status", "--porcelain", "--", *relevant])
+    observed["relevant_status"] = status.stdout.splitlines()
+    if status.returncode != 0 or status.stdout.strip():
+        problems.append("method or accepted seam has uncommitted changes")
+    return problems, observed
+
+
+def projected_generated_source_bytes(predecl: dict) -> int:
+    copies = 0
+    seen: set[str] = set()
+    for scenario in predecl["scenarios"]:
+        query_count = len(scenario["queries"])
+        for case in scenario["cases"]:
+            setup = case["setup"]
+            if setup.startswith("s7-"):
+                continue
+            if setup in {"s4-immediate", "s4-after-3s", "s6-baseline-edited",
+                         "s6-decision-edited", "s6-refresh-recorded"}:
+                copies += query_count
+            elif setup.startswith(("s4-", "s6-")) and setup not in seen:
+                copies += 1
+                seen.add(setup)
+    # The two deterministic S7 generated vaults are far below one MiB each; use
+    # a conservative fixed allowance, checked against a predeclared maximum.
+    return copies * dir_size(VAULT) + 2 * 1024 * 1024
 
 
 def command_run(args, predecl: dict, predecl_hash: str) -> int:
@@ -567,9 +726,23 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
     if errors:
         raise SystemExit("invalid predeclaration: " + "; ".join(errors))
     scratch = args.scratch.resolve()
-    if any(scratch == p or p in scratch.parents for p in (VAULT.resolve(), FIXTURES.resolve())):
+    if any(scratch == p or p in scratch.parents or scratch in p.parents
+           for p in (VAULT.resolve(), FIXTURES.resolve())):
         raise SystemExit("scratch must be outside every source root")
     scratch.mkdir(parents=True, exist_ok=True)
+    cap = predecl["limits"]["stage_a_scratch_bytes"]
+    existing_size = dir_size(scratch)
+    if existing_size > cap:
+        raise SystemExit("preexisting Stage A scratch exceeds its 250 MiB allocation")
+    minimum_free = predecl["limits"]["minimum_free_before_launch_bytes"]
+    if cap - existing_size < minimum_free:
+        raise SystemExit("insufficient free Stage A scratch allocation before launch")
+    projected = projected_generated_source_bytes(predecl)
+    if projected > predecl["limits"]["max_generated_source_bytes"]:
+        raise SystemExit("bounded generated-source projection exceeds its predeclared maximum")
+    environment_problems, observed_environment = verify_launch_environment(predecl, args.predeclaration)
+    if environment_problems:
+        raise SystemExit("launch environment refused: " + "; ".join(environment_problems))
     ledger = scratch / "attempts.jsonl"
     records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()] \
         if ledger.exists() else []
@@ -582,7 +755,10 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
     before = fixture_status()
     tree_before = tree_digest(FIXTURES)
     start_record = {"attempt": attempt_no, "event": "started", "at": utc_now(),
-                    "predeclaration_sha256": predecl_hash, "fixture_before": before}
+                    "predeclaration_sha256": predecl_hash, "fixture_before": before,
+                    "launch_environment": observed_environment,
+                    "preexisting_scratch_bytes": existing_size,
+                    "projected_generated_source_bytes": projected}
     append_attempt(ledger, start_record)
     if not before["ok"]:
         append_attempt(ledger, {"attempt": attempt_no, "event": "stopped", "at": utc_now(),
@@ -590,13 +766,14 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
         return 2
     cmd = [sys.executable, "-I", str(Path(__file__).resolve()), "_worker",
            "--predeclaration", str(args.predeclaration.resolve()), "--attempt-dir", str(attempt_dir)]
-    code, timed_out, timeout_termination = run_bounded(cmd, predecl["limits"]["seconds_per_attempt"])
+    code, timed_out, timeout_termination, stop_reason = run_bounded(
+        cmd, predecl["limits"]["seconds_per_attempt"], scratch, cap)
     after = fixture_status()
     tree_unchanged = tree_digest(FIXTURES) == tree_before
     size = dir_size(scratch)
-    cap = predecl["limits"]["stage_a_scratch_bytes"]
     final = {"attempt": attempt_no, "event": "finished", "at": utc_now(), "exit_code": code,
              "timed_out": timed_out, "timeout_process_tree_termination": timeout_termination,
+             "bounded_stop_reason": stop_reason,
              "fixture_after": after, "fixtures_tree_unchanged": tree_unchanged,
              "scratch_bytes": size, "scratch_cap_bytes": cap}
     append_attempt(ledger, final)

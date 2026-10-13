@@ -1,0 +1,56 @@
+{
+  "work_package": "hub-126-package-b-librarian-preparation",
+  "mode": "synthetic-deterministic-only",
+  "source_revision": "4351301dbb9a51bbaa3c3c96cf6498c40b403045",
+  "branch": "codex/126-librarian-prep",
+  "model_calls": 0,
+  "downloads": 0,
+  "installs": 0,
+  "network_inference": false,
+  "live_github_verification": false,
+  "real_vault_used": false,
+  "fixture_integrity": {
+    "expected_files": 16,
+    "matched_before_each_run": 16,
+    "matched_after_each_run": 16,
+    "mismatches": 0
+  },
+  "refresh": {
+    "command": "python -I skills/project-recovery/scripts/recover.py refresh --manifest manifest/fixture-vault.json",
+    "engine": "qmd",
+    "version": "2.8.3",
+    "generation": "qmd-2.8.3:d3096a01a1830271",
+    "documents": 9
+  },
+  "dedicated_unit": {
+    "command": "python -I -m unittest discover -s tests -p test_librarian.py -v",
+    "run": 9,
+    "passed": 9,
+    "skipped": 0,
+    "failed": 0
+  },
+  "full_unit": {
+    "command": "python -I -m unittest discover -s tests",
+    "run": 137,
+    "passed": 134,
+    "skipped": 3,
+    "failed": 0,
+    "environment": "outside restrictive sandbox for the existing Windows junction test"
+  },
+  "qmd_integration": {
+    "command": "$env:PROJECT_RECOVERY_QMD_INTEGRATION='1'; python -I -m unittest discover -s tests -p test_librarian_qmd.py",
+    "run": 2,
+    "passed": 2,
+    "skipped": 0,
+    "failed": 0,
+    "cases": [
+      "actual QMD assembly plus fresh requery returns only the validator-rederived packet",
+      "actual QMD assembly plus a deliberately different fresh requery is rejected with no packet"
+    ]
+  },
+  "generated_scratch_bytes_max_observed": 159057,
+  "generated_scratch_limit_bytes": 262144000,
+  "existing_observations": [
+    "qmd_client emitted ResourceWarning for unclosed PIPE wrappers after short-lived child termination; child exited and tests passed; no core change made"
+  ]
+}

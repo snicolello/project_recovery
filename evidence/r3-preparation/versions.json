@@ -1,0 +1,7 @@
+{
+  "python": "3.11.9",
+  "qmd": "2.8.3",
+  "packet_token_estimator": "approx-utf8-bytes-div-2.9",
+  "manifest": "manifest/fixture-vault.json",
+  "source_revision": "4351301dbb9a51bbaa3c3c96cf6498c40b403045"
+}

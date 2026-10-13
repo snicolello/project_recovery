@@ -15,6 +15,6 @@
   "qmd": "2.8.3",
   "python": "3.11.9",
   "node": "24.13.0",
-  "network": "disabled/offline",
+  "network": "not used; not enforced",
   "models_or_embeddings": "not used"
 }

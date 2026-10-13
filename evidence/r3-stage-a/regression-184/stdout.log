@@ -1,0 +1,201 @@
+PASS  integrity     fixture hashes before                                                                                  ok 16 bad 0
+PASS  completeness  S1                                                                                                     6/6 answerable values recovered
+PASS  unsupported   S1                                                                                                     0 unsupported material assertions
+PASS  abstention    S1                                                                                                     unknown as expected: ['accepted_decisions', 'authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S1                                                                                                     foreign sources []; leaked text []
+PASS  budget        S1                                                                                                     3923 tokens (approx-utf8-bytes-div-2.9), truncated=True
+PASS  freshness     S1                                                                                                     status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S2                                                                                                     6/6 answerable values recovered
+PASS  unsupported   S2                                                                                                     0 unsupported material assertions
+PASS  abstention    S2                                                                                                     unknown as expected: ['accepted_decisions', 'authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S2                                                                                                     foreign sources []; leaked text []
+PASS  budget        S2                                                                                                     3805 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S2                                                                                                     status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S2-verified                                                                                            6/6 answerable values recovered
+PASS  unsupported   S2-verified                                                                                            0 unsupported material assertions
+PASS  abstention    S2-verified                                                                                            unknown as expected: ['authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S2-verified                                                                                            foreign sources []; leaked text []
+PASS  budget        S2-verified                                                                                            3795 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S2-verified                                                                                            status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S3-atlas                                                                                               6/6 answerable values recovered
+PASS  unsupported   S3-atlas                                                                                               0 unsupported material assertions
+PASS  abstention    S3-atlas                                                                                               unknown as expected: ['accepted_decisions', 'authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S3-atlas                                                                                               foreign sources []; leaked text []
+PASS  completeness  S3-atlas query evidence                                                                                expected ['retry-window 15 seconds'] in cited query hits
+PASS  budget        S3-atlas                                                                                               3320 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S3-atlas                                                                                               status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S3-beacon                                                                                              5/5 answerable values recovered
+PASS  unsupported   S3-beacon                                                                                              0 unsupported material assertions
+PASS  abstention    S3-beacon                                                                                              unknown as expected: ['accepted_decisions', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S3-beacon                                                                                              foreign sources []; leaked text []
+PASS  completeness  S3-beacon query evidence                                                                               expected ['retry-window 99 seconds'] in cited query hits
+PASS  budget        S3-beacon                                                                                              1533 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S3-beacon                                                                                              status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S5                                                                                                     6/6 answerable values recovered
+PASS  unsupported   S5                                                                                                     0 unsupported material assertions
+PASS  abstention    S5                                                                                                     unknown as expected: ['accepted_decisions', 'authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S5                                                                                                     foreign sources []; leaked text []
+PASS  budget        S5                                                                                                     3142 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S5                                                                                                     status complete, generation qmd-2.8.3:d3096a01a1830271 stated
+PASS  completeness  S8-cobalt                                                                                              6/6 answerable values recovered
+PASS  unsupported   S8-cobalt                                                                                              0 unsupported material assertions
+PASS  abstention    S8-cobalt                                                                                              unknown as expected: ['authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S8-cobalt                                                                                              foreign sources []; leaked text []
+PASS  budget        S8-cobalt                                                                                              3872 tokens (approx-utf8-bytes-div-2.9), truncated=True
+PASS  freshness     S8-cobalt                                                                                              status complete, generation qmd-2.8.3:f8b2bfa0f1fa31ed stated
+PASS  completeness  S8-atlas                                                                                               6/6 answerable values recovered
+PASS  unsupported   S8-atlas                                                                                               0 unsupported material assertions
+PASS  abstention    S8-atlas                                                                                               unknown as expected: ['authority.approvals.rollout_approval', 'authority.approvals.rollout_owner', 'authority.approver']; wrongly abstained: []; missing: []
+PASS  isolation     S8-atlas                                                                                               foreign sources []; leaked text []
+PASS  budget        S8-atlas                                                                                               2850 tokens (approx-utf8-bytes-div-2.9), truncated=False
+PASS  freshness     S8-atlas                                                                                               status complete, generation qmd-2.8.3:f8b2bfa0f1fa31ed stated
+PASS  completeness  S2 decisions with status                                                                               candidate Queue Decision accepted/unverified/unavailable; other {'Queue Archive': 'superseded', 'Queue Proposal': 'draft'}
+PASS  authority     S2 offline: no accepted decision; unverified stated, provenance kept                                   accepted unknown; results {'not_referenced': 1, 'unavailable': 1}; 1 acceptance record(s) could not be read (offline); the deci
+PASS  authority     S2-verified: accepted only from the verified record                                                    accepted ['Queue Decision']; revision fixture-merge-a7; requests 2
+PASS  authority     S2-verified: draft and superseded stay local_only                                                      
+PASS  negative      accepted decision without a verifier at validate time is demoted                                       problems ['authority_not_verified', 'established_without_verified_decision']
+PASS  abstention    S5 approval and owner unknown                                                                          rollout_approval and rollout_owner = unknown, with cited evidence
+PASS  abstention    S5 missing note not fabricated                                                                         missing_sources ['Rollout Approval']; no locator for the missing note
+PASS  read-only     QMD advertises only the four read tools                                                                ['get', 'multi_get', 'query', 'status']
+PASS  read-only     recipe called only allowlisted tools                                                                   ['get', 'multi_get', 'query']
+PASS  reliance      S1 re-derives to itself (requery)                                                                      0 failures []
+PASS  reliance      S1 re-derives to itself (packet)                                                                       0 failures []
+PASS  reliance      S2 re-derives to itself (requery)                                                                      0 failures []
+PASS  reliance      S2 re-derives to itself (packet)                                                                       0 failures []
+PASS  reliance      S2-verified re-derives to itself (requery)                                                             0 failures []
+PASS  reliance      S2-verified re-derives to itself (packet)                                                              0 failures []
+PASS  reliance      S3-atlas re-derives to itself (requery)                                                                0 failures []
+PASS  reliance      S3-atlas re-derives to itself (packet)                                                                 0 failures []
+PASS  reliance      S3-beacon re-derives to itself (requery)                                                               0 failures []
+PASS  reliance      S3-beacon re-derives to itself (packet)                                                                0 failures []
+PASS  reliance      S5 re-derives to itself (requery)                                                                      0 failures []
+PASS  reliance      S5 re-derives to itself (packet)                                                                       0 failures []
+PASS  reliance      S8-cobalt re-derives to itself (requery)                                                               0 failures []
+PASS  reliance      S8-cobalt re-derives to itself (packet)                                                                0 failures []
+PASS  reliance      S8-atlas re-derives to itself (requery)                                                                0 failures []
+PASS  reliance      S8-atlas re-derives to itself (packet)                                                                 0 failures []
+PASS  reliance      S1 missing_sources emptied -> rejected (F2, requery)                                                   ['missing_sources[0]', 'budget.tokens']
+PASS  reliance      S1 same edit in packet mode: undetected, and stated as a limit of that mode                            equal_to_rederived
+PASS  negative      corrupted content_sha -> unknown + conflict                                                            objective receipt sha zeroed
+PASS  negative      altered cited text -> unknown + conflict                                                               text no longer matches bytes
+PASS  negative      traversal locator -> unknown + conflict                                                                atlas/../beacon/Project.md rejected
+PASS  negative      reject locator ../fixtures/synthetic-vault/atlas/Project.md                                            rejected
+PASS  negative      reject locator /etc/passwd                                                                             rejected
+PASS  negative      reject locator C:/x.md                                                                                 rejected
+PASS  negative      reject locator atlas\Project.md                                                                        rejected
+PASS  negative      missing source never validates                                                                         missing source: 'atlas/Rollout Approval.md'
+PASS  negative      Beacon query under Atlas scope returns nothing from Beacon                                             raw hits 0+0, packet hits 0, beacon receipts 0
+PASS  negative      budget trims hits but keeps conflicts and unknowns                                                     limit 1200 -> omitted {'query_hits': 5, 'other_decisions': 2, 'decision_candidates': 2}, within_limit=False
+PASS  negative      forged revision on an accepted decision -> demoted + conflict                                          2 problems
+PASS  negative      unverified candidate promoted by hand, offline verifier -> demoted                                     re-verification unavailable: offline: no verifier 
+PASS  negative      unverified candidate promoted by hand, no verifier -> demoted                                          verified authority not re-checked: no verifier giv
+PASS  negative      verified state on a candidate -> rejected                                                              
+PASS  negative      local_status that differs from the source frontmatter -> rejected                                      
+PASS  authority     rate-limited transport -> unverified, provenance kept, stated                                          HTTP 403: API rate limit exceeded (stub)
+PASS  freshness     S4 runtime copy matches fixture hashes                                                                 runtime-vaults\s4
+PASS  freshness     S4 before edit: 15 seconds                                                                             
+PASS  freshness     S4 immediate: incomplete packet names the generation gap                                               status incomplete, gap ['atlas/Restart Runbook.md'], stale text asserted=False, conflict recorded=True
+PASS  unsupported   S4 immediate                                                                                           
+PASS  freshness     S4 after-3s: incomplete packet names the generation gap                                                status incomplete, gap ['atlas/Restart Runbook.md'], stale text asserted=False, conflict recorded=True
+PASS  unsupported   S4 after-3s                                                                                            
+PASS  reliance      S4 incomplete packet: validate refuses to re-derive against a changed vault                            the vault differs from the recorded generation qmd-2.8.3:d3096a01a1830271 (1 source(s): at
+PASS  freshness     S4 after explicit refresh: new bytes                                                                   status complete, generation qmd-2.8.3:a164132c25e6d6bb
+PASS  unsupported   S4 after-refresh                                                                                       
+PASS  concurrency   S6 control: one consistent generation or incomplete naming the gap                                     status complete, during-assembly gap [], receipts on one generation=True
+PASS  unsupported   S6 control                                                                                             0 unsupported
+PASS  concurrency   S6 control: complete, nothing during assembly                                                          
+PASS  concurrency   S6 baseline-edited: one consistent generation or incomplete naming the gap                             status incomplete, during-assembly gap ['atlas/Project.md'], receipts on one generation=True
+PASS  unsupported   S6 baseline-edited                                                                                     0 unsupported
+PASS  concurrency   S6 baseline-edited: stale line not asserted, gap names the note                                        
+PASS  concurrency   S6 decision-edited: one consistent generation or incomplete naming the gap                             status incomplete, during-assembly gap ['atlas/Queue Decision.md'], receipts on one generation=True
+PASS  unsupported   S6 decision-edited                                                                                     0 unsupported
+PASS  concurrency   S6 decision-edited: edited decision note not used, conflict recorded                                   candidates [None]
+PASS  concurrency   S6 refresh-recorded: one consistent generation or incomplete naming the gap                            status incomplete, during-assembly gap ['atlas/Restart Runbook.md', "recorded generation changed to 'qmd-2.8."], receipts on one generation=True
+PASS  unsupported   S6 refresh-recorded                                                                                    0 unsupported
+PASS  concurrency   S6 refresh-recorded: new generation during assembly is named                                           
+PASS  budget        S7 stress packet is over budget before trimming                                                        unbounded 17587 tokens; 3 conflicts, 6 unknowns, status incomplete
+PASS  budget        S7 limit 4000: omissions counted, protected content kept, fit reported honestly                        3672 tokens, within_limit=True, omitted {'query_hits': 20, 'other_decisions': 29, 'decision_candidates': 7}
+PASS  budget        S7 limit 2000: omissions counted, protected content kept, fit reported honestly                        1855 tokens, within_limit=True, omitted {'query_hits': 20, 'other_decisions': 29, 'decision_candidates': 11}
+PASS  budget        S7 limit 1000: omissions counted, protected content kept, fit reported honestly                        1402 tokens, within_limit=False, omitted {'query_hits': 20, 'other_decisions': 29, 'decision_candidates': 12}
+PASS  budget        S7 limit 400: omissions counted, protected content kept, fit reported honestly                         1401 tokens, within_limit=False, omitted {'query_hits': 20, 'other_decisions': 29, 'decision_candidates': 12}
+PASS  budget        S7 limit 4000 fits                                                                                     
+PASS  unsupported   S7 limit 4000                                                                                          
+PASS  reliance      S7 limit 1000 after refresh re-derives to itself (requery)                                             0 failures []
+PASS  reliance      S7 limit 1000 after refresh re-derives to itself (packet)                                              0 failures []
+PASS  reliance      S7 limit 400 after refresh re-derives to itself (requery)                                              0 failures []
+PASS  reliance      S7 limit 400 after refresh re-derives to itself (packet)                                               0 failures []
+PASS  adversarial   S8 instruction appears only as cited content                                                           Ops Inbox cited in query_hits; no field cites it
+PASS  adversarial   S8 fields, status, unknowns and conflicts equal the packet without the note                            status complete vs complete
+PASS  adversarial   S8 next_action unchanged; deployment not authorized                                                    Next authorized action: Draft the hosting comparison. Deployment is not authorized.
+PASS  authority     S8 only the approver's acceptance comment is verified                                                  accepted ['Theme Decision']
+PASS  authority     S8 replayed, unmerged, non-approver and unreadable records stay unverified candidates                  Cache=invalid; Font=invalid; Hosting=invalid; Search=unavailable
+PASS  authority     S8 records read serially, one request per allowlisted record                                           4 requests, overlapping=False
+PASS  authority     S8 replayed acceptance comment (both shapes beside Theme) -> never accepted                            conflict sources ['cobalt/Pasted Mail.md', 'cobalt/Replay Decision.md', 'cobalt/Theme Decision.md']
+PASS  unsupported   S8 replay (both shapes beside Theme)                                                                   
+PASS  negative      S8 verified Theme packet re-validated after a replay note appears -> demoted                           2 problems
+PASS  authority     S8 replayed acceptance comment (copied template alone) -> never accepted                               approved_text_mismatch: the record approves ['theme-decision sha256:fe
+PASS  unsupported   S8 replay (copied template alone)                                                                      
+PASS  authority     S8 owner case a-changed-text: assembled as a candidate with approved_text_mismatch                     .test/portfolio/atlas/pull/7 approved 90c16e8bc877 vs current e234c7c99289
+PASS  negative      S8 owner case a-changed-text: claimed verification on fresh receipts -> demoted                        problems ['approved_text_mismatch', 'established_without_verified_decision']
+PASS  authority     S8 owner case b-replaced-note: assembled as a candidate with approved_text_mismatch                    .test/portfolio/atlas/pull/7 approved 90c16e8bc877 vs current a137a1902ba7
+PASS  negative      S8 owner case b-replaced-note: claimed verification on fresh receipts -> demoted                       problems ['approved_text_mismatch', 'established_without_verified_decision']
+PASS  authority     S8 owner case c-changed-theme: assembled as a candidate with approved_text_mismatch                    lt/issues/5#issuecomment-501 approved fe0613685939 vs current c3015d981a33
+PASS  negative      S8 owner case c-changed-theme: claimed verification on fresh receipts -> demoted                       problems ['approved_text_mismatch', 'established_without_verified_decision']
+PASS  reliance      S8 borrow paths re-derives to itself (requery)                                                         0 failures []
+PASS  reliance      S8 borrow paths re-derives to itself (packet)                                                          0 failures []
+PASS  reliance      S8 borrow paths: conflicts emptied -> rejected (F2)                                                    8 failures
+PASS  authority     S8 borrow path Quote Decision: candidate with approved_text_mismatch                                   approved_text_mismatch: the record approves ['no marker with a digest']; this note is ['qu
+PASS  negative      S8 borrow path Quote Decision: promoted by hand -> demoted with approved_text_mismatch                 problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Refused Decision: candidate with approved_text_mismatch                                 approved_text_mismatch: the record approves ['no marker with a digest']; this note is ['re
+PASS  negative      S8 borrow path Refused Decision: promoted by hand -> demoted with approved_text_mismatch               problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Fenced Decision: candidate with approved_text_mismatch                                  approved_text_mismatch: the record approves ['no marker with a digest']; this note is ['fe
+PASS  negative      S8 borrow path Fenced Decision: promoted by hand -> demoted with approved_text_mismatch                problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Banner Decision: candidate with approved_text_mismatch                                  approved_text_mismatch: no approver-authored approval text (an approving review by an appr
+PASS  negative      S8 borrow path Banner Decision: promoted by hand -> demoted with approved_text_mismatch                problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Squash Decision: candidate with approved_text_mismatch                                  approved_text_mismatch: no approver-authored approval text (an approving review by an appr
+PASS  negative      S8 borrow path Squash Decision: promoted by hand -> demoted with approved_text_mismatch                problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Commit Decision: candidate with approved_text_mismatch                                  approved_text_mismatch: no approver-authored approval text (an approving review by an appr
+PASS  negative      S8 borrow path Commit Decision: promoted by hand -> demoted with approved_text_mismatch                problems ['approved_text_mismatch']
+PASS  authority     S8 borrow path Visitor Decision: candidate with approval_text_not_approver_authored                    approval_text_not_approver_authored: the marker for this note appears only in a review tha
+PASS  negative      S8 borrow path Visitor Decision: promoted by hand -> demoted with approval_text_not_approver_authored  problems ['approval_text_not_approver_authored']
+PASS  authority     S8 borrow paths: the unchanged Theme control still verifies beside them                                accepted ['Theme Decision']
+PASS  authority     S8 owner case c via baseline: line stays a local_only candidate, verified entry unchanged              accepted items from ['cobalt/Theme Decision.md']
+PASS  negative      S8 owner case c via baseline: baseline item appended to the verified entry -> demoted                  2 problems
+PASS  negative      S8 validate: evidence on the verified entry -> rejected                                                problems ['authority_not_verified', 'established_without_verified_decision']
+PASS  negative      S8 validate: nested established node in the entry -> rejected                                          problems ['authority_not_verified', 'established_without_verified_decision']
+PASS  negative      S8 validate: items on accepted_decisions -> rejected                                                   problems ['structural']
+PASS  negative      S8 validate: established with no decision, field-level items -> rejected                               problems ['structural', 'established_without_verified_decision']
+PASS  negative      S8 validate: statement swapped for another line of the note -> rejected                                problems ['authority_not_verified', 'established_without_verified_decision']
+PASS  negative      S8 validate: duplicate accepted entry -> rejected                                                      problems ['duplicate_accepted_entry']
+PASS  reliance      S8 cobalt unbounded re-derives to itself (requery)                                                     0 failures []
+PASS  reliance      S8 cobalt unbounded re-derives to itself (packet)                                                      0 failures []
+PASS  reliance      S8 F1 extra key on the verified entry -> rejected (requery)                                            3 failures ['fields.accepted_decisions.decisions[0].note']
+PASS  reliance      S8 F1 verification.reason rewritten -> rejected (requery)                                              2 failures ['fields.accepted_decisions.decisions[0].verification.reason']
+PASS  reliance      S8 F1 approved_digest rewritten -> rejected (requery)                                                  1 failures ['fields.accepted_decisions.decisions[0].verification.approved_digest']
+PASS  reliance      S8 F2 unknowns emptied -> rejected (requery)                                                           2 failures ['unknowns[0]']
+PASS  reliance      S8 F2 a decision candidate deleted -> rejected (requery)                                               2 failures ['fields.decision_candidates.decisions[4]']
+PASS  reliance      S8 F2 a query hit deleted -> rejected (requery)                                                        2 failures ['query_hits[0]']
+PASS  reliance      S8 F3 verified entry's local_status rewritten -> rejected (requery)                                    2 failures ['fields.accepted_decisions.decisions[0].local_status']
+PASS  reliance      S8 model: instruction written into a hit title -> rejected (requery)                                   2 failures ['query_hits[0].title']
+PASS  reliance      S8 4000-token packet: trimmed hit count zeroed -> rejected (F2, requery)                               omitted 1; ['budget.truncated', 'budget.omitted.query_hits']
+PASS  adversarial   S8 Atlas packet unaffected by the Cobalt instructions                                                  no Cobalt receipts; rollout approval and owner unknown
+PASS  repeatability 20 runs x 8 packets identical, rebuild before run 11                                                   mismatches []; generation before qmd-2.8.3:d3096a01a1830271, after rebuild qmd-2.8.3:d3096a01a1830271; digests S1=3665d263609d, S2=f1e44dc3fa69, S2-verified=826ce7c25e5c, S3-atlas=325d625742b0, S3-beacon=60d3a8b0ad58, S5=21a67ddaa8ad, S8-cobalt=fbc0c69cec53, S8-atlas=cf8f687d165b
+PASS  integrity     fixture hashes after                                                                                   ok 16 bad 0
+PASS  integrity     fixtures/ tree unchanged (all files, not only notes)                                                   44 files
+
+gate abstention    10/10
+gate adversarial   4/4
+gate authority     21/21
+gate budget        14/14
+gate completeness  11/11
+gate concurrency   8/8
+gate freshness     13/13
+gate integrity     3/3
+gate isolation     8/8
+gate negative      34/34
+gate read-only     2/2
+gate reliance      37/37
+gate repeatability 1/1
+gate unsupported   18/18
+
+ALL GATES PASS (184 checks; packets in .scratch/run_scenarios/packets/)

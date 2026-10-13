@@ -44,6 +44,12 @@ that external state lane. Continuous 250 MiB lane accounting sums
 sums repository `.scratch`, `.qmd` and `runtime-vaults`. Both caps terminate the
 complete worker process tree.
 
+Those shared roots resolve inside this A worktree. They do not include sibling
+worktrees; the orchestrator enforces the overnight 1 GiB total across worktrees
+using the 250 MiB lane allocations and reported sibling totals. After the two
+reserved runs, this A lane used 392,442 bytes and all three A-worktree shared
+roots used 2,574,055 bytes.
+
 The canonical sorted compact JSON projection of `runtime`, `measurement`,
 `evidence` and `scenarios` hashes to
 `e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1`

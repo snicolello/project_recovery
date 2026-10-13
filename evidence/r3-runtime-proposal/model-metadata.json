@@ -1,0 +1,21 @@
+{
+  "observed_at_utc": "2026-10-13T01:51:57.8005139Z",
+  "repository": "Qwen/Qwen3-4B-GGUF",
+  "revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+  "license": "apache-2.0",
+  "file": {
+    "type": "file",
+    "oid": "1206cf64b64392ba533af8e1e6d793ac290c8111",
+    "size": 2497280256,
+    "lfs": {
+      "oid": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "size": 2497280256,
+      "pointerSize": 135
+    },
+    "xetHash": "9375c1fd02b321abc3f51b69ff7fcdd187af17f0d694c5b05000b54664292e17",
+    "path": "Qwen3-4B-Q4_K_M.gguf"
+  },
+  "source_api": "https://huggingface.co/api/models/Qwen/Qwen3-4B-GGUF",
+  "metadata_only": true,
+  "model_bytes_downloaded": false
+}

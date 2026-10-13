@@ -114,8 +114,9 @@ synthetic fixture manifest at 16/16 immediately before and after each check.
   control in S5, S7, and S8 totals 42,136, a 9.256% achievable reduction. The
   15% reference was not met and is not an acceptance threshold.
 
-The per-scenario choices and values are the table above. S7 `project` and `report`
-again passed row oracles but were excluded for semantic mismatch. The raw result,
+The per-scenario choices and values are in the provisional Attempt 2 table. S7
+`project` and `report` again passed row oracles but were excluded for semantic
+mismatch. The raw result,
 lossless packets, fetch envelopes, row stream, complete ledger, boundary summary,
 and empty worker logs are under `attempt-03/`; `results.json` is the same result
 content with LF-normalized line endings and `summary.json` is the concise owner
@@ -127,11 +128,108 @@ raw files under `attempt-03/` are preserved with explicit
 Top-level `results.json` is an LF-normalized audit export with identical parsed
 JSON and base64 packet values. Attempts 1 and 2 remain byte-identical.
 
-## Independent final audit
+## Post-hoc analysis (not predeclared)
 
-The independent evidence audit passed with no blocking or actionable findings at
-reviewed evidence revision `f63a2781bd5effe5b805aef09138a84bf705187f`.
-It independently decoded all 64 packets; verified all 1,328 packet receipts, 460
+The committed [recomputation script](https://github.com/snicolello/project_recovery/blob/9266a989194fc7a1af9ca5d67c3229eb7a5722e0/scripts/analyze_stage_a_retained.py)
+produces the checked [post-hoc output](https://github.com/snicolello/project_recovery/blob/9266a989194fc7a1af9ca5d67c3229eb7a5722e0/evidence/r3-stage-a/posthoc-analysis.json)
+(SHA-256 `0cd925812d95bbe7dec0832213ee507e4570b5513f6c5b60eb068e0fa1d41f26`).
+It reads the final raw result (SHA-256
+`522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d`)
+and reapplies the existing [volatile-field stripping and compact-byte estimator](https://github.com/snicolello/project_recovery/blob/541ea4397574d2a3ed8874085be4aaf5e37ef704/skills/project-recovery/scripts/packet.py).
+These observations were not in the frozen measurement plan and do not replace the
+predeclared 8.63% figure of record.
+
+All 64 validated packet rows form 48 same-case candidate-to-control comparisons.
+Normalized recovered `fields` match in 46. The two mismatches are the S7 `project`
+and `report` plans at the 2,000-token case, which the predeclared result already
+excluded for semantic mismatch. All 37 eligible comparisons match. The 24 refused
+rows retain no packet and are outside this equivalence claim. Within the eligible
+population, raw `fields` have equal byte lengths but differ in `observed_at`
+timestamps. After the predeclared volatile-field stripping, they are byte-identical;
+the remaining packet-level differences are `query`, `query_hits`,
+`missing_sources`, and derived `budget`. Thus query choice changed echoed search
+material rather than recovered content in the eligible synthetic cases.
+
+The table reports compact JSON value bytes, summed over each plan's consuming
+successful cases. Fetch bytes are separate. Each candidate is the
+best-in-hindsight eligible non-control from its frozen list.
+
+| Scenario | Query plan | Fields | Query hits | Missing sources | Query | Packet | Fetch envelopes | Hit count |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| S1 | control | 6,897 | 2,970 | 125 | 15 | 11,376 | 0 | 5 |
+| S1 | best-in-hindsight (`marker`) | 6,897 | 820 | 2 | 10 | 9,099 | 0 | 1 |
+| S2 | control | 13,950 | 5,512 | 4 | 14 | 22,036 | 0 | 8 |
+| S2 | best-in-hindsight (`decisions`) | 13,950 | 4 | 4 | 50 | 16,564 | 0 | 0 |
+| S3 | control | 9,768 | 1,819 | 4 | 18 | 14,072 | 0 | 3 |
+| S3 | best-in-hindsight (`window`) | 9,768 | 1,000 | 4 | 28 | 13,263 | 0 | 2 |
+| S4 | control | 13,794 | 2,698 | 4 | 18 | 19,254 | 0 | 4 |
+| S4 | best-in-hindsight (`window`) | 13,794 | 1,060 | 4 | 28 | 17,626 | 0 | 2 |
+| S5 | control | 6,897 | 709 | 125 | 9 | 9,110 | 0 | 1 |
+| S5 | best-in-hindsight (`unknown`) | 6,897 | 709 | 125 | 18 | 9,119 | 0 | 1 |
+| S6 | control | 6,897 | 2,970 | 125 | 15 | 11,376 | 0 | 5 |
+| S6 | best-in-hindsight (`marker`) | 6,897 | 820 | 2 | 10 | 9,099 | 0 | 1 |
+| S7 | control | 17,300 | 8 | 8 | 32 | 23,172 | 3,416 | 0 |
+| S7 | best-in-hindsight (`load`) | 17,300 | 8 | 8 | 52 | 23,193 | 3,416 | 0 |
+| S8 | control | 17,154 | 4 | 4 | 40 | 19,490 | 1,337 | 0 |
+| S8 | best-in-hindsight (`marker`) | 17,154 | 822 | 4 | 34 | 20,302 | 1,337 | 1 |
+
+S2's best-in-hindsight `decisions` plan returns zero hits across its two consuming
+cases and performs no explicit fetch. As a post-hoc ablation, emptying both echoed
+`query_hits` and `missing_sources` in the R2 control packets, retaining fetch
+envelopes, and reapplying `ceil(bytes/2.9)` per row changes 46,434 estimated tokens
+to 40,563, a 12.644% reduction. This is an observation only; no follow-up run is
+authorized.
+
+S6 repeats S1's main-case setup for the shared `control` and `marker` queries.
+Their raw packets differ in volatile timestamps, while canonical bytes, packet
+digests, and estimated costs match. Removing S6 gives a 42,511-token control, a
+39,289-token best-in-hindsight non-control total (7.579% lower), and a 38,998-token
+best-in-hindsight total when controls may be retained (8.264% lower).
+
+The predeclared selection yields a best-in-hindsight non-control total of 42,427
+(8.629% below control) and a best-in-hindsight total including retained controls
+of 42,136 (9.256% below control). The sum of each scenario's mean eligible
+non-control plan is 43,477.667 tokens (6.367% below control). The sum of each
+scenario's most expensive eligible non-control is 44,428 tokens (4.320% below
+control). These are hindsight summaries of frozen lists, not estimates of unseen
+query strategies.
+
+The premeasurement history from [revision `5330507`](https://github.com/snicolello/project_recovery/tree/5330507491ea246fc016ad993742cf161b8e0f12)
+to [revision `aab2944`](https://github.com/snicolello/project_recovery/tree/aab29440ff445cdad17dbd2fa8246575079d114c)
+added six exact failure oracles, the `S7-unbounded` diagnostic reference, and
+changed `S6-refresh-recorded` from `not_rederivable` to `rejected`. Each attempt
+launch-gated the hashes in its own `implementation.files`. The
+`fixed_measurement_projection` hash was recorded for comparison but was not
+enforced by the harness at runtime.
+
+The exact duplicate `attempt-03/candidate-results-final.jsonl` was removed. It was
+1,633,789 bytes with SHA-256
+`277639b97a0e91ff94f514f79a2f744372d374b5c367a01713dc39ab31ba0175`,
+identical to retained `candidate-results.jsonl`; the original remains
+[commit-pinned at the preservation revision](https://github.com/snicolello/project_recovery/blob/10849760e6eb380eb8b55308cfffa594276a1a3f/evidence/r3-stage-a/attempt-03/candidate-results-final.jsonl).
+The top-level LF result export was retained because it is parsed-JSON-identical to
+the raw attempt result but not byte-identical. Their hashes are respectively
+`9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597`
+and `522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d`.
+
+Raw attempt paths beginning `C:\dev\...` contain no personal identifiers and were
+kept for hash integrity. The live 20-run ledger remains in gitignored
+`.scratch/r3-stage-a`; committed attempt snapshots preserve the three Stage A
+reservations, and overall usage remains 4/20 including the accepted-core
+regression. This untracked live ledger is a known audit limit.
+
+The 8.1 meaning check is explicit: a separate Codex agent session must review both
+the calculations and the interpretation that eligible synthetic savings come
+from echoed search-list size rather than changed recovered content. R3 remains
+deferred and unaccepted. Re-entry requires R4 pilot evidence that recovered
+content depends on the query, or that frontier-token cost becomes material.
+
+## Separate Codex audit session
+
+A separate Codex agent session verified arithmetic and evidence integrity with no
+blocking or actionable findings at the
+[reviewed evidence revision](https://github.com/snicolello/project_recovery/blob/f63a2781bd5effe5b805aef09138a84bf705187f/evidence/r3-stage-a/README.md#independent-final-audit).
+That session decoded all 64 packets; verified all 1,328 packet receipts, 460
 required evidence entries, 42 fetch envelopes, 24 refusal oracles, every row cost,
 the S7 cross-budget checks and semantic exclusions, and both aggregates. It also
 confirmed fixture integrity, runtime and scratch bounds, the global 4/20 run count,
@@ -146,8 +244,9 @@ The separately reserved baseline command `python -I scripts/run_scenarios.py`
 ran once with an external 600-second process-tree boundary. It exited 0 after
 133.850 seconds with `ALL GATES PASS (184 checks)`. Fixture hashes were 16/16
 before and after. Full stdout, empty stderr and the boundary summary are under
-`regression-184/`. This establishes that the accepted R2 path remained intact;
-it does not convert the refused Stage A attempt into a measurement.
+`regression-184/`. This establishes that the accepted R2 path remained intact. It
+does not change attempt 1's setup-refusal status, attempt 2's provisional status,
+or attempt 3's status as the final auditable measurement.
 
 ## Predeclared infrastructure amendment
 

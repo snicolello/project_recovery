@@ -72,8 +72,12 @@ exact compact packet bytes, with matching charged lengths and digests; all 24
 expected refusals remain packet-free and charge zero. The independently
 recomputable result repeats the 42,427-token best-non-control total (8.629% below
 the 46,434 control) and the 42,136 achievable total when cheaper controls are kept
-(9.256% below). The result is pending final independent evidence audit and owner
-decision.
+(9.256% below). A separate Codex agent session verified the retained result's
+arithmetic and evidence integrity. The owner deferred R3 without accepting it.
+The predeclared 8.63% remains the figure of record. Re-entry requires R4 pilot
+evidence that recovered content depends on the query, or that frontier-token cost
+becomes material. The committed evidence README gives the post-hoc mechanism and
+population boundaries.
 
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:

@@ -2,52 +2,54 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Declared baseline for Project Recovery: verified current state and one safe next action.
-- Status: Current. R2 accepted (bounded, owner ruling of 2026-10-12); R3 not started.
-- As of: 2026-10-12, `main` at `0b11a91` (PR #5 merged by the owner) plus this change. R2 ticket: https://github.com/snicolello/stephen-project-hub/issues/119 (closed) under Epic #113.
-- Authority: Stephen (owner), through rulings recorded on hub Epic https://github.com/snicolello/stephen-project-hub/issues/113. Author of this baseline: a Claude Personal session on 2026-10-11; approver: the owner, at the R0 gate on the Epic.
-- Sources: hub Epic #113 (rulings 1 to 9 and the release roadmap, 2026-10-10); `docs/discovery/*` (Astra Phase 0 brief, acceptance criteria and gap list, 2026-10-10); `evidence/scoped-evaluation-2026-10-10/` (executed tool runs, Basic Memory 0.23.2 and QMD 2.8.3).
-- Objective: hold the accepted R2 baseline (verified authority, decision candidates, stated freshness) until the owner opens R3 on Epic #113.
-- Next action: none authorized. R3 (Librarian) starts only on an owner ruling on Epic #113, and may not rely on model-produced packets before project_recovery #6 (the R3 reliance gate) closes.
+- Status: Current. R2 accepted; reliance gate #6 accepted and closed; R3 not started.
+- As of: 2026-10-12 (owner's time zone), `main` at `fe6b4fb` (PR #8 merged by the owner), plus this documentation update.
+- Authority: Stephen (owner), through rulings recorded on hub Epic https://github.com/snicolello/stephen-project-hub/issues/113. The owner's “Approved and Merged, great work” acceptance of PR #8 is [recorded here](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6136063604).
+- Sources: Epic #113 and its rulings; the [#6 acceptance record](https://github.com/snicolello/project_recovery/issues/6#issuecomment-6136067672); merged PRs #1, #5 and #8; `evidence/reliance-gate-2026-10-12/`.
+- Objective: hold the accepted R2 baseline and the completed reliance gate until the owner opens R3 on Epic #113.
+- Next action: await a separate owner ruling on the [R3 decision packet](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6130175603). Neither proposed stage nor the proposed 15% threshold is approved. Closing #6 does not start R3.
 - Read when:
   - `PROJECT.md`: checking identity, outcome, trust zone or boundaries.
   - `docs/recovery-contract.md`: implementing or reviewing any release; it is the product contract.
   - `fixtures/scenario-plan.json` and `fixtures/synthetic-vault/`: writing or running scenarios.
-  - `skills/project-recovery/SKILL.md` and `docs/quickstart.md`: running or reviewing the recipe, the authority policy, the tokenizer check and the project_recovery #2 resolutions; `scripts/run_scenarios.py` scores every gate (S1 to S8, offline).
-  - `docs/discovery/gap-list-2026-10-10.md`: understanding why the project builds a verification layer and not a retrieval engine.
-  - `evidence/scoped-evaluation-2026-10-10/README.md`: reproducing the hand trial.
+  - `skills/project-recovery/SKILL.md` and `docs/quickstart.md`: running the recipe or checking validation guarantees and limits; `scripts/run_scenarios.py` scores S1 to S8.
+  - `docs/discovery/gap-list-2026-10-10.md` and `evidence/scoped-evaluation-2026-10-10/README.md`: understanding the verification layer and the original hand trial.
 
 ## Current baseline
 
-Release R0 content and release R1 (`manifest/`, `skills/project-recovery/` with pinned QMD lockfile and stdlib Python scripts, `scripts/run_scenarios.py`, unit tests, `docs/quickstart.md`) are on `main`. R2 (merged `0b11a91`, PR #5): `authority.py` (serial verifier with offline, snapshot and gh transports), the manifest authority policy, `decision_candidates` versus verified `accepted_decisions`, a freshness re-check after assembly, seven Cobalt fixture notes, seven non-indexed borrow-path notes and about twenty synthetic GitHub snapshots, scenarios S6 to S8, 147 offline gate checks and 90 unit tests, remediated after independent review (records bound to the citing note), owner review (records bound to the approved note bytes by digest) and two re-reviews (whole-line markers in approver comments or approving reviews only; baseline lines never attached; record identity normalized across projects), and a validate pass that checks the bound content under `accepted_decisions` against what assembly produces. Five independent reviews and five remediations are recorded on hub #119; assembly (vault bytes to packet) held against every probe since `64fb1a9`. The contract is unchanged. No Librarian code exists.
+R0, R1 and R2 are on `main`: the recovery contract, synthetic fixtures, manifest, pinned QMD recipe, deterministic assembler, serial GitHub authority verification and freshness checks. The recovery path is read-only. Fixtures remain synthetic; no real vault or Work-zone material is authorized. The product contract is unchanged. No Librarian code exists.
 
-**R2 supported boundary (owner ruling, [hub #113](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6127542754), 2026-10-12).** R2 is accepted for synthetic fixtures using packets directly produced by the deterministic assembler. A packet modified after assembly, or produced by a model, is outside the trusted boundary: `validate` does not establish its trustworthiness or completeness. The [fifth review's](https://github.com/snicolello/stephen-project-hub/issues/119#issuecomment-6127543421) findings F1 to F3 (validate accepts hand-edited values inside a verified entry; validate does not re-assemble, so deletions are silent; an emptied entry keeps `verified` after a local-status mismatch, exit 1) are a temporary accepted exception, not resolved defects; F4 (stale title-check line) is corrected. They are preserved with their dispositions on project_recovery #6, the R3 reliance gate. A newly discovered defect inside the assembly boundary still blocks R2.
+PR #8 adds the accepted #6 reliance gate. Received packets must pass an explicit structural allowlist and equal-checks against fresh deterministic re-derivation, apart from the documented wall-clock fields. The default `validate --hits requery` obtains hits through QMD; `--hits packet` reconstructs from the packet's hit claims and has narrower guarantees. A consumer uses the returned re-derived packet only after successful validation.
+
+The final allocation fix stops structural traversal on discovery of the 101st problem, retaining the first 100 diagnostics in order plus a truncation marker. This bounds diagnostic amplification; parsing and other processing still scale with input size. Counts, ranks, limits and token figures above 10^15, nesting deeper than 64 levels, and input beyond the documented 4 MB allowance are rejected.
+
+**Acceptance and remaining limits.** The [bounded R2 ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6127542754) accepted assembler-produced packets and preserved F1 to F3 as temporary exceptions. Those findings are now addressed by the accepted #6 implementation and its explicit guarantees; they are no longer an open reliance gate. This does not make packet mode equivalent to requery: hit selection, order, titles and omitted-hit count remain packet claims, and deleted traces of omitted hits are not detected. Packet mode rejects packets whose query dropped out-of-scope results and requires requery. Wall-clock fields are checked for presence and format. Vault bytes, snapshot files and approvers' GitHub accounts remain trust roots; validation does not establish submitter provenance. These limits are documented in the skill and quickstart and still apply to any future R3 design.
 
 ## Completed
 
-- 2026-10-12: R2 merged `0b11a91` (PR #5) under the owner's bounded acceptance ruling; gate recorded on hub Epic #113; hub #119 closed.
-- 2026-10-10: Phase 0 discovery (Astra, Codex) and the one-day hand trial of Basic Memory and QMD; consolidated into hub Epic #113 with nine owner rulings. Hub #64 closed as absorbed; hub #17 item (4) repointed.
-- 2026-10-11: R2 implemented and submitted for review (hub #119); project_recovery #2 items 1 to 4 resolved (see `skills/project-recovery/SKILL.md`).
-- 2026-10-11: R1 merged `22bcaa7` (PR #1); gate recorded on hub Epic #113.
-- 2026-10-11: repository scaffolded under the project-onboarding skill; Apache-2.0 licence; Astra outputs imported with workspace paths scrubbed.
+- 2026-10-12: reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) accepted and closed after owner merge of [PR #8](https://github.com/snicolello/project_recovery/pull/8) at `fe6b4fb`; acceptance recorded on Epic #113. The merged tree is identical to reviewed head `eb7380b` (allocation code `71e251d`).
+- 2026-10-12: R2 merged `0b11a91` (PR #5) under the owner's bounded acceptance ruling; gate recorded on Epic #113; hub #119 closed. PR #7 recorded the post-R2 baseline.
+- 2026-10-11: R1 merged `22bcaa7` (PR #1); gate recorded on Epic #113. project_recovery #2 items 1 to 4 were resolved and the issue closed after R2.
+- 2026-10-11: repository scaffolded with Apache-2.0 licence; discovery outputs imported with workspace paths scrubbed.
+- 2026-10-10: Phase 0 discovery and the hand trial of Basic Memory and QMD consolidated into Epic #113 with nine owner rulings. Hub #64 closed as absorbed; hub #17 item (4) repointed.
 
 ## Pending
 
-- None. project_recovery #2 closed after the R2 merge (items 1 to 4 resolved on `main`).
+- Owner ruling on the R3 decision packet. Approval of PR #8 completes a prerequisite only; no R3 implementation, model call or new dependency is authorized.
 
 ## Deferred
 
-- R3 Librarian, R4 vault pilot, R5 public v1.0: each behind its predecessor's gate on Epic #113.
-- R3 reliance gate (project_recovery #6): before R3 relies on any model-produced packet, `validate` must enforce an exact shape allowlist on accepted entries, items and receipts, replace or equal-check the verification block against fresh re-verification, and either re-derive conflicts, unknowns and candidates from the vault or state in the skill text that it cannot detect deletions. This gate is separate from R3 planning and is not closed by the R2 gate.
+- R3 Librarian, R4 vault pilot, R5 public v1.0: each needs its applicable owner ruling on Epic #113.
 - Comparative 40-case benchmark: cancelled under ruling 3; re-entry only if a later release gate cannot be decided without it.
 
 ## Blocked
 
-- None.
+- No unresolved implementation defect in the completed allocation remediation. R3 awaits authorization as above.
 
 ## Evidence
 
-- Hub Epic #113 and its ruling comments; hub PR #114 (STATE.md routing).
-- `evidence/scoped-evaluation-2026-10-10/evidence-verification.json`: twenty artifact consistency checks, all true, from the hand trial.
-- `fixtures/synthetic-vault-hashes.json`: SHA-256 of the nine fixture notes.
-- R1: https://github.com/snicolello/project_recovery/pull/1 (merged `22bcaa7`; `scripts/run_scenarios.py` gate output, review remediation, completion view on hub #118).
-- R2: https://github.com/snicolello/project_recovery/pull/5 (merged `0b11a91`); five review and remediation records on hub #119; the fifth review's full report and the owner's bounded acceptance ruling there and on #113; validation at `bc6b8d5` recorded on PR #5.
+- [Final #6 completion evidence](https://github.com/snicolello/project_recovery/issues/6#issuecomment-6136010028): 126 unit tests run, 125 passed and one symlink-permission skip; 184/184 actual-QMD scenario checks, including 20 repeat runs and index rebuild. The Windows junction check passed outside the restrictive sandbox. These checks apply to the merged code because its tree equals reviewed head `eb7380b`.
+- `evidence/reliance-gate-2026-10-12/allocation-results.json`, `allocation_repro.py` and `versions.json`: reproducible before/after evidence and existing pinned runtimes. The 10,000-empty-hit input reduced structural peak traced Python allocation from 17,213,118 to 36,124 bytes; full validation remained rejecting in both modes. Measurements use `tracemalloc`, not process RSS, and did not approach the 4 MB allowance.
+- Independent focused review of `603b6c3..71e251d` by a separate agent session: no remaining allocation finding; five focused tests and reproduction rerun. Earlier reliance-gate review history and its limits remain on PR #8 and issue #6.
+- `fixtures/synthetic-vault-hashes.json`: 16/16 SHA-256 hashes matched before and after remediation; the entire 44-file fixture tree and product contract were unchanged.
+- Historical evidence: `evidence/reliance-gate-2026-10-12/results.json` records the earlier matrix at `fc2ffa9`, not the final allocation run. R2 acceptance evidence at `bc6b8d5` (90 tests, 147 scenario checks) is on PR #5 and hub #119. The hand-trial consistency checks remain in `evidence/scoped-evaluation-2026-10-10/evidence-verification.json`.

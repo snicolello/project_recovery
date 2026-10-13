@@ -5,12 +5,15 @@
     python -I recover.py fetch    --manifest M --project P --source "atlas/Project.md" --start 9 --end 10
     python -I recover.py assemble --manifest M --project P --query "Atlas project" [--max-tokens 4000] [--out F]
                                   [--verifier offline|snapshot|gh] [--snapshots DIR]
-    python -I recover.py validate --manifest M --packet packet.json [--verifier ...] [--snapshots DIR]
+    python -I recover.py validate --manifest M --packet packet.json [--hits requery|packet]
+                                  [--verifier ...] [--snapshots DIR]
 
 Every command prints JSON on stdout. ``assemble`` prints compact JSON, the exact form
 the 4,000-token bound is counted on; the other commands print indented JSON. Only
 ``refresh`` changes anything, and only the derived index under <repo>/.qmd/.
-``validate`` exits 1 when any claim fails (see packet.audit). ``--verifier`` chooses how
+``validate`` re-derives the packet and exits 0 only when the packet is well-formed and
+equals its re-derivation (see rederive.py; the result's ``guarantee`` says what that
+does and does not establish). ``--verifier`` chooses how
 acceptance records are read: ``offline`` (nothing is read; every referenced record is
 unverified), ``snapshot`` (fixed response files), or ``gh`` (live, read-only ``gh api``
 GET requests, one at a time). The default is the manifest's ``authority_policy.verifier``.
@@ -26,6 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import packet as pk  # noqa: E402
 import recipe  # noqa: E402
+import rederive  # noqa: E402
+import shape  # noqa: E402
 from qmd_client import McpSession  # noqa: E402
 from receipts import SourceError, make_receipt, normalize_text, safe_resolve, validate_receipt  # noqa: E402
 
@@ -64,6 +69,9 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--out", type=Path, help="also write the packet to this file (UTF-8)")
         if name == "validate":
             p.add_argument("--packet", required=True, type=Path)
+            p.add_argument("--hits", choices=rederive.MODES, default="requery",
+                           help="requery: run the packet's query through QMD again (default); "
+                                "packet: replay the packet's own hit selection, without QMD")
         if name in ("assemble", "validate"):
             p.add_argument("--verifier", choices=("offline", "snapshot", "gh"),
                            help="acceptance-record transport (default: the manifest's)")
@@ -76,22 +84,21 @@ def main(argv: list[str] | None = None) -> int:
         emit({k: record[k] for k in ("generation", "refreshed_at", "engine")} | {"documents": len(record["files"])})
         return 0
     if args.cmd == "validate":
-        original = json.loads(args.packet.read_text(encoding="utf-8"))
-        project = m.projects.get(original.get("project")) if isinstance(original, dict) else None
         try:
-            expected = recipe.load_generation(m)["generation"]
-        except recipe.RecipeError:
-            expected = None
-        recheck = None
-        if project is not None:
-            verifier = recipe.make_verifier(m, args.verifier, args.snapshots)
-            recheck = recipe.make_rechecker(m, original["project"], verifier)
-        checked, problems = pk.audit(original, m.vault_root, expected, project.root if project else None, recheck)
-        if project is None:
-            problems.append({"field": "project", "kind": "scope_mismatch", "reason": "packet project not in manifest"})
-        emit({"failures": len(problems), "problems": problems, "recorded_generation": expected, "packet": checked})
-        return 1 if problems else 0
+            data = args.packet.read_bytes()
+        except OSError as exc:
+            data = None
+            result = {"result": "not_rederivable", "failures": 1, "packet": None,
+                      "problems": [{"check": "input", "field": "packet", "kind": "unreadable", "reason": str(exc)}]}
+        if data is not None:
+            result = rederive.validate(m, data, args.verifier, args.snapshots, args.hits)
+        emit(result)
+        return 0 if result["result"] == "equal_to_rederived" else 1
 
+    if args.cmd == "assemble" and args.max_tokens is not None and not 1 <= args.max_tokens <= shape.MAX_INT:
+        # validate refuses any limit outside this range, so assemble never produces one
+        emit({"error": f"--max-tokens must be from 1 to {shape.MAX_INT}"})
+        return 2
     proj = m.projects[args.project]
     with McpSession(m.state_dir) as session:
         if args.cmd == "query":

@@ -5,7 +5,7 @@ description: Recover a project's governing state (objective, authority, decision
 
 # Project recovery: read, refresh, assemble
 
-Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 adds serial GitHub acceptance verification, the decision-candidate distinction (owner ruling B, hub #113) and a freshness re-check after assembly. Commands run from the repository root; every command prints JSON.
+Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 adds serial GitHub acceptance verification, the decision-candidate distinction (owner ruling B, hub #113) and a freshness re-check after assembly. `validate` re-derives a received packet and compares it value for value (project_recovery #6, the R3 reliance gate). Commands run from the repository root; every command prints JSON.
 
 ## Rules
 
@@ -36,22 +36,25 @@ Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 
    7. `budget`: token estimate under `approx-utf8-bytes-div-2.9` (ceiling of bytes / 2.9), the 4,000 limit, and how many query hits, other decisions and decision candidates were omitted to fit (trimmed in that order). `accepted_decisions`, the mandatory fields, `conflicts` and `unknowns` are never trimmed; if the packet still does not fit, `within_limit` is false. The estimate is counted on the compact JSON that `assemble` prints and writes with `--out`, so the bound applies to exactly what you receive.
 5. **Fetch detail** separately when needed, by locator and line range:
    `python -I skills/project-recovery/scripts/recover.py fetch --manifest manifest/fixture-vault.json --project atlas --source "atlas/Queue Decision.md" --start 10 --end 16`
-6. **Re-check a packet** you received from elsewhere (for example from a model): `recover.py validate --manifest ... --packet packet.json [--verifier snapshot|gh]`. It checks:
-   - every cited item: the receipt's bytes match the source, the text equals those bytes, the source lies under the manifest's root for the packet's project (a packet cannot widen its own `scope.root`), and the receipt generation equals the recorded generation (the packet's own when none is recorded); a packet whose generation differs from the recorded one also fails;
-   - every node marked `established` has at least one validating item (a decision container needs at least one established decision);
-   - every `authority_state` is a contract state, and `verified` appears only on an entry of `accepted_decisions`;
-   - every accepted decision has a verified result with reference, revision and `verified_at`, and is re-verified through the chosen verifier from its source note's bytes (same reference and revision). Without a verifier that can read the record (the offline default), an accepted decision cannot be confirmed and is demoted to an `unverified` candidate;
-   - every decision's `local_status` equals the frontmatter status in its source bytes;
-   - `conflicts` and `unknowns` are present (missing lists are treated as empty).
+6. **Re-check a packet** you received from elsewhere (another agent, a model, a file edited by hand): `recover.py validate --manifest ... --packet packet.json [--hits requery|packet] [--verifier snapshot|gh]`. Validate trusts a packet only as far as the deterministic assembler reproduces it (project_recovery #6, the R3 reliance gate). It runs three steps and reports input, structure and re-derivation problems separately in `checks`:
+   1. **Input and structure** (`shape.py`). The file must be one UTF-8 JSON object, with no duplicate keys, no NaN, no infinite number, no lone surrogate, no integer beyond Python's 4,300-digit conversion limit, at most 4,000,000 bytes and 64 levels of nesting; every count, rank, limit and token figure is at most 10^15 (`assemble --max-tokens` accepts 1 to 10^15 for the same reason). A query hit ranked above the manifest's search limit is reported as an input problem (`rank_exceeds_search_limit`) and the packet is rejected, since QMD never returns more results than that; the packet-mode replay never holds more entries than the limit. A packet value that re-assembly cannot handle gives `not_rederivable`, never an escaping error. Every object in it must match an exact allowlist of keys and value shapes: an unexpected key, a missing key or a wrong type is a failure, never kept. This is structure only; it says nothing about whether the values are true.
+   2. **Re-derivation** (`rederive.py`). Validate re-runs `assemble` for the packet's project, query and token limit. It reads from the vault bytes at the recorded generation and verifies with its own verifier, so every acceptance record is read again. It refuses (`not_rederivable`, no packet returned) when no generation is recorded, the vault has changed since it was recorded, or the project is not in the manifest.
+   3. **Comparison**. The submitted packet must equal its re-derivation value for value. Any added, rewritten, relabelled, reordered or deleted value fails, anywhere in the packet: an entry, item or receipt key; the `verification` block; the container `basis` or `reason`; `local_status`; a title; `conflicts`, `unknowns`, candidates, `missing_sources`, `generation_gap` and `budget`. Wall-clock values (`observed_at`, `assembled_at`, `verified_at`, `refreshed_at`) count for presence and format only.
 
-   Each failure turns the field `unknown` (or demotes the decision) and adds a conflict. The output reports `failures` and `problems`; exit code 1 means at least one failure. A decision's `title` is checked against its note's hashed bytes (title line, else permalink).
+   The output carries `result`: `equal_to_rederived` (exit 0), or `rejected` or `not_rederivable` (exit 1). It also carries `checks`, `problems` (each tagged `structure`, `rederivation` or `input`), a `guarantee`, and `packet`, which is the **re-derived** packet. In requery mode nothing from the submitted packet survives into it, so a rejected packet still yields the trusted one; in packet mode only the packet's hit selection does (below), re-cited from the vault bytes. A packet checked with a verifier that cannot read its records (for example a snapshot-verified packet validated offline) is rejected, not trusted.
 
-   **What validate does not establish (R2 accepted exception).** A passing `validate` does not establish that a packet received from another agent is complete or trustworthy. R2 supports `validate` on the synthetic fixtures and on packets directly produced by `assemble`; a packet modified after assembly, or produced by a model, is outside that boundary. The owner ruling of 2026-10-12 ([hub #113](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6127542754), recorded on [hub #119](https://github.com/snicolello/stephen-project-hub/issues/119#issuecomment-6127543062)) accepts the following as a temporary exception, not as resolved defects; project_recovery #6 is the R3 reliance gate that must close before any model-produced packet is relied on:
-   - validate checks key names and the bound items of a verified accepted entry, not its other values: an added entry, item or receipt key, a rewritten `verification.reason`, `actor` or `approved_digest`, or a rewritten container `basis` or `reason` passes with 0 failures (fifth review F1);
-   - validate does not re-assemble, so it does not detect deletions or omissions: an emptied `conflicts`, `unknowns`, `missing_sources` or `generation_gap`, a deleted candidate, a zeroed `budget.omitted`, or an unknown field refilled with another validly receipted line is silent (F2);
-   - after a `local_status_mismatch`, the emptied entry stays under `accepted_decisions` as `verified` with no items; the exit code is 1, so this is not silent (F3).
+   `--hits requery` (the default) runs the packet's query through QMD again, so hit selection, order, titles and `budget.omitted.query_hits` are re-derived too. It needs the index for the recorded generation. `--hits packet` needs no QMD: it replays the packet's own hit selection and re-cites every hit from the vault bytes. In that mode, which hits were chosen, their order and titles, and the omitted-hit count are the packet's claim. A trace of an omitted hit (a `missing_sources` entry or a "hit could not be cited" unknown) is re-derived when the packet keeps it but not detected when the packet deletes it. A packet whose query dropped out-of-scope results (`query_hits` `scope_violation` conflicts) is rejected in packet mode, because those results would have to be taken from the packet's own text; validate it with requery. The result's `guarantee.not_established` lists each of these.
 
-   Until #6 closes, treat a packet from a model as untrusted: re-run `assemble` yourself from the same manifest and compare, rather than relying on `validate` alone.
+   **What a pass establishes, and what it does not.** `equal_to_rederived` means the packet is well-formed and is exactly what the deterministic assembler produces from these vault bytes for that project, query and limit, with this verifier. It does not establish:
+   - that the notes are true, current or written by whom they say: the vault is the trust root, and byte equality is integrity, not approval;
+   - anything beyond the verifier's trust root: snapshot files are trusted as given, and live records trust the approvers' GitHub accounts;
+   - who produced the packet, or how: validate carries no signature or provenance for the submitter;
+   - that the query was the right question;
+   - that the vault or the records stay as they were after validation.
+
+   Because the comparison is exact, a model-produced packet is trusted only when it reproduces the assembler's output for its query. Content a model selects or phrases differently is rejected, not partially kept.
+
+   `packet.audit` (and `unsupported_assertions`) remains the claim-level check the scenario gates score on assembled packets: receipts, bound decision content and `local_status`. A local-status mismatch demotes an accepted entry there too. It does not decide whether a received packet can be trusted; `validate` does.
 
 ## Scripts
 
@@ -62,7 +65,9 @@ Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 
 | `scripts/receipts.py` | Span convention, SHA-256, locator allowlist (no traversal, no link or junction escape), receipt validation. |
 | `scripts/authority.py` | Acceptance-record references, the authority policy, serial verifier, and the offline, snapshot and gh transports. |
 | `scripts/recipe.py` | Manifest loading, refresh and generation record, packet assembly, decision candidates, re-verification for validate. |
-| `scripts/packet.py` | 4,000-token bound, canonical form for repeatability, revalidation. |
+| `scripts/packet.py` | 4,000-token bound, canonical form for repeatability, claim-level audit. |
+| `scripts/shape.py` | Strict packet parsing and the exact allowlist of packet keys and value shapes. |
+| `scripts/rederive.py` | `validate`: re-derive a received packet from the vault and compare it value for value. |
 | `scripts/recover.py` | Command line: `refresh`, `query`, `fetch`, `assemble`, `validate`. |
 
 Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and joined with LF without a trailing terminator; a CR before an LF stays in its line. `content_sha` is SHA-256 of exactly those bytes; QMD's ranged `get` returns the same bytes, so the served text and the file are compared directly. The canonical packet used for repeatability drops only wall-clock fields (`observed_at`, `refreshed_at`, `assembled_at`).
@@ -86,13 +91,7 @@ Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and j
   - Only the first body line of a decision note (its statement) is displayed and cited. The approval digest binds the whole note's bytes, so a statement that runs onto a second line is approved in full but shown truncated; a blank or label line in first position is what gets shown.
   - A `pull_review` record does not require the pull request to be merged; the digest binds the approved bytes.
   - The REST API does not reveal comment edits by collaborators, and an agent using the owner's `gh` session can post as the owner. That is the inherent limit of the trust root: the approvers' GitHub accounts.
-- `validate` checks that the bound content under `accepted_decisions` is what assembly would produce:
-  - one entry per source note;
-  - the title read from the note's hashed bytes (title line, else permalink; a note with neither is never promoted);
-  - items that are exactly that note's status, statement and reference lines, compared by span and digest;
-  - no other cited content anywhere in the entry;
-  - nothing on the `accepted_decisions` node except `status`, `basis`, `reason` and `decisions`, which is `established` only while a verified decision survives.
-  It does not check the entry's other values or the rest of the packet; see "What validate does not establish" under step 6.
+- An entry under `accepted_decisions` is exactly what assembly produces for its note: one entry per source note; the title read from the note's hashed bytes (title line, else permalink; a note with neither is never promoted); items that are exactly that note's status, statement and reference lines; no other cited content. `validate` enforces this, together with every other value in the packet, by re-derivation (step 6). `packet.audit` checks the same bound content at the claim level.
 - `verifier`: default `transport` and `serial: true`. Requests run one at a time behind a lock that refuses a second concurrent request; each distinct record is read at most once per run.
 
 ## Live GitHub smoke test (optional)

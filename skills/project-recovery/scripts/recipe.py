@@ -598,7 +598,11 @@ def make_rechecker(m: Manifest, project: str, verifier: au.Verifier):
 
 
 def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tokens: int | None = None,
-             verifier: au.Verifier | None = None) -> dict:
+             verifier: au.Verifier | None = None, omitted_hits: int = 0, hidden_from_rank: int | None = None) -> dict:
+    """The packet for ``project`` and ``query``. ``omitted_hits`` and ``hidden_from_rank`` are
+    used only by validate's replay mode (``rederive.py``): the count of hits trimmed before the
+    replay that it cannot cite (added to ``budget.omitted``), and the rank from which replayed
+    results are cited and read for ``missing_sources``, then left out as trimming would."""
     if project not in m.projects:
         raise RecipeError(f"project not in manifest: {project}")
     proj = m.projects[project]
@@ -666,4 +670,7 @@ def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tok
         "unknowns": a.unknowns,
     }
     out["missing_sources"] = a.missing_links(out, listing)
-    return pk.bound(out, max_tokens or m.max_tokens)
+    if hidden_from_rank is not None:
+        out["query_hits"] = [h for h in hits if h["rank"] < hidden_from_rank]
+        omitted_hits += len(hits) - len(out["query_hits"])
+    return pk.bound(out, max_tokens or m.max_tokens, omitted_hits)

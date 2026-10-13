@@ -1,0 +1,9 @@
+{
+  "scope": "structural-diagnostic allocation remediation and its verification",
+  "python": "3.11.9",
+  "node": "24.13.0",
+  "qmd": "2.8.3",
+  "platform": "Windows",
+  "dependencies_installed_for_this_remediation": false,
+  "qmd_pin": "skills/project-recovery/qmd/package-lock.json"
+}

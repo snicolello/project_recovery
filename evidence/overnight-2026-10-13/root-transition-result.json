@@ -1,0 +1,132 @@
+{
+  "schema": "project-recovery-transition-rehearsal-v1",
+  "status": "pass",
+  "advance_preparation_only": true,
+  "run_id": "root-consumer-20261012",
+  "started_at": "2026-10-13T02:07:58.373Z",
+  "source_revision": "012c683d70cc7610414cc0136890b4931712bf08",
+  "platform": {
+    "system": "Windows",
+    "release": "10",
+    "python": "3.11.9",
+    "node_qmd_required": "Node 24; QMD 2.8.3"
+  },
+  "paths": {
+    "fixture_root": "fixtures/synthetic-vault",
+    "pilot_vault": "runtime-vaults/transition-rehearsal/root-consumer-20261012",
+    "state": ".qmd/transition-rehearsal-root-consumer-20261012",
+    "index": ".qmd/transition-rehearsal-root-consumer-20261012/index.sqlite",
+    "cache": ".qmd/transition-rehearsal-root-consumer-20261012/xdg-cache",
+    "output": ".scratch/transition-rehearsal/root-consumer-20261012"
+  },
+  "checks": {
+    "fixture_before": {
+      "result": "pass",
+      "files": 16
+    },
+    "isolated_paths": "pass",
+    "trust_root": {
+      "parent_traversal": "rejected",
+      "link_kind": "junction",
+      "link_escape": "rejected"
+    },
+    "configuration": {
+      "state_dir_inside_source": "rejected",
+      "update_hook": "rejected"
+    },
+    "poisoned_mcp_advertisement": "rejected",
+    "pilot_source_unchanged": {
+      "result": "pass",
+      "files": 16
+    },
+    "index_cache_disjoint": "pass",
+    "mcp_advertised_tools": [
+      "get",
+      "multi_get",
+      "query",
+      "status"
+    ],
+    "mcp_calls": [
+      "query",
+      "multi_get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "query",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get"
+    ],
+    "mutating_tools_refused": [
+      "write",
+      "edit",
+      "move",
+      "delete",
+      "shell",
+      "update",
+      "embed"
+    ],
+    "qmd_snippet_line_labels": {
+      "result": "reproduced",
+      "file": "atlas/Queue Archive.md",
+      "match_line_field": 9,
+      "actual_match_line": 9,
+      "rendered_heading_label": 10,
+      "actual_heading_line": 8,
+      "snippet": "9: @@ -8,4 @@ (7 before, 0 after)\n10: # Queue Archive\r\n11: Atlas queue originally used Redis in an abandoned prototype.\r\n12: This decision is superseded by [[Queue Decision]] and must not govern current work.\r\n13: "
+    },
+    "validation": {
+      "result": "equal_to_rederived",
+      "failures": 0,
+      "hits": "requery"
+    },
+    "fixture_after": {
+      "result": "pass",
+      "files": 16
+    }
+  },
+  "timings_seconds": {
+    "refresh": 0.926,
+    "assemble": 0.331,
+    "validate_requery": 0.332,
+    "total": 1.691
+  },
+  "generation": "qmd-2.8.3:d3096a01a1830271",
+  "documents": 9,
+  "packet": {
+    "path": ".scratch/transition-rehearsal/root-consumer-20261012/atlas-packet.json",
+    "sha256": "ee10c9eab30c51ff617e29c86e4ba230876d24837fba987b31a3b757e810cd2e",
+    "status": "complete",
+    "accepted_decisions": 1
+  },
+  "finished_at": "2026-10-13T02:08:00.064Z",
+  "evidence_export": {
+    "normalization": "Only absolute worktree prefixes in path values replaced with repository-relative paths. Other values preserved.",
+    "raw_sha256": "b8ae134421a22deaeb1078a932417b908a5be0802a683337ba8a9bd338f03c57",
+    "observer": "orchestrator documented-command replay"
+  }
+}

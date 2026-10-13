@@ -41,9 +41,9 @@ sum produced 43477.666666666664. The difference is below the documented
 43,477.667-token rounding and does not change the 6.367% summary. The corrected
 analysis sums scenario means as Fraction values, asserts the exact value
 130433/3, then converts once for JSON. Both runtimes produce
-43477.666666666664. The initial result is 147 run: 145 passed, one skipped, and
-one setUpClass error. That class setup error kept the seven post-hoc test methods
-from running; the corrected discovery count is 154.
+43477.666666666664. The initial result had 147 test methods run: 146 passed and
+one skipped, with one additional setUpClass error. Seven post-hoc methods did not
+run. The corrected discovery count is 154.
 
 Corrected full no-QMD suite
 ---------------------------

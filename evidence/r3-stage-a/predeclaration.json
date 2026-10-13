@@ -1,10 +1,26 @@
 {
   "schema": "project-recovery-r3-stage-a-predeclaration-v1",
-  "status": "predeclared-before-measurement",
+  "status": "amended-after-setup-refusal-before-valid-measurement",
   "source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
   "authority": {
     "ticket": "https://github.com/snicolello/stephen-project-hub/issues/126",
     "ruling": "https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6136264847"
+  },
+  "amendment": {
+    "after_attempt": 1,
+    "attempt_1_method_revision": "53b388d17d0838a80cb741fe5f4f4d2051962326",
+    "attempt_1_predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+    "attempt_1_harness_sha256": "ce7e853169abfe6fd793f32a7c37eb45b50c039451fbaa708f256f41634d7726",
+    "classification": "infrastructure-only amendment before any valid query or consumer-cost observation",
+    "observed_boundary": "all 88 candidate rows were ineligible with zero trusted packet bytes and zero fetch-envelope bytes because setup was refused before QMD query execution; no query-saving result exists",
+    "changes": [
+      "place every candidate's QMD state under the required repository .qmd/r3-stage-a lane",
+      "give every candidate/case a non-overlapping synthetic source copy",
+      "continuously enforce the 250 MiB Stage A lane over generated sources plus external QMD index/config/cache state and the 1 GiB shared cap over repository scratch, QMD state and runtime vaults"
+    ],
+    "frozen_unchanged": "candidate queries, scenario cases, evidence requirements, oracles, fetch policy, byte estimator, aggregation, tie-breaking, failure treatment and interpretation",
+    "fixed_measurement_projection": "canonical sorted compact JSON of runtime, measurement, evidence and scenarios",
+    "fixed_measurement_projection_sha256_before_and_after": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1"
   },
   "runtime": {
     "qmd": "2.8.3",
@@ -17,12 +33,12 @@
     "seconds_per_attempt": 600,
     "stage_a_scratch_bytes": 262144000,
     "minimum_free_before_launch_bytes": 209715200,
-    "max_generated_source_bytes": 16777216,
+    "max_generated_source_bytes": 67108864,
     "shared_scratch_bytes": 1073741824
   },
   "implementation": {
     "files": {
-      "scripts/measure_stage_a.py": "ce7e853169abfe6fd793f32a7c37eb45b50c039451fbaa708f256f41634d7726",
+      "scripts/measure_stage_a.py": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
       "skills/project-recovery/scripts/packet.py": "13a7b8a800960ac271f462363dc54c9b0ceb003fda841b3520087765235bf348",
       "skills/project-recovery/scripts/recipe.py": "f49d20d4a223ff45000a04bcc8ee3c411551dc7ec76264a027891d8077457aeb",
       "skills/project-recovery/scripts/rederive.py": "4ca309c7fe66de67fe61c05628da75c796bd221d3623e477ce93f2010fd098cc",
@@ -33,7 +49,7 @@
       "manifest/fixture-vault.json": "dff414acea6366741a03e9f9d8b3dfa4bfaa23fa23b192c23517cd0e80d52140",
       "manifest/scenario-vault.json": "ad5ad2838c937e082e0bf91e218c41f25dda3d191795d3ffdaae5c3f63068cef"
     },
-    "launch_gate": "all hashes must match, relevant paths must be clean, accepted source revision must be an ancestor, and installed QMD must be exactly 2.8.3; each Stage A invocation records one shared full-harness-budget increment, while the separate 184-check regression is counted by the orchestrator"
+    "launch_gate": "all hashes must match, relevant paths must be clean, accepted source revision must be an ancestor, and installed QMD must be exactly 2.8.3; every candidate uses a distinct source copy and QMD state below .qmd/r3-stage-a; lane accounting includes generated sources plus external QMD index/config/cache state and shared accounting includes repository scratch, QMD state and runtime vaults; each Stage A invocation records one shared full-harness-budget increment, while the separate 184-check regression is counted by the orchestrator"
   },
   "measurement": {
     "trusted_packet_source": "validate_requery.packet",

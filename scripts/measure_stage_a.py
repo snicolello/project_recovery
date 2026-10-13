@@ -38,6 +38,8 @@ from receipts import make_receipt, normalize_text, safe_resolve, validate_receip
 
 DEFAULT_PREDECLARATION = REPO / "evidence" / "r3-stage-a" / "predeclaration.json"
 DEFAULT_SCRATCH = REPO / ".scratch" / "r3-stage-a"
+DEFAULT_STATE_LANE = REPO / ".qmd" / "r3-stage-a"
+SHARED_ACCOUNTING_ROOTS = (REPO / ".scratch", REPO / ".qmd", REPO / "runtime-vaults")
 FIXTURES = REPO / "fixtures"
 VAULT = FIXTURES / "synthetic-vault"
 EXPECTED_HASHES = FIXTURES / "synthetic-vault-hashes.json"
@@ -89,6 +91,10 @@ def fixture_status() -> dict:
 
 def dir_size(root: Path) -> int:
     return sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) if root.exists() else 0
+
+
+def roots_size(roots: tuple[Path, ...]) -> int:
+    return sum(dir_size(root) for root in roots)
 
 
 def load_predeclaration(path: Path) -> tuple[dict, str]:
@@ -392,14 +398,14 @@ class Prepared:
     after_listing: object | None
 
 
-def prepare_case(case: dict, work: Path) -> Prepared:
+def prepare_case(case: dict, work: Path, state: Path) -> Prepared:
     setup = case["setup"]
-    state = work / "state"
     vault_copy = work / "vault"
     after_listing = None
     if setup in ("fixture", "scenario"):
         manifest_path = FIXTURE_MANIFEST if setup == "fixture" else SCENARIO_MANIFEST
-        m = recipe.load_manifest(manifest_path, None, state)
+        shutil.copytree(VAULT, vault_copy)
+        m = recipe.load_manifest(manifest_path, vault_copy, state)
         recipe.refresh(m, rebuild=True)
     elif setup.startswith("s4-") or setup.startswith("s6-"):
         shutil.copytree(VAULT, vault_copy)
@@ -476,8 +482,8 @@ def fetch_requirement(m: recipe.Manifest, project: str, req: dict, session: McpS
 
 
 def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, work: Path,
-                  prepared: Prepared | None = None) -> dict:
-    prepared = prepared or prepare_case(case, work)
+                  state: Path) -> dict:
+    prepared = prepare_case(case, work, state)
     m = prepared.manifest
     project = case["project"]
     transport = case.get("transport")
@@ -547,26 +553,18 @@ def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, w
     return result
 
 
-def run_worker(predecl_path: Path, attempt_dir: Path) -> int:
+def run_worker(predecl_path: Path, attempt_dir: Path, state_root: Path) -> int:
     predecl, predecl_hash = load_predeclaration(predecl_path)
     started = time.monotonic()
     rows: list[dict] = []
-    prepared_cache: dict[str, Prepared] = {}
     for scenario in predecl["scenarios"]:
         for query_plan in scenario["queries"]:
             for case in scenario["cases"]:
                 work = attempt_dir / "work" / scenario["id"] / query_plan["id"] / case["id"]
+                state = state_root / scenario["id"] / query_plan["id"] / case["id"]
                 work.mkdir(parents=True)
                 try:
-                    setup = case["setup"]
-                    mutable_during_assembly = setup_requires_fresh_per_query(setup)
-                    cache_key = setup if not mutable_during_assembly else ""
-                    if cache_key and cache_key not in prepared_cache:
-                        shared = attempt_dir / "work" / "shared" / setup
-                        shared.mkdir(parents=True)
-                        prepared_cache[cache_key] = prepare_case(case, shared)
-                    row = run_candidate(predecl, scenario, case, query_plan, work,
-                                        prepared_cache.get(cache_key) if cache_key else None)
+                    row = run_candidate(predecl, scenario, case, query_plan, work, state)
                 except Exception as exc:  # preserve the failed candidate and continue bounded work
                     row = {"case": case["id"], "query_id": query_plan["id"], "query": query_plan["query"],
                            "expected_validation": case["expected_validation"], "validation": "harness_error",
@@ -675,7 +673,8 @@ class BoundedRunError(RuntimeError):
         self.termination_detail = termination_detail
 
 
-def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int,
+def run_bounded(cmd: list[str], timeout: int, lane_roots: tuple[Path, ...], lane_cap: int,
+                shared_roots: tuple[Path, ...], shared_cap: int,
                 stdout_path: Path, stderr_path: Path) -> tuple[int, bool, str | None, str | None]:
     """Run one attempt and terminate its process tree if the hard cap expires."""
     kwargs = {"cwd": REPO}
@@ -690,8 +689,10 @@ def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int,
             while proc.poll() is None:
                 if time.monotonic() >= deadline:
                     return 124, True, terminate_process_tree(proc), "time_cap"
-                if dir_size(scratch) > scratch_cap:
-                    return 125, False, terminate_process_tree(proc), "scratch_cap"
+                if roots_size(lane_roots) > lane_cap:
+                    return 125, False, terminate_process_tree(proc), "stage_a_lane_cap"
+                if roots_size(shared_roots) > shared_cap:
+                    return 127, False, terminate_process_tree(proc), "shared_scratch_cap"
                 time.sleep(0.25)
             return proc.returncode, False, None, None
         except BaseException as exc:
@@ -730,23 +731,18 @@ def verify_launch_environment(predecl: dict, predecl_path: Path) -> tuple[list[s
 
 
 def projected_generated_source_bytes(predecl: dict) -> int:
-    copies = 0
-    seen: set[str] = set()
+    fixture_copies = 0
+    stress_copies = 0
     for scenario in predecl["scenarios"]:
         query_count = len(scenario["queries"])
         for case in scenario["cases"]:
-            setup = case["setup"]
-            if setup.startswith("s7-"):
-                continue
-            if setup in {"s4-immediate", "s4-after-3s", "s6-baseline-edited",
-                         "s6-decision-edited", "s6-refresh-recorded"}:
-                copies += query_count
-            elif setup.startswith(("s4-", "s6-")) and setup not in seen:
-                copies += 1
-                seen.add(setup)
-    # The two deterministic S7 generated vaults are far below one MiB each; use
-    # a conservative fixed allowance, checked against a predeclared maximum.
-    return copies * dir_size(VAULT) + 2 * 1024 * 1024
+            if case["setup"].startswith("s7-"):
+                stress_copies += query_count
+            else:
+                fixture_copies += query_count
+    # Every candidate/case gets a non-overlapping source root. Each deterministic
+    # S7 source is bounded conservatively at one MiB.
+    return fixture_copies * dir_size(VAULT) + stress_copies * 1024 * 1024
 
 
 def command_run(args, predecl: dict, predecl_hash: str) -> int:
@@ -761,9 +757,14 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
         raise SystemExit("scratch must be outside every source root")
     scratch.mkdir(parents=True, exist_ok=True)
     cap = predecl["limits"]["stage_a_scratch_bytes"]
-    existing_size = dir_size(scratch)
+    shared_cap = predecl["limits"]["shared_scratch_bytes"]
+    lane_roots = (scratch, DEFAULT_STATE_LANE)
+    existing_size = roots_size(lane_roots)
+    shared_existing_size = roots_size(SHARED_ACCOUNTING_ROOTS)
     if existing_size > cap:
-        raise SystemExit("preexisting Stage A scratch exceeds its 250 MiB allocation")
+        raise SystemExit("preexisting Stage A source/state lane exceeds its 250 MiB allocation")
+    if shared_existing_size > shared_cap:
+        raise SystemExit("preexisting shared scratch exceeds its 1 GiB allocation")
     minimum_free = predecl["limits"]["minimum_free_before_launch_bytes"]
     if cap - existing_size < minimum_free:
         raise SystemExit("insufficient free Stage A scratch allocation before launch")
@@ -782,12 +783,17 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
     attempt_no = prior + 1
     attempt_dir = scratch / "attempts" / f"attempt-{attempt_no:02d}"
     attempt_dir.mkdir(parents=True, exist_ok=False)
+    attempt_state_root = DEFAULT_STATE_LANE / f"attempt-{attempt_no:02d}"
+    attempt_state_root.mkdir(parents=True, exist_ok=False)
     before = fixture_status()
     tree_before = tree_digest(FIXTURES)
     start_record = {"attempt": attempt_no, "event": "started", "at": utc_now(),
                     "predeclaration_sha256": predecl_hash, "fixture_before": before,
                     "launch_environment": observed_environment,
-                    "preexisting_scratch_bytes": existing_size,
+                    "accounting_roots": {"stage_a_lane": [str(p) for p in lane_roots],
+                                         "shared": [str(p) for p in SHARED_ACCOUNTING_ROOTS]},
+                    "preexisting_lane_bytes": existing_size,
+                    "preexisting_shared_bytes": shared_existing_size,
                     "projected_generated_source_bytes": projected,
                     "shared_full_harness_budget_increment": 1}
     append_attempt(ledger, start_record)
@@ -796,11 +802,13 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
                                 "reason": "fixture hash verification failed before run"})
         return 2
     cmd = [sys.executable, "-I", str(Path(__file__).resolve()), "_worker",
-           "--predeclaration", str(args.predeclaration.resolve()), "--attempt-dir", str(attempt_dir)]
+           "--predeclaration", str(args.predeclaration.resolve()), "--attempt-dir", str(attempt_dir),
+           "--state-root", str(attempt_state_root)]
     launch_error = None
     try:
         code, timed_out, timeout_termination, stop_reason = run_bounded(
-            cmd, predecl["limits"]["seconds_per_attempt"], scratch, cap,
+            cmd, predecl["limits"]["seconds_per_attempt"], lane_roots, cap,
+            SHARED_ACCOUNTING_ROOTS, shared_cap,
             attempt_dir / "worker-stdout.log", attempt_dir / "worker-stderr.log")
     except BoundedRunError as exc:
         code, timed_out, timeout_termination, stop_reason = (
@@ -811,19 +819,24 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
         launch_error = f"{type(exc).__name__}: {exc}"
     after = fixture_status()
     tree_unchanged = tree_digest(FIXTURES) == tree_before
-    size = dir_size(scratch)
+    scratch_size = dir_size(scratch)
+    state_size = dir_size(DEFAULT_STATE_LANE)
+    lane_size = scratch_size + state_size
+    shared_size = roots_size(SHARED_ACCOUNTING_ROOTS)
     final = {"attempt": attempt_no, "event": "finished", "at": utc_now(), "exit_code": code,
              "timed_out": timed_out, "timeout_process_tree_termination": timeout_termination,
              "bounded_stop_reason": stop_reason,
              "launch_error": launch_error,
              "fixture_after": after, "fixtures_tree_unchanged": tree_unchanged,
-             "scratch_bytes": size, "scratch_cap_bytes": cap}
+             "scratch_bytes": scratch_size, "external_state_bytes": state_size,
+             "lane_accounted_bytes": lane_size, "lane_cap_bytes": cap,
+             "shared_accounted_bytes": shared_size, "shared_cap_bytes": shared_cap}
     append_attempt(ledger, final)
     (attempt_dir / "attempt-summary.json").write_text(json.dumps({"start": start_record, "finish": final}, indent=2),
                                                        encoding="utf-8")
     if not after["ok"] or not tree_unchanged:
         return 3
-    if size > cap:
+    if lane_size > cap or shared_size > shared_cap:
         return 4
     if code == 0 and args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -844,9 +857,10 @@ def main(argv: list[str] | None = None) -> int:
     worker = sub.add_parser("_worker")
     worker.add_argument("--predeclaration", type=Path, required=True)
     worker.add_argument("--attempt-dir", type=Path, required=True)
+    worker.add_argument("--state-root", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "_worker":
-        return run_worker(args.predeclaration, args.attempt_dir)
+        return run_worker(args.predeclaration, args.attempt_dir, args.state_root)
     predecl, digest = load_predeclaration(args.predeclaration)
     if args.command == "preflight":
         errors = validate_predeclaration(predecl)

@@ -27,12 +27,22 @@ The predeclaration binds the harness, accepted R2 assembly/validation seams and
 manifests by SHA-256. Launch refuses a changed or dirty method, a product baseline
 that is no longer an ancestor, or installed QMD other than 2.8.3. The attempt
 record captures the actual measurement revision. The runner also refuses
-preexisting over-cap scratch, checks a conservative generated-source bound, polls
-scratch use throughout execution and terminates the complete process tree on the
-250 MiB lane cap or 600-second time cap. It reserves the attempt before launch,
+preexisting over-cap scratch, checks a conservative generated-source bound, gives
+every candidate a distinct synthetic source copy and QMD state below
+`.qmd/r3-stage-a`, and polls both the source scratch and external state. It
+terminates the complete process tree on the 250 MiB Stage A lane cap, the 1 GiB
+shared cap or the 600-second time cap. It reserves the attempt before launch,
 captures complete worker stdout and stderr, verifies fixture hashes after failures,
 and records one increment against the shared 20-full-harness-run budget. The
 separate existing 184-check regression is another orchestrator-counted full run.
+
+Attempt 1 produced no query or consumer-cost observation: setup refused all 88
+rows because QMD state was outside the repository `.qmd` boundary, and later rows
+also encountered the already-created shared setup directory. Its zero-byte rows
+remain failure evidence. Before another measurement, the implementation-only
+amendment above was committed and re-predeclared. The candidate list, semantic
+oracles, required coverage, fetch rules, byte estimator, aggregation, failure
+treatment and interpretation are unchanged.
 
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:

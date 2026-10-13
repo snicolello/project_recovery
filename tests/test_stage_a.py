@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import math
 import sys
@@ -77,6 +78,13 @@ class StageAPureTests(unittest.TestCase):
         self.assertIn("never a universal upper bound", method["scope_limit"])
         self.assertIn("control retained", method["scenario_selection"])
 
+    def test_amended_measurement_projection_matches_attempt_one(self):
+        fields = {key: self.data[key] for key in ("runtime", "measurement", "evidence", "scenarios")}
+        canonical = json.dumps(fields, sort_keys=True, separators=(",", ":"),
+                               ensure_ascii=False).encode("utf-8")
+        expected = self.data["amendment"]["fixed_measurement_projection_sha256_before_and_after"]
+        self.assertEqual(expected, hashlib.sha256(canonical).hexdigest())
+
     def test_attempt_ledger_counts_starts_not_lines(self):
         records = [
             {"attempt": 1, "event": "started"},
@@ -111,6 +119,41 @@ class StageAPureTests(unittest.TestCase):
         projected = stage_a.projected_generated_source_bytes(self.data)
         self.assertLessEqual(projected, self.data["limits"]["max_generated_source_bytes"])
         self.assertEqual(20, self.data["limits"]["shared_full_harness_budget"])
+
+    def test_setup_refuses_state_outside_repo_qmd(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            with mock.patch.object(stage_a.recipe, "refresh"):
+                with self.assertRaises(stage_a.recipe.RecipeError):
+                    stage_a.prepare_case({"setup": "fixture"}, root / "work", root / "state")
+
+    def test_setup_uses_distinct_sources_and_valid_external_qmd_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            state_a = stage_a.DEFAULT_STATE_LANE / "pure-path-test-a"
+            state_b = stage_a.DEFAULT_STATE_LANE / "pure-path-test-b"
+            with mock.patch.object(stage_a.recipe, "refresh") as refresh:
+                prepared_a = stage_a.prepare_case({"setup": "fixture"}, root / "a", state_a)
+                prepared_b = stage_a.prepare_case({"setup": "fixture"}, root / "b", state_b)
+        self.assertEqual(state_a.resolve(), prepared_a.manifest.state_dir)
+        self.assertEqual(state_b.resolve(), prepared_b.manifest.state_dir)
+        self.assertNotEqual(prepared_a.manifest.vault_root, prepared_b.manifest.vault_root)
+        self.assertEqual(2, refresh.call_count)
+
+    def test_shared_accounting_cap_stops_worker_tree(self):
+        proc = mock.Mock()
+        proc.poll.return_value = None
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            with (mock.patch.object(stage_a.subprocess, "Popen", return_value=proc),
+                  mock.patch.object(stage_a, "roots_size", side_effect=[0, 2049]),
+                  mock.patch.object(stage_a, "terminate_process_tree",
+                                    return_value="terminated shared cap") as terminate):
+                result = stage_a.run_bounded(["worker"], 600, (root,), 1024,
+                                             (root / "shared",), 2048,
+                                             root / "stdout.log", root / "stderr.log")
+        self.assertEqual((127, False, "terminated shared cap", "shared_scratch_cap"), result)
+        terminate.assert_called_once_with(proc)
 
     def test_s7_cross_budget_check_enforces_protected_and_omission_invariants(self):
         base_projection = {"protected": {"objective": "same"}, "conflicts": ["same"],
@@ -160,11 +203,12 @@ class StageAPureTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             with (mock.patch.object(stage_a.subprocess, "Popen", return_value=proc),
-                  mock.patch.object(stage_a, "dir_size", side_effect=OSError("scratch vanished")),
+                  mock.patch.object(stage_a, "roots_size", side_effect=OSError("scratch vanished")),
                   mock.patch.object(stage_a, "terminate_process_tree",
                                     return_value="terminated pid tree") as terminate):
                 with self.assertRaises(stage_a.BoundedRunError) as caught:
-                    stage_a.run_bounded(["worker"], 600, root, 1024,
+                    stage_a.run_bounded(["worker"], 600, (root,), 1024,
+                                        (root / "shared",), 2048,
                                         root / "stdout.log", root / "stderr.log")
         terminate.assert_called_once_with(proc)
         self.assertEqual("terminated pid tree", caught.exception.termination_detail)

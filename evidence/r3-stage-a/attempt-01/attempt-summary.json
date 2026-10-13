@@ -1,0 +1,45 @@
+{
+  "start": {
+    "attempt": 1,
+    "event": "started",
+    "at": "2026-10-13T02:20:19.965962Z",
+    "predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+    "fixture_before": {
+      "ok": true,
+      "expected_count": 16,
+      "actual_count": 16,
+      "missing": [],
+      "extra": [],
+      "mismatched": []
+    },
+    "launch_environment": {
+      "qmd": "2.8.3",
+      "measurement_revision": "53b388d17d0838a80cb741fe5f4f4d2051962326",
+      "relevant_status": []
+    },
+    "preexisting_scratch_bytes": 0,
+    "projected_generated_source_bytes": 2237222,
+    "shared_full_harness_budget_increment": 1
+  },
+  "finish": {
+    "attempt": 1,
+    "event": "finished",
+    "at": "2026-10-13T02:20:20.940751Z",
+    "exit_code": 1,
+    "timed_out": false,
+    "timeout_process_tree_termination": null,
+    "bounded_stop_reason": null,
+    "launch_error": null,
+    "fixture_after": {
+      "ok": true,
+      "expected_count": 16,
+      "actual_count": 16,
+      "missing": [],
+      "extra": [],
+      "mismatched": []
+    },
+    "fixtures_tree_unchanged": true,
+    "scratch_bytes": 358229,
+    "scratch_cap_bytes": 262144000
+  }
+}

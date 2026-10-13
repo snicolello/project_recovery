@@ -1,0 +1,2710 @@
+{
+  "schema": "project-recovery-r3-stage-a-results-v1",
+  "predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+  "source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
+  "runtime": {
+    "python": "3.11.9",
+    "qmd": "2.8.3",
+    "platform": "win32"
+  },
+  "elapsed_seconds": 0.6560000000172295,
+  "scenarios": [
+    {
+      "id": "S1",
+      "control": {
+        "id": "control",
+        "query": "Atlas project",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S1-atlas"
+        ],
+        "failed_cases": [
+          "S1-atlas"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "marker",
+          "query": "ATLAS-42",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S1-atlas"
+          ],
+          "failed_cases": [
+            "S1-atlas"
+          ]
+        },
+        {
+          "id": "objective",
+          "query": "offline field-report",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S1-atlas"
+          ],
+          "failed_cases": [
+            "S1-atlas"
+          ]
+        },
+        {
+          "id": "next",
+          "query": "empty-report parser tests",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S1-atlas"
+          ],
+          "failed_cases": [
+            "S1-atlas"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S2",
+      "control": {
+        "id": "control",
+        "query": "queue",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S2-offline",
+          "S2-snapshot"
+        ],
+        "failed_cases": [
+          "S2-offline",
+          "S2-snapshot"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "decisions",
+          "query": "SQLite PostgreSQL Redis",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ],
+          "failed_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ]
+        },
+        {
+          "id": "titles",
+          "query": "Queue Decision Proposal Archive",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ],
+          "failed_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ]
+        },
+        {
+          "id": "revision",
+          "query": "fixture-commit-a1",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ],
+          "failed_cases": [
+            "S2-offline",
+            "S2-snapshot"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S3",
+      "control": {
+        "id": "control",
+        "query": "restart",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S3-atlas",
+          "S3-beacon"
+        ],
+        "failed_cases": [
+          "S3-atlas",
+          "S3-beacon"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "window",
+          "query": "retry-window",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ],
+          "failed_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ]
+        },
+        {
+          "id": "runbook",
+          "query": "Restart Runbook",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ],
+          "failed_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ]
+        },
+        {
+          "id": "instruction",
+          "query": "restart instruction",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ],
+          "failed_cases": [
+            "S3-atlas",
+            "S3-beacon"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S4",
+      "control": {
+        "id": "control",
+        "query": "restart",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S4-before",
+          "S4-after-refresh"
+        ],
+        "failed_cases": [
+          "S4-before",
+          "S4-immediate",
+          "S4-after-3s",
+          "S4-after-refresh"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "window",
+          "query": "retry-window",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S4-before",
+            "S4-after-refresh"
+          ],
+          "failed_cases": [
+            "S4-before",
+            "S4-immediate",
+            "S4-after-3s",
+            "S4-after-refresh"
+          ]
+        },
+        {
+          "id": "runbook",
+          "query": "Restart Runbook",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S4-before",
+            "S4-after-refresh"
+          ],
+          "failed_cases": [
+            "S4-before",
+            "S4-immediate",
+            "S4-after-3s",
+            "S4-after-refresh"
+          ]
+        },
+        {
+          "id": "marker-label",
+          "query": "Runbook marker",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S4-before",
+            "S4-after-refresh"
+          ],
+          "failed_cases": [
+            "S4-before",
+            "S4-immediate",
+            "S4-after-3s",
+            "S4-after-refresh"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S5",
+      "control": {
+        "id": "control",
+        "query": "rollout",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S5-rollout"
+        ],
+        "failed_cases": [
+          "S5-rollout"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "approval-owner",
+          "query": "rollout approval owner",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S5-rollout"
+          ],
+          "failed_cases": [
+            "S5-rollout"
+          ]
+        },
+        {
+          "id": "unknown",
+          "query": "UNKNOWN approval",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S5-rollout"
+          ],
+          "failed_cases": [
+            "S5-rollout"
+          ]
+        },
+        {
+          "id": "no-deploy",
+          "query": "Deployment is not authorized",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S5-rollout"
+          ],
+          "failed_cases": [
+            "S5-rollout"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S6",
+      "control": {
+        "id": "control",
+        "query": "Atlas project",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S6-control"
+        ],
+        "failed_cases": [
+          "S6-control",
+          "S6-baseline-edited",
+          "S6-decision-edited",
+          "S6-refresh-recorded"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "marker",
+          "query": "ATLAS-42",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S6-control"
+          ],
+          "failed_cases": [
+            "S6-control",
+            "S6-baseline-edited",
+            "S6-decision-edited",
+            "S6-refresh-recorded"
+          ]
+        },
+        {
+          "id": "parser",
+          "query": "parser retry",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S6-control"
+          ],
+          "failed_cases": [
+            "S6-control",
+            "S6-baseline-edited",
+            "S6-decision-edited",
+            "S6-refresh-recorded"
+          ]
+        },
+        {
+          "id": "sqlite",
+          "query": "SQLite",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S6-control"
+          ],
+          "failed_cases": [
+            "S6-control",
+            "S6-baseline-edited",
+            "S6-decision-edited",
+            "S6-refresh-recorded"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S7",
+      "control": {
+        "id": "control",
+        "query": "stress",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S7-limit-4000",
+          "S7-limit-2000",
+          "S7-limit-1000",
+          "S7-limit-400"
+        ],
+        "failed_cases": [
+          "S7-stale-4000",
+          "S7-unbounded",
+          "S7-limit-4000",
+          "S7-limit-2000",
+          "S7-limit-1000",
+          "S7-limit-400"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "project",
+          "query": "Stress Project",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ],
+          "failed_cases": [
+            "S7-stale-4000",
+            "S7-unbounded",
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ]
+        },
+        {
+          "id": "report",
+          "query": "truncation report",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ],
+          "failed_cases": [
+            "S7-stale-4000",
+            "S7-unbounded",
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ]
+        },
+        {
+          "id": "load",
+          "query": "load option",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ],
+          "failed_cases": [
+            "S7-stale-4000",
+            "S7-unbounded",
+            "S7-limit-4000",
+            "S7-limit-2000",
+            "S7-limit-1000",
+            "S7-limit-400"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    },
+    {
+      "id": "S8",
+      "control": {
+        "id": "control",
+        "query": "approve deployment",
+        "role": "control",
+        "eligible": false,
+        "semantic_equal_to_control": true,
+        "estimated_tokens": 0,
+        "fetches": 0,
+        "zero_fetch_cases": [
+          "S8-cobalt",
+          "S8-atlas"
+        ],
+        "failed_cases": [
+          "S8-cobalt",
+          "S8-atlas"
+        ]
+      },
+      "candidates": [
+        {
+          "id": "no-deploy",
+          "query": "Deployment is not authorized",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ],
+          "failed_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ]
+        },
+        {
+          "id": "marker",
+          "query": "Recovery marker",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ],
+          "failed_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ]
+        },
+        {
+          "id": "authority",
+          "query": "approval owner",
+          "role": "candidate",
+          "eligible": false,
+          "semantic_equal_to_control": true,
+          "estimated_tokens": 0,
+          "fetches": 0,
+          "zero_fetch_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ],
+          "failed_cases": [
+            "S8-cobalt",
+            "S8-atlas"
+          ]
+        }
+      ],
+      "best_non_control_candidate": null,
+      "achievable_best_with_control": null,
+      "non_control_relative_reduction": null,
+      "achievable_relative_reduction": null
+    }
+  ],
+  "cases": [
+    {
+      "case": "S1-atlas",
+      "query_id": "control",
+      "query": "Atlas project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S1"
+    },
+    {
+      "case": "S1-atlas",
+      "query_id": "marker",
+      "query": "ATLAS-42",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S1"
+    },
+    {
+      "case": "S1-atlas",
+      "query_id": "objective",
+      "query": "offline field-report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S1"
+    },
+    {
+      "case": "S1-atlas",
+      "query_id": "next",
+      "query": "empty-report parser tests",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S1"
+    },
+    {
+      "case": "S2-offline",
+      "query_id": "control",
+      "query": "queue",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-snapshot",
+      "query_id": "control",
+      "query": "queue",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-offline",
+      "query_id": "decisions",
+      "query": "SQLite PostgreSQL Redis",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-snapshot",
+      "query_id": "decisions",
+      "query": "SQLite PostgreSQL Redis",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-offline",
+      "query_id": "titles",
+      "query": "Queue Decision Proposal Archive",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-snapshot",
+      "query_id": "titles",
+      "query": "Queue Decision Proposal Archive",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-offline",
+      "query_id": "revision",
+      "query": "fixture-commit-a1",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S2-snapshot",
+      "query_id": "revision",
+      "query": "fixture-commit-a1",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 12
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S2"
+    },
+    {
+      "case": "S3-atlas",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-beacon",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-atlas",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-beacon",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-atlas",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-beacon",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-atlas",
+      "query_id": "instruction",
+      "query": "restart instruction",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S3-beacon",
+      "query_id": "instruction",
+      "query": "restart instruction",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S3"
+    },
+    {
+      "case": "S4-before",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-immediate",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-3s",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-refresh",
+      "query_id": "control",
+      "query": "restart",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-before",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-before'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-immediate",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-3s",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-refresh",
+      "query_id": "window",
+      "query": "retry-window",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-after-refresh'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-before",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-before'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-immediate",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-3s",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-refresh",
+      "query_id": "runbook",
+      "query": "Restart Runbook",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-after-refresh'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-before",
+      "query_id": "marker-label",
+      "query": "Runbook marker",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-before'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-immediate",
+      "query_id": "marker-label",
+      "query": "Runbook marker",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-3s",
+      "query_id": "marker-label",
+      "query": "Runbook marker",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S4-after-refresh",
+      "query_id": "marker-label",
+      "query": "Runbook marker",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 6
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s4-after-refresh'"
+      ],
+      "eligible": false,
+      "scenario": "S4"
+    },
+    {
+      "case": "S5-rollout",
+      "query_id": "control",
+      "query": "rollout",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 8
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S5"
+    },
+    {
+      "case": "S5-rollout",
+      "query_id": "approval-owner",
+      "query": "rollout approval owner",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 8
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S5"
+    },
+    {
+      "case": "S5-rollout",
+      "query_id": "unknown",
+      "query": "UNKNOWN approval",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 8
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S5"
+    },
+    {
+      "case": "S5-rollout",
+      "query_id": "no-deploy",
+      "query": "Deployment is not authorized",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 8
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\fixture'"
+      ],
+      "eligible": false,
+      "scenario": "S5"
+    },
+    {
+      "case": "S6-control",
+      "query_id": "control",
+      "query": "Atlas project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-baseline-edited",
+      "query_id": "control",
+      "query": "Atlas project",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-decision-edited",
+      "query_id": "control",
+      "query": "Atlas project",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-refresh-recorded",
+      "query_id": "control",
+      "query": "Atlas project",
+      "expected_validation": "rejected",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-control",
+      "query_id": "marker",
+      "query": "ATLAS-42",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s6-control'"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-baseline-edited",
+      "query_id": "marker",
+      "query": "ATLAS-42",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-decision-edited",
+      "query_id": "marker",
+      "query": "ATLAS-42",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-refresh-recorded",
+      "query_id": "marker",
+      "query": "ATLAS-42",
+      "expected_validation": "rejected",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-control",
+      "query_id": "parser",
+      "query": "parser retry",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s6-control'"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-baseline-edited",
+      "query_id": "parser",
+      "query": "parser retry",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-decision-edited",
+      "query_id": "parser",
+      "query": "parser retry",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-refresh-recorded",
+      "query_id": "parser",
+      "query": "parser retry",
+      "expected_validation": "rejected",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-control",
+      "query_id": "sqlite",
+      "query": "SQLite",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 9
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s6-control'"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-baseline-edited",
+      "query_id": "sqlite",
+      "query": "SQLite",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-decision-edited",
+      "query_id": "sqlite",
+      "query": "SQLite",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S6-refresh-recorded",
+      "query_id": "sqlite",
+      "query": "SQLite",
+      "expected_validation": "rejected",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S6"
+    },
+    {
+      "case": "S7-stale-4000",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-unbounded",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-4000",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-2000",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-1000",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-400",
+      "query_id": "control",
+      "query": "stress",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-stale-4000",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-stale'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-unbounded",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-4000",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-2000",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-1000",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-400",
+      "query_id": "project",
+      "query": "Stress Project",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-stale-4000",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-stale'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-unbounded",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-4000",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-2000",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-1000",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-400",
+      "query_id": "report",
+      "query": "truncation report",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-stale-4000",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "not_rederivable",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 0
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-stale'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-unbounded",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-4000",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-2000",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-1000",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S7-limit-400",
+      "query_id": "load",
+      "query": "load option",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 4
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\s7-after-refresh'",
+        "S7 unbounded reference unavailable"
+      ],
+      "eligible": false,
+      "scenario": "S7"
+    },
+    {
+      "case": "S8-cobalt",
+      "query_id": "control",
+      "query": "approve deployment",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 10
+      },
+      "oracle_problems": [
+        "RecipeError: state dir must be a subdirectory of <repo>/.qmd/"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-atlas",
+      "query_id": "control",
+      "query": "approve deployment",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 11
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-cobalt",
+      "query_id": "no-deploy",
+      "query": "Deployment is not authorized",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 10
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-atlas",
+      "query_id": "no-deploy",
+      "query": "Deployment is not authorized",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 11
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-cobalt",
+      "query_id": "marker",
+      "query": "Recovery marker",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 10
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-atlas",
+      "query_id": "marker",
+      "query": "Recovery marker",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 11
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-cobalt",
+      "query_id": "authority",
+      "query": "approval owner",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 10
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    },
+    {
+      "case": "S8-atlas",
+      "query_id": "authority",
+      "query": "approval owner",
+      "expected_validation": "equal_to_rederived",
+      "validation": "harness_error",
+      "validation_failures": 1,
+      "search_work": {},
+      "trusted_packet_bytes": 0,
+      "fetch_envelope_bytes": 0,
+      "total_consumer_bytes": 0,
+      "estimated_tokens": 0,
+      "fetches": [],
+      "coverage": {
+        "covered": 0,
+        "required": 11
+      },
+      "oracle_problems": [
+        "FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\dev\\\\project_recovery\\\\.scratch\\\\overnight-stage-a\\\\.scratch\\\\r3-stage-a\\\\attempts\\\\attempt-01\\\\work\\\\shared\\\\scenario'"
+      ],
+      "eligible": false,
+      "scenario": "S8"
+    }
+  ],
+  "aggregate": {
+    "control_estimated_tokens": 0,
+    "best_non_control_candidates_estimated_tokens": null,
+    "non_control_relative_reduction": null,
+    "achievable_best_with_control_estimated_tokens": null,
+    "achievable_relative_reduction": null,
+    "reference_15_percent_met_by_non_control": null,
+    "interpretation": "Best within the fixed candidate list; not a universal upper bound."
+  },
+  "all_controls_valid": false,
+  "all_scenarios_have_valid_candidate": false
+}

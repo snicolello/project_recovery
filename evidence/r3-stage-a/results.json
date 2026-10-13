@@ -1,0 +1,36 @@
+{
+  "schema": "project-recovery-r3-stage-a-evidence-summary-v1",
+  "status": "no-valid-measurement-setup-refused",
+  "attempts_consumed": 1,
+  "attempt_1": {
+    "method_revision": "53b388d17d0838a80cb741fe5f4f4d2051962326",
+    "predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+    "harness_sha256": "ce7e853169abfe6fd793f32a7c37eb45b50c039451fbaa708f256f41634d7726",
+    "exit_code": 1,
+    "rows": 88,
+    "eligible_rows": 0,
+    "recipe_error_rows": 27,
+    "file_exists_error_rows": 61,
+    "rows_with_query_work": 0,
+    "trusted_packet_bytes": 0,
+    "fetch_envelope_bytes": 0,
+    "all_controls_valid": false,
+    "all_scenarios_have_valid_candidate": false,
+    "non_control_relative_reduction": null,
+    "achievable_relative_reduction": null,
+    "classification": "infrastructure setup refusal; no consumer/query-saving observation",
+    "fixtures_before_and_after": "16/16; tree unchanged",
+    "retained_scratch_bytes": 358229
+  },
+  "r2_regression": {
+    "command": "python -I scripts/run_scenarios.py",
+    "timeout_seconds": 600,
+    "elapsed_seconds": 133.85,
+    "exit_code": 0,
+    "checks_passed": 184,
+    "checks_total": 184,
+    "fixtures_before_and_after": "16/16"
+  },
+  "fixed_measurement_projection_sha256_before_and_after": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1",
+  "next_gate": "focused independent review and fresh full-run reservation"
+}

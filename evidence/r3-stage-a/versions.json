@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-10-13",
+  "accepted_source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
+  "attempt_1_method_revision": "53b388d17d0838a80cb741fe5f4f4d2051962326",
+  "attempt_1_predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+  "attempt_1_harness_sha256": "ce7e853169abfe6fd793f32a7c37eb45b50c039451fbaa708f256f41634d7726",
+  "qmd": "2.8.3",
+  "python": "3.11.9",
+  "node": "24.13.0",
+  "network": "disabled/offline",
+  "models_or_embeddings": "not used"
+}

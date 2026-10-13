@@ -10,7 +10,7 @@ MCP lexical query snippet labels count the diff header as source lines (QMD 2.8.
 
 With QMD 2.8.3 on Windows, the MCP `query` tool's lexical result has a correct separate `line` field for the matching source line, but the rendered `snippet` labels are two lines ahead of the file. This reproduces with a standalone CRLF Markdown file.
 
-Environment: QMD 2.8.3 (`facd35e`), Node 24.13.0, Windows 11 host, lexical query, reranking disabled, embeddings disabled. The Project Recovery implementation revision used for the retained reproduction will be inserted after the one authorized fresh run; this draft remains unsent.
+Environment: QMD 2.8.3 (`facd35e`), Node 24.13.0, Windows 11 host, lexical query, reranking disabled, embeddings disabled. Project Recovery implementation revision: `fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840`; the raw rehearsal result is retained with that revision. This draft remains unsent.
 
 From an empty temporary directory, create `Queue Archive.md` with explicit CRLF bytes:
 

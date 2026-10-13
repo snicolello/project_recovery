@@ -18,7 +18,7 @@
       "validate_snapshot": 0.674,
       "total": 4.403
     },
-    "unit_suite": "133 tests run in 17.540 seconds: 132 passed, 1 symlink-permission skip; Windows junction path passed",
+    "unit_suite": "140 tests run in 20.678 seconds: 139 passed, 1 symlink-permission skip; Windows junction path passed",
     "scenario_harness": "not run by package C; package A/root owns the existing 184-check harness"
   },
   "linux": {
@@ -27,7 +27,7 @@
     "node": "22.21.0",
     "npm": "10.9.4",
     "git": "2.43.0",
-    "dependency_free_tests": "7 tests in 0.015 seconds; pass; fixtures 16/16 before and after",
+    "dependency_free_tests": "full 140-test suite at fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840 without qmd-runtime or qmd on PATH; 139 passed, 1 existing skip, 17.652 seconds; fixtures 16/16 before and after",
     "native_qmd_rehearsal": "not run: available Node is below the documented Node 24 prerequisite and no approved native Linux QMD 2.8.3 installation exists"
   },
   "r5_usability_criterion": "not established: no fresh install and no outside reader; the 15-minute Windows plus Linux criterion remains pending"

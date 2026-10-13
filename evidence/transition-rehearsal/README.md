@@ -4,11 +4,11 @@ Status: tested advance preparation for owner review under [hub issue 126](https:
 
 ## Outcome
 
-The synthetic maintained-install rehearsal passed on Windows at implementation revision `0fad9f3109189bc366eaf6054a43106da73f8752`. It copied the 16 hash-pinned notes, built a nine-document QMD 2.8.3 index outside the source root, performed a normal MCP query/read and snapshot-verified assembly, and returned `equal_to_rederived` with zero failures under `validate --hits requery`. Fixture and pilot source hashes matched before and after.
+The single authorized synthetic maintained-install rehearsal passed on Windows at implementation revision `fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840`. It copied the 16 hash-pinned notes, built a nine-document QMD 2.8.3 index outside the source root, performed a normal MCP query/read and snapshot-verified assembly, and returned `equal_to_rederived` with zero failures under `validate --hits requery`. Fixture and pilot source hashes matched before and after.
 
-The executable negative checks rejected parent traversal, a Windows junction escape, a derived-state path inside the source root, an update-hook configuration, a poisoned MCP advertisement containing `write`, and direct calls to seven mutating tool names. The live QMD server advertised only `get`, `multi_get`, `query` and `status`. Index, cache, copied vault and output paths were disjoint as documented in `docs/transition-rehearsal.md`.
+The executable negative checks rejected parent traversal, a Windows junction escape, a derived-state path inside the source root with the exact vault-overlap error, an update-hook configuration with its exact error, a poisoned MCP advertisement containing `write`, and direct calls to seven mutating tool names through a real un-entered `McpSession`. The live QMD server advertised only `get`, `multi_get`, `query` and `status`. The raw result observes the index, cache and configuration below isolated state and shows that default `~/.cache/qmd` and `~/.config/qmd` were absent and unchanged. All retained paths are repository-relative.
 
-Generated package-C scratch measured 1.25 MB after all retained attempts, excluding the pre-existing QMD runtime junction, below the lane's 250 MB cap.
+Generated package-C scratch measured 3.16 MB decimal after all retained attempts, excluding the pre-existing QMD runtime junction, below the lane's 250 MB cap.
 
 ## Exact commands and results
 
@@ -18,12 +18,12 @@ Final Windows rehearsal:
 
 ```powershell
 python -I scripts/verify_fixture_hashes.py
-$env:PROJECT_RECOVERY_REVISION = (git rev-parse HEAD)
-python -I scripts/rehearse_transition.py --run-id windows-0fad9f3
+$env:PROJECT_RECOVERY_REVISION = 'fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840'
+python -I scripts/rehearse_transition.py --run-id windows-fe9031f
 python -I scripts/verify_fixture_hashes.py
 ```
 
-Result: pass in 1.621 seconds: refresh 0.895, assemble 0.325, requery validation 0.318. Generation `qmd-2.8.3:d3096a01a1830271`; packet SHA-256 `c0db86a58f0396c27801273f7413663fd19e7130ffeac6124e08d399a630fdf4`. The sanitized result is `windows-result.json`; ignored run artifacts remain under the three run-specific paths named there.
+Result: pass in 1.797 seconds: refresh 0.903, assemble 0.462, requery validation 0.349. Generation `qmd-2.8.3:d3096a01a1830271`; packet SHA-256 `9a047f642aa00d7e6310ea83c6c33f260b14bd8f5b72572af856ba059aae143e`. `windows-fe9031f-result.json` retains the raw result fields and relative provenance, with line endings normalized for Git (SHA-256 `8aad1a9ab9ac1c22b1c9723eff5876af684c973a9667e246a5aa4fc86391da77`); ignored run artifacts remain under the relative run-specific paths named there. The earlier handwritten `windows-result.json` was retired.
 
 Final Windows unit suite:
 
@@ -33,7 +33,7 @@ python -I -m unittest discover -s tests
 python -I scripts/verify_fixture_hashes.py
 ```
 
-Result: 133 tests run in 17.540 seconds: 132 passed and one existing symlink-permission test skipped. The retained unittest summary is `Ran 133 tests in 17.540s` and `OK (skipped=1)`; skips are included in the run count. The existing Windows junction test and the rehearsal's explicit junction probe passed outside the restrictive sandbox. The accepted 184-check scenario harness was not run by package C because package A/root owns that shared integration run.
+Result: 140 tests run in 20.678 seconds: 139 passed and one existing symlink-permission test skipped. The retained unittest summary is `Ran 140 tests in 20.678s` and `OK (skipped=1)`; skips are included in the run count. The existing Windows junction test and the rehearsal's explicit junction probe passed outside the restrictive sandbox. The accepted 184-check scenario harness was not run by package C because package A/root owns that shared integration run.
 
 Maintained-install quickstart exercise, using the prose commands in `docs/quickstart.md` and its existing QMD installation:
 
@@ -55,11 +55,11 @@ From the repository root on the available WSL host:
 
 ```bash
 python3 -I scripts/verify_fixture_hashes.py
-python3 -I -m unittest discover -s tests -p test_transition_rehearsal.py
+python3 -I -m unittest discover -s tests
 python3 -I scripts/verify_fixture_hashes.py
 ```
 
-Result: seven dependency-free tests passed in 0.015 seconds on WSL2 Ubuntu with Python 3.12.3. A native QMD rehearsal was not run: the available Linux Node is 22.21.0 rather than the documented Node 24 prerequisite, and no approved Linux QMD 2.8.3 installation exists. Windows results do not establish Linux behavior.
+Result: the complete 140-test suite passed in 17.652 seconds on WSL2 Ubuntu with Python 3.12.3: 139 passed and one existing symlink-permission test skipped. The suite ran from a `git archive` of exact revision `fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840`; the archive had no `qmd-runtime`, and `qmd` was absent from the host path. Fixture hashes were 16/16 before and after. A native QMD rehearsal was not run: the available Linux host has no approved native QMD 2.8.3 installation. Windows results do not establish Linux QMD behavior.
 
 ## Reproduced QMD observation
 
@@ -69,7 +69,8 @@ QMD 2.8.3 still reproduces the original bounded snippet-line issue. In the `Atla
 
 - The first focused unit invocation used package syntax (`python -I -m unittest tests.test_transition_rehearsal`) even though `tests/` is not a package. It failed during import before running tests; surrounding fixture checks passed. Discovery syntax was used thereafter.
 - The first sandboxed link probe could not create a Windows junction. The harness was corrected to record `not_available` for a denied platform probe, and the authorized outside-sandbox runs then proved the junction escape was rejected.
-- A sandboxed broad unit attempt encountered the accepted suite's Windows junction permission boundary. The final outside-sandbox suite passed. These environment failures are not product failures and are retained here rather than hidden.
+- A sandboxed full Windows suite reached all 140 tests in 295.953 seconds but ended with `PermissionError: [WinError 5] Access is denied` when the existing junction-escape test attempted to create its temporary junction; one existing test was skipped. Fixture checks were 16/16 before and after. The justified outside-sandbox rerun passed all runnable tests in 20.678 seconds.
+- Initial WSL inspection was denied by the Windows sandbox. Authorized read-only WSL access then confirmed Ubuntu, Python 3.12.3 and no `qmd` command. The committed source was extracted to a new bounded scratch path and the full no-QMD suite passed; no Linux setup or installation occurred.
 - The baseline `ResourceWarning` has a source-confirmed unclosed-log-handle cause when `McpSession.__enter__` fails before entering its cleanup block. It is recorded as [Project Recovery issue 14](https://github.com/snicolello/project_recovery/issues/14) for WP7; accepted core code is outside this package and was not changed.
 - This was a maintained-install engineering rehearsal by a separate Codex agent session. It was not a fresh clone, fresh dependency install or outside-reader trial and therefore does not satisfy the R5 15-minute Windows-and-Linux usability criterion.
 

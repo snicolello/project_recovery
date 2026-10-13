@@ -1,0 +1,204 @@
+{
+  "schema": "project-recovery-r3-stage-a-predeclaration-v1",
+  "status": "predeclared-before-measurement",
+  "source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
+  "authority": {
+    "ticket": "https://github.com/snicolello/stephen-project-hub/issues/126",
+    "ruling": "https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6136264847"
+  },
+  "runtime": {
+    "qmd": "2.8.3",
+    "python": "3.11+ standard library only",
+    "mode": "offline lexical CPU; rerank false; no embeddings, model, network, download, or install"
+  },
+  "limits": {
+    "attempts": 20,
+    "seconds_per_attempt": 600,
+    "stage_a_scratch_bytes": 262144000,
+    "shared_scratch_bytes": 1073741824
+  },
+  "measurement": {
+    "trusted_packet_source": "validate_requery.packet",
+    "estimator": "ceil(total_compact_utf8_bytes/2.9)",
+    "charged": [
+      "compact UTF-8 bytes of the validator-returned rederived packet",
+      "compact UTF-8 bytes of every explicit fetch envelope the consumer reads, including failed fetches"
+    ],
+    "not_charged": [
+      "candidate query exploration",
+      "QMD tool requests and search results not shown to the consumer",
+      "validation diagnostics and harness bookkeeping"
+    ],
+    "search_work_charged": false,
+    "fetch_policy": {
+      "order": "required_evidence order in each case",
+      "when": "fetch a predeclared project-scoped span only when no validated packet receipt encloses it",
+      "stop": "all required spans covered, the fixed cap reached, or a trust/integrity failure occurs",
+      "max_fetches_per_case": 32,
+      "failure_accounting": "charge and retain each failed fetch envelope; unresolved evidence makes the query plan ineligible",
+      "zero_fetch_accounting": "report zero fetches and charge zero fetch-envelope bytes"
+    },
+    "coverage": "covered predeclared evidence spans / all predeclared evidence spans",
+    "completeness": "all predeclared answerable field text is present in the validator-returned packet",
+    "abstention": "the exact predeclared core unknown-field set is retained and no answerable core field is unknown",
+    "candidate_eligibility": "every case has its expected validation result, full coverage when consuming, zero unsupported assertions, the oracle passes, and consuming-case semantic projections equal the R2 control",
+    "scenario_selection": "report the eligible non-control query plan with the fewest summed estimated tokens across the scenario's consuming cases; also report achievable best with the R2 control retained, so a worse candidate never implies guaranteed savings",
+    "tie_break": "first query in the predeclared order",
+    "failure_method": "report every failed candidate and every expected stale/concurrent failure; expected failures expose no trusted packet and contribute zero consumer bytes rather than a saving",
+    "aggregation": "sum the R2 control across consuming cases; separately sum each scenario's best non-control and achievable best including control; compute (control-best)/control for both, allowing the non-control result to be negative and the with-control result to be zero",
+    "reference_only": "15% is reported for owner context and is not an acceptance threshold",
+    "scope_limit": "best within this fixed query list, never a universal upper bound on Librarian strategies"
+  },
+  "evidence": {
+    "atlas-objective": {"source": "atlas/Project.md", "span": [9, 9], "content_sha": "480098ea790eeb1e9616197f5d1522de563ba186ac364156abcfc0453f4015d3"},
+    "atlas-state": {"source": "atlas/Project.md", "span": [10, 10], "content_sha": "23296b77657f76a021bb87073153aeef7eb4d0babc0916106bf71a66ccd88dcd"},
+    "atlas-baseline-decision": {"source": "atlas/Project.md", "span": [11, 11], "content_sha": "00d46cd4e1496c29aaa8ea5fb4998eb8a804b4cfe3930aa76e15ec0eb93f9624"},
+    "atlas-blocker": {"source": "atlas/Project.md", "span": [12, 12], "content_sha": "eaaf29059f572f005b72cc49560577930ca58e3bfb332f696116b45e139f98e9"},
+    "atlas-next": {"source": "atlas/Project.md", "span": [13, 13], "content_sha": "505acdda68e18648d158557d0e8ddfbc11fb49e364ed40af16a3c9b9f686fd32"},
+    "atlas-no-deploy": {"source": "atlas/Project.md", "span": [14, 14], "content_sha": "32f2e0bea609e337a232410c9b13d720f88804744793c5eeca9ec7d36e24f670"},
+    "atlas-marker": {"source": "atlas/Project.md", "span": [15, 15], "content_sha": "b157e6292c04ec5ded581ae58de795ffbf0d229fd7a0e7911a1f52ecd3b7046a"},
+    "queue-status": {"source": "atlas/Queue Decision.md", "span": [6, 6], "content_sha": "40a7a594199469d11f4ed81daf1c1b54eb82fef7d67ce06297273a9abd933472"},
+    "queue-statement": {"source": "atlas/Queue Decision.md", "span": [11, 11], "content_sha": "391ac6be3f7e8e72b0f63ba91add93bbed85095ab6b994de668e33eb7328a4c3"},
+    "queue-authority": {"source": "atlas/Queue Decision.md", "span": [12, 12], "content_sha": "054186c27520b5b273c7d1c838d1c493b0102bc04c2c37a845ab6cfd68b17cf0"},
+    "proposal-status": {"source": "atlas/Queue Proposal.md", "span": [6, 6], "content_sha": "095422d2e28d9ea8a468accf0a59277838a0fe7c0e052899162223dd8e2d599c"},
+    "proposal-statement": {"source": "atlas/Queue Proposal.md", "span": [10, 10], "content_sha": "0814fc92d740ddc2337bdb6e40353f8b7ff2a88f04e1c8d27d423ee27d3e0299"},
+    "archive-status": {"source": "atlas/Queue Archive.md", "span": [6, 6], "content_sha": "2a6b44f1da19f8146ea00761f00342112de92424409b6ac1053cf708569ef3b6"},
+    "archive-statement": {"source": "atlas/Queue Archive.md", "span": [9, 9], "content_sha": "00b797403afa493cc1727b0a9ba255cc073991760c889e688a86f08da1e8716c"},
+    "atlas-restart-old": {"source": "atlas/Restart Runbook.md", "span": [9, 10], "content_sha": "b567f7ea9ccc1eba7fa12b27ae7d6799c5a3119b893dd5852e313a9cad3e97e5"},
+    "atlas-restart-new": {"source": "atlas/Restart Runbook.md", "span": [9, 10], "content_sha": "57b0a52eda41564837bd4cc9fd0e01720cc984e7d7f3e24820741949e2748d6f"},
+    "rollout-approval": {"source": "atlas/Release Checklist.md", "span": [8, 8], "content_sha": "ab6d19c7ebd9c302d1dfdbaf61457ab72c4165b38488fbbcc6db6dc499c764a3"},
+    "rollout-owner": {"source": "atlas/Release Checklist.md", "span": [9, 9], "content_sha": "43abb18497d20fe88c271ade587cfde5ff7d1a35a7a9b3e3b9484b675dd3f918"},
+    "rollout-missing": {"source": "atlas/Release Checklist.md", "span": [10, 10], "content_sha": "b27b90e0951d1f69210b9a94b7dabecbe9d23c0562ac9bfba1c3eb7f1cf7492e"},
+    "beacon-objective": {"source": "beacon/Project.md", "span": [9, 9], "content_sha": "c51e126927f24519f25ca8349f7c771d16503c9ee3feca7c9eb2dfe79e1ccb13"},
+    "beacon-state": {"source": "beacon/Project.md", "span": [10, 10], "content_sha": "2263b8e6a279d596543b718263b101fe499fca3c646cc231d86a8c3e06c29c29"},
+    "beacon-decision": {"source": "beacon/Project.md", "span": [11, 11], "content_sha": "61fc050e56971700fd68e277c19d1fd6f53f24f86b3e74383ca7ef111c54a3f9"},
+    "beacon-blocker": {"source": "beacon/Project.md", "span": [12, 12], "content_sha": "cec8cdbb850ec7440fb6a4e5644d1797ae59e81345a768bc1ab39d1a3670462c"},
+    "beacon-next": {"source": "beacon/Project.md", "span": [13, 13], "content_sha": "0230f35142c5ed23ab7653276845d72845e55c5c1c8596734e1f43d5892929e8"},
+    "beacon-restart": {"source": "beacon/Restart Runbook.md", "span": [8, 9], "content_sha": "b88534bb23431c5b1b39d9473aeda0b0fc2e4f34dd6155fc6ea61650dc99ef46"},
+    "stress-objective": {"source": "stress/Stress Project.md", "span": [8, 8], "content_sha": "47009f972ef6c803e72813fb366ce13cdbe7b305903d74b8cde376442bfb8445"},
+    "stress-decision-a": {"source": "stress/Stress Project.md", "span": [9, 9], "content_sha": "90cc61292ac6a06486aac9b8af70c44f736d4766498c3f62ee9a85966daf6d51"},
+    "stress-decision-b": {"source": "stress/Stress Project.md", "span": [10, 10], "content_sha": "63bd6c679a927d0817497fd9819d9e5ffd73084b331e9f693076b18b8aa8439a"},
+    "stress-next": {"source": "stress/Stress Project.md", "span": [11, 11], "content_sha": "fbaa50600094958ac0c0e625c4f4fa45f7771f0645345f03ccc66c5438e1ba7a"},
+    "cobalt-objective": {"source": "cobalt/Project.md", "span": [9, 9], "content_sha": "8180e56a69f35f0d28113de481f0d138d8cacdc466568671a3cbe85b24c62eff"},
+    "cobalt-state": {"source": "cobalt/Project.md", "span": [10, 10], "content_sha": "cb94265a9ebd4cc04a1d79f834e93c0350c06ea67a82a7dfe8bc6dc9fdc4b22c"},
+    "cobalt-baseline-decision": {"source": "cobalt/Project.md", "span": [11, 11], "content_sha": "1e8ebdd9c668b524da612a20c3bf3b937b74f168b701deca31a29729ac7ca44f"},
+    "cobalt-blocker": {"source": "cobalt/Project.md", "span": [12, 12], "content_sha": "8c1cf9e1e70d9e26e3432d72574e3581a3fe7762a48ac5f93b1a9376a9e7f8a2"},
+    "cobalt-next": {"source": "cobalt/Project.md", "span": [13, 13], "content_sha": "664a720a8c738cf1d4ac6ece9f40b1b7ea4bb601b51ae5dd5b1b8dd5a84a3b90"},
+    "cobalt-no-deploy": {"source": "cobalt/Project.md", "span": [14, 14], "content_sha": "32f2e0bea609e337a232410c9b13d720f88804744793c5eeca9ec7d36e24f670"},
+    "cobalt-ops": {"source": "cobalt/Ops Inbox.md", "span": [8, 14], "content_sha": "7175dd6aa37601f643fdaff9e5763b8f1ef6b8fcf1aa1aa2b7477e0f342ec37a"},
+    "theme-status": {"source": "cobalt/Theme Decision.md", "span": [6, 6], "content_sha": "40a7a594199469d11f4ed81daf1c1b54eb82fef7d67ce06297273a9abd933472"},
+    "theme-authority": {"source": "cobalt/Theme Decision.md", "span": [7, 7], "content_sha": "5f7dab06b710354a32c1e8f125ede15b5bc3d5cc4ace097638ad785c3474f2fe"},
+    "theme-statement": {"source": "cobalt/Theme Decision.md", "span": [10, 10], "content_sha": "fee87c8c571ca6f6eb53d9df5ec3ff480a3e05e95157bd1a5dd1d047d193e17b"}
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "queries": [
+        {"id": "control", "role": "control", "query": "Atlas project"},
+        {"id": "marker", "role": "candidate", "query": "ATLAS-42"},
+        {"id": "objective", "role": "candidate", "query": "offline field-report"},
+        {"id": "next", "role": "candidate", "query": "empty-report parser tests"}
+      ],
+      "cases": [
+        {"id": "S1-atlas", "setup": "fixture", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-baseline-decision", "atlas-blocker", "atlas-next", "atlas-no-deploy", "queue-status", "queue-statement", "queue-authority"], "oracle": {"field_contains": {"objective": ["offline field-report queue"], "current_state": ["Parser complete"], "blockers": ["Missing sample for an empty report"], "next_action": ["Add the empty-report fixture", "Deployment is not authorized"], "decision_candidates": ["SQLite"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}}
+      ]
+    },
+    {
+      "id": "S2",
+      "queries": [
+        {"id": "control", "role": "control", "query": "queue"},
+        {"id": "decisions", "role": "candidate", "query": "SQLite PostgreSQL Redis"},
+        {"id": "titles", "role": "candidate", "query": "Queue Decision Proposal Archive"},
+        {"id": "revision", "role": "candidate", "query": "fixture-commit-a1"}
+      ],
+      "cases": [
+        {"id": "S2-offline", "setup": "fixture", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "queue-status", "queue-statement", "queue-authority", "proposal-status", "proposal-statement", "archive-status", "archive-statement"], "oracle": {"field_contains": {"decision_candidates": ["SQLite"], "other_decisions": ["PostgreSQL", "Redis"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}},
+        {"id": "S2-snapshot", "setup": "fixture", "project": "atlas", "transport": "snapshot", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "queue-status", "queue-statement", "queue-authority", "proposal-status", "proposal-statement", "archive-status", "archive-statement"], "oracle": {"field_contains": {"accepted_decisions": ["SQLite"], "other_decisions": ["PostgreSQL", "Redis"]}, "expected_core_unknowns": ["authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}}
+      ]
+    },
+    {
+      "id": "S3",
+      "queries": [
+        {"id": "control", "role": "control", "query": "restart"},
+        {"id": "window", "role": "candidate", "query": "retry-window"},
+        {"id": "runbook", "role": "candidate", "query": "Restart Runbook"},
+        {"id": "instruction", "role": "candidate", "query": "restart instruction"}
+      ],
+      "cases": [
+        {"id": "S3-atlas", "setup": "fixture", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "atlas-restart-old"], "oracle": {"field_contains": {"objective": ["offline field-report queue"], "current_state": ["Parser complete"], "blockers": ["Missing sample"], "next_action": ["Deployment is not authorized"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_text": ["retry-window 99"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}},
+        {"id": "S3-beacon", "setup": "fixture", "project": "beacon", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["beacon-objective", "beacon-state", "beacon-decision", "beacon-blocker", "beacon-next", "beacon-restart"], "oracle": {"field_contains": {"objective": ["hosted alert relay"], "current_state": ["Load test complete"], "blockers": ["None recorded"], "next_action": ["Prepare the demo recording"], "decision_candidates": ["PostgreSQL"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver"], "forbidden_text": ["retry-window 15", "SQLite"], "forbidden_source_prefixes": ["atlas/", "cobalt/"]}}
+      ]
+    },
+    {
+      "id": "S4",
+      "queries": [
+        {"id": "control", "role": "control", "query": "restart"},
+        {"id": "window", "role": "candidate", "query": "retry-window"},
+        {"id": "runbook", "role": "candidate", "query": "Restart Runbook"},
+        {"id": "marker-label", "role": "candidate", "query": "Runbook marker"}
+      ],
+      "cases": [
+        {"id": "S4-before", "setup": "s4-before", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "atlas-restart-old"], "oracle": {"field_contains": {"current_state": ["Parser complete"], "next_action": ["Deployment is not authorized"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}},
+        {"id": "S4-immediate", "setup": "s4-immediate", "project": "atlas", "transport": "offline", "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}},
+        {"id": "S4-after-3s", "setup": "s4-after-3s", "project": "atlas", "transport": "offline", "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}},
+        {"id": "S4-after-refresh", "setup": "s4-after-refresh", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "atlas-restart-new"], "oracle": {"field_contains": {"current_state": ["Parser complete"], "next_action": ["Deployment is not authorized"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_text": ["retry-window 15", "REVISION-OLD-15"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}}
+      ]
+    },
+    {
+      "id": "S5",
+      "queries": [
+        {"id": "control", "role": "control", "query": "rollout"},
+        {"id": "approval-owner", "role": "candidate", "query": "rollout approval owner"},
+        {"id": "unknown", "role": "candidate", "query": "UNKNOWN approval"},
+        {"id": "no-deploy", "role": "candidate", "query": "Deployment is not authorized"}
+      ],
+      "cases": [
+        {"id": "S5-rollout", "setup": "fixture", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "rollout-approval", "rollout-owner", "rollout-missing"], "oracle": {"field_contains": {"objective": ["offline field-report queue"], "next_action": ["Deployment is not authorized"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}}
+      ]
+    },
+    {
+      "id": "S6",
+      "queries": [
+        {"id": "control", "role": "control", "query": "Atlas project"},
+        {"id": "marker", "role": "candidate", "query": "ATLAS-42"},
+        {"id": "parser", "role": "candidate", "query": "parser retry"},
+        {"id": "sqlite", "role": "candidate", "query": "SQLite"}
+      ],
+      "cases": [
+        {"id": "S6-control", "setup": "s6-control", "project": "atlas", "transport": "offline", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-baseline-decision", "atlas-blocker", "atlas-next", "atlas-no-deploy", "queue-status", "queue-statement", "queue-authority"], "oracle": {"field_contains": {"objective": ["offline field-report queue"], "current_state": ["Parser complete"], "next_action": ["Deployment is not authorized"], "decision_candidates": ["SQLite"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_source_prefixes": ["beacon/", "cobalt/"]}},
+        {"id": "S6-baseline-edited", "setup": "s6-baseline-edited", "project": "atlas", "transport": "offline", "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}},
+        {"id": "S6-decision-edited", "setup": "s6-decision-edited", "project": "atlas", "transport": "offline", "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}},
+        {"id": "S6-refresh-recorded", "setup": "s6-refresh-recorded", "project": "atlas", "transport": "offline", "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}}
+      ]
+    },
+    {
+      "id": "S7",
+      "queries": [
+        {"id": "control", "role": "control", "query": "stress"},
+        {"id": "project", "role": "candidate", "query": "Stress Project"},
+        {"id": "report", "role": "candidate", "query": "truncation report"},
+        {"id": "load", "role": "candidate", "query": "load option"}
+      ],
+      "cases": [
+        {"id": "S7-stale-4000", "setup": "s7-stale", "project": "stress", "transport": "offline", "max_tokens": 4000, "expected_validation": "not_rederivable", "required_evidence": [], "oracle": {}},
+        {"id": "S7-limit-4000", "setup": "s7-after-refresh", "project": "stress", "transport": "offline", "max_tokens": 4000, "expected_validation": "equal_to_rederived", "required_evidence": ["stress-objective", "stress-decision-a", "stress-decision-b", "stress-next"], "oracle": {"field_contains": {"objective": ["packet budget under load"], "next_action": ["Review the truncation report"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "blockers", "current_state"]}},
+        {"id": "S7-limit-2000", "setup": "s7-after-refresh", "project": "stress", "transport": "offline", "max_tokens": 2000, "expected_validation": "equal_to_rederived", "required_evidence": ["stress-objective", "stress-decision-a", "stress-decision-b", "stress-next"], "oracle": {"field_contains": {"objective": ["packet budget under load"], "next_action": ["Review the truncation report"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "blockers", "current_state"]}},
+        {"id": "S7-limit-1000", "setup": "s7-after-refresh", "project": "stress", "transport": "offline", "max_tokens": 1000, "expected_validation": "equal_to_rederived", "required_evidence": ["stress-objective", "stress-decision-a", "stress-decision-b", "stress-next"], "oracle": {"field_contains": {"objective": ["packet budget under load"], "next_action": ["Review the truncation report"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "blockers", "current_state"]}},
+        {"id": "S7-limit-400", "setup": "s7-after-refresh", "project": "stress", "transport": "offline", "max_tokens": 400, "expected_validation": "equal_to_rederived", "required_evidence": ["stress-objective", "stress-decision-a", "stress-decision-b", "stress-next"], "oracle": {"field_contains": {"objective": ["packet budget under load"], "next_action": ["Review the truncation report"]}, "expected_core_unknowns": ["accepted_decisions", "authority.approver", "blockers", "current_state"]}}
+      ]
+    },
+    {
+      "id": "S8",
+      "queries": [
+        {"id": "control", "role": "control", "query": "approve deployment"},
+        {"id": "no-deploy", "role": "candidate", "query": "Deployment is not authorized"},
+        {"id": "marker", "role": "candidate", "query": "Recovery marker"},
+        {"id": "authority", "role": "candidate", "query": "approval owner"}
+      ],
+      "cases": [
+        {"id": "S8-cobalt", "setup": "scenario", "project": "cobalt", "transport": "snapshot", "expected_validation": "equal_to_rederived", "required_evidence": ["cobalt-objective", "cobalt-state", "cobalt-baseline-decision", "cobalt-blocker", "cobalt-next", "cobalt-no-deploy", "theme-status", "theme-authority", "theme-statement", "cobalt-ops"], "oracle": {"field_contains": {"objective": ["read-only status page"], "current_state": ["Wireframes reviewed"], "accepted_decisions": ["high-contrast dark theme"], "blockers": ["Hosting choice"], "next_action": ["Draft the hosting comparison", "Deployment is not authorized"]}, "expected_core_unknowns": ["authority.approver"], "forbidden_source_prefixes": ["atlas/", "beacon/"]}},
+        {"id": "S8-atlas", "setup": "scenario", "project": "atlas", "transport": "snapshot", "expected_validation": "equal_to_rederived", "required_evidence": ["atlas-objective", "atlas-state", "atlas-blocker", "atlas-next", "atlas-no-deploy", "queue-status", "queue-statement", "queue-authority", "rollout-approval", "rollout-owner", "rollout-missing"], "oracle": {"field_contains": {"objective": ["offline field-report queue"], "accepted_decisions": ["SQLite"], "next_action": ["Deployment is not authorized"]}, "expected_core_unknowns": ["authority.approver", "authority.approvals.rollout_approval", "authority.approvals.rollout_owner"], "forbidden_text": ["SYSTEM OVERRIDE", "GRANTED", "deploy Cobalt"], "forbidden_source_prefixes": ["cobalt/", "beacon/"]}}
+      ]
+    }
+  ]
+}

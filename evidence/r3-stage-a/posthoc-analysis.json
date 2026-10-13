@@ -35,8 +35,9 @@
     "best_in_hindsight_non_control_relative_reduction": 0.08629452556316493,
     "control_estimated_tokens": 46434,
     "definition": "Mean: arithmetic mean of eligible non-control plan totals within each scenario, summed across scenarios. Worst: most expensive eligible non-control plan in each scenario, summed across scenarios.",
-    "mean_eligible_candidate_estimated_tokens": 43477.66666666667,
-    "mean_eligible_candidate_relative_reduction": 0.06366742760333653,
+    "mean_eligible_candidate_estimated_tokens": 43477.666666666664,
+    "mean_eligible_candidate_estimated_tokens_exact": "130433/3",
+    "mean_eligible_candidate_relative_reduction": 0.06366742760333668,
     "terminology": "All selections in this section are best-in-hindsight within the frozen eligible candidate lists.",
     "worst_eligible_candidate_estimated_tokens": 44428,
     "worst_eligible_candidate_relative_reduction": 0.043201102640306674

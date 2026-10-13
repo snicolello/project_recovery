@@ -64,7 +64,8 @@ class StageAPosthocAnalysisTests(unittest.TestCase):
         h = self.report["hindsight"]
         self.assertEqual(42427, h["best_in_hindsight_non_control_estimated_tokens"])
         self.assertAlmostEqual(0.08629452556316493, h["best_in_hindsight_non_control_relative_reduction"])
-        self.assertEqual(43477.66666666667, h["mean_eligible_candidate_estimated_tokens"])
+        self.assertEqual(43477.666666666664, h["mean_eligible_candidate_estimated_tokens"])
+        self.assertEqual("130433/3", h["mean_eligible_candidate_estimated_tokens_exact"])
         self.assertEqual(44428, h["worst_eligible_candidate_estimated_tokens"])
         ablation = self.report["empty_echoed_hit_list_ablation"]
         self.assertEqual(40563, ablation["ablated_control_estimated_tokens"])

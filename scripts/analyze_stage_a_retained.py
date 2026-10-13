@@ -12,6 +12,7 @@ import copy
 import hashlib
 import json
 import subprocess
+from fractions import Fraction
 from pathlib import Path
 
 
@@ -281,16 +282,19 @@ def hindsight_summary(result: dict) -> dict:
     control = sum(item["control"]["estimated_tokens"] for item in scenarios)
     best = sum(item["best_non_control_candidate"]["estimated_tokens"] for item in scenarios)
     with_control = sum(item["achievable_best_with_control"]["estimated_tokens"] for item in scenarios)
-    means = []
+    means: list[Fraction] = []
     worst = []
     for item in scenarios:
         eligible = [plan for plan in item["candidates"] if plan["eligible"]]
-        means.append(sum(plan["estimated_tokens"] for plan in eligible) / len(eligible))
+        means.append(
+            Fraction(sum(plan["estimated_tokens"] for plan in eligible), len(eligible))
+        )
         worst.append(max(plan["estimated_tokens"] for plan in eligible))
-    mean_total = sum(means)
+    mean_total_exact = sum(means, Fraction())
+    mean_total = float(mean_total_exact)
     worst_total = sum(worst)
     assert (control, best, with_control) == (46434, 42427, 42136)
-    assert mean_total == 43477.66666666667
+    assert mean_total_exact == Fraction(130433, 3)
     assert worst_total == 44428
     return {
         "terminology": "All selections in this section are best-in-hindsight within the frozen eligible candidate lists.",
@@ -300,6 +304,7 @@ def hindsight_summary(result: dict) -> dict:
         "best_in_hindsight_including_control_estimated_tokens": with_control,
         "best_in_hindsight_including_control_relative_reduction": relative_reduction(control, with_control),
         "mean_eligible_candidate_estimated_tokens": mean_total,
+        "mean_eligible_candidate_estimated_tokens_exact": "130433/3",
         "mean_eligible_candidate_relative_reduction": relative_reduction(control, mean_total),
         "worst_eligible_candidate_estimated_tokens": worst_total,
         "worst_eligible_candidate_relative_reduction": relative_reduction(control, worst_total),

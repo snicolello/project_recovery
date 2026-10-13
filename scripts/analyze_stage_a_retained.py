@@ -135,7 +135,7 @@ def packet_difference_keys(left: dict, right: dict) -> list[str]:
 
 def analyze_mechanism(result: dict) -> dict:
     plans = query_plans(result)
-    recovered_comparisons = []
+    eligible_comparisons = 0
     differing_keys: set[str] = set()
     raw_fields_same_size = True
     raw_fields_identical = True
@@ -164,25 +164,49 @@ def analyze_mechanism(result: dict) -> dict:
                 stripped_fields_identical &= control_stripped == candidate_stripped
                 keys = packet_difference_keys(control_packet, candidate_packet)
                 differing_keys.update(keys)
-                recovered_comparisons.append(
-                    {
-                        "scenario": sid,
-                        "case": row["case"],
-                        "query_id": query_id,
-                        "raw_fields_bytes": len(candidate_fields),
-                        "raw_fields_equal_size": len(control_fields) == len(candidate_fields),
-                        "raw_fields_byte_identical": control_fields == candidate_fields,
-                        "stripped_fields_byte_identical": control_stripped == candidate_stripped,
-                        "stripped_packet_difference_keys": keys,
-                    }
-                )
+                eligible_comparisons += 1
 
     allowed_differences = {"budget", "missing_sources", "query", "query_hits"}
-    assert recovered_comparisons
+    assert eligible_comparisons
     assert raw_fields_same_size
     assert not raw_fields_identical
     assert stripped_fields_identical
     assert differing_keys <= allowed_differences
+
+    validated_rows = [
+        row for row in result["cases"] if row["validation"] == "equal_to_rederived"
+    ]
+    validated_by_case: dict[tuple[str, str], dict[str, dict]] = {}
+    for row in validated_rows:
+        validated_by_case.setdefault((row["scenario"], row["case"]), {})[
+            row["query_id"]
+        ] = row
+    all_comparisons = 0
+    normalized_mismatches = []
+    for (sid, case_id), rows in sorted(validated_by_case.items()):
+        control = rows.get("control")
+        if not control:
+            continue
+        control_fields = compact(
+            strip_volatile(load_packet(control)["fields"]), sort_keys=True
+        )
+        for query_id, row in sorted(rows.items()):
+            if query_id == "control":
+                continue
+            all_comparisons += 1
+            candidate_fields = compact(
+                strip_volatile(load_packet(row)["fields"]), sort_keys=True
+            )
+            if candidate_fields != control_fields:
+                normalized_mismatches.append(
+                    {"scenario": sid, "case": case_id, "query_id": query_id}
+                )
+    assert len(validated_rows) == 64
+    assert all_comparisons == 48
+    assert normalized_mismatches == [
+        {"scenario": "S7", "case": "S7-limit-2000", "query_id": "project"},
+        {"scenario": "S7", "case": "S7-limit-2000", "query_id": "report"},
+    ]
 
     best_sections = []
     for scenario in result["scenarios"]:
@@ -204,7 +228,7 @@ def analyze_mechanism(result: dict) -> dict:
     assert s2["best_in_hindsight_non_control"]["fetch_envelopes"] == 0
 
     return {
-        "eligible_control_candidate_comparisons": len(recovered_comparisons),
+        "eligible_control_candidate_comparisons": eligible_comparisons,
         "qualifier": (
             "Raw fields are equal-size but differ in observed_at timestamps. After the "
             "predeclared volatile-field stripping, recovered fields are byte-identical "
@@ -214,7 +238,13 @@ def analyze_mechanism(result: dict) -> dict:
         "raw_fields_byte_identical_across_all_comparisons": raw_fields_identical,
         "stripped_fields_byte_identical_across_all_comparisons": stripped_fields_identical,
         "stripped_packet_difference_keys": sorted(differing_keys),
-        "comparison_details": recovered_comparisons,
+        "all_validated_packet_population": {
+            "validated_packet_rows": len(validated_rows),
+            "same_case_candidate_control_comparisons": all_comparisons,
+            "normalized_fields_matches": all_comparisons - len(normalized_mismatches),
+            "normalized_fields_mismatches": normalized_mismatches,
+            "scope_note": "The two mismatches are the S7 plans excluded for semantic mismatch. The 24 refused rows retain no packet and are outside this comparison.",
+        },
         "control_vs_best_in_hindsight_section_bytes": best_sections,
         "s2_zero_hit_observation": {
             "query_id": "decisions",

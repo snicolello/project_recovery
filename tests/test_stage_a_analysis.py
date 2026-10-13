@@ -38,6 +38,17 @@ class StageAPosthocAnalysisTests(unittest.TestCase):
         )
         self.assertEqual(0, mechanism["s2_zero_hit_observation"]["query_hit_count"])
         self.assertEqual(0, mechanism["s2_zero_hit_observation"]["fetch_envelope_bytes"])
+        population = mechanism["all_validated_packet_population"]
+        self.assertEqual(64, population["validated_packet_rows"])
+        self.assertEqual(48, population["same_case_candidate_control_comparisons"])
+        self.assertEqual(46, population["normalized_fields_matches"])
+        self.assertEqual(
+            [
+                {"scenario": "S7", "case": "S7-limit-2000", "query_id": "project"},
+                {"scenario": "S7", "case": "S7-limit-2000", "query_id": "report"},
+            ],
+            population["normalized_fields_mismatches"],
+        )
 
     def test_section_byte_examples(self):
         table = {

@@ -1,0 +1,345 @@
+{
+  "duplicates_and_preservation": {
+    "candidate_results_final_jsonl": {
+      "bytes": 1633789,
+      "identical_to": "attempt-03/candidate-results.jsonl",
+      "preserved_at_revision": "10849760e6eb380eb8b55308cfffa594276a1a3f",
+      "sha256": "277639b97a0e91ff94f514f79a2f744372d374b5c367a01713dc39ab31ba0175",
+      "status": "removed exact duplicate"
+    },
+    "result_containers": {
+      "byte_identical": false,
+      "lf_audit_export": {
+        "bytes": 2194001,
+        "sha256": "9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597"
+      },
+      "parsed_json_identical": true,
+      "raw_attempt_3": {
+        "bytes": 2227722,
+        "sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d"
+      },
+      "status": "both retained because they are parsed-identical but not byte-identical"
+    }
+  },
+  "empty_echoed_hit_list_ablation": {
+    "ablated_control_estimated_tokens": 40563,
+    "label": "post-hoc observation only; no follow-up measurement is authorized",
+    "mechanism": "Empty both echoed query_hits and missing_sources in control packets, retain fetch envelopes, and reapply ceil(bytes/2.9) per row.",
+    "original_control_estimated_tokens": 46434,
+    "relative_reduction": 0.12643752422793642
+  },
+  "hindsight": {
+    "best_in_hindsight_including_control_estimated_tokens": 42136,
+    "best_in_hindsight_including_control_relative_reduction": 0.09256148511866305,
+    "best_in_hindsight_non_control_estimated_tokens": 42427,
+    "best_in_hindsight_non_control_relative_reduction": 0.08629452556316493,
+    "control_estimated_tokens": 46434,
+    "definition": "Mean: arithmetic mean of eligible non-control plan totals within each scenario, summed across scenarios. Worst: most expensive eligible non-control plan in each scenario, summed across scenarios.",
+    "mean_eligible_candidate_estimated_tokens": 43477.666666666664,
+    "mean_eligible_candidate_estimated_tokens_exact": "130433/3",
+    "mean_eligible_candidate_relative_reduction": 0.06366742760333668,
+    "terminology": "All selections in this section are best-in-hindsight within the frozen eligible candidate lists.",
+    "worst_eligible_candidate_estimated_tokens": 44428,
+    "worst_eligible_candidate_relative_reduction": 0.043201102640306674
+  },
+  "limits": {
+    "full_harness_run_limit": 20,
+    "full_harness_runs_used": 4,
+    "note": "The live 20-run ledger is retained in gitignored .scratch/r3-stage-a; checked-in attempt snapshots preserve each Stage A reservation. This post-hoc script performs no harness run.",
+    "stage_a_lane_limit_bytes": 262144000
+  },
+  "mechanism": {
+    "all_validated_packet_population": {
+      "normalized_fields_matches": 46,
+      "normalized_fields_mismatches": [
+        {
+          "case": "S7-limit-2000",
+          "query_id": "project",
+          "scenario": "S7"
+        },
+        {
+          "case": "S7-limit-2000",
+          "query_id": "report",
+          "scenario": "S7"
+        }
+      ],
+      "same_case_candidate_control_comparisons": 48,
+      "scope_note": "The two mismatches are the S7 plans excluded for semantic mismatch. The 24 refused rows retain no packet and are outside this comparison.",
+      "validated_packet_rows": 64
+    },
+    "control_vs_best_in_hindsight_section_bytes": [
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 2,
+          "packet": 9099,
+          "query": 10,
+          "query_hit_count": 1,
+          "query_hits": 820
+        },
+        "best_in_hindsight_query_id": "marker",
+        "control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 125,
+          "packet": 11376,
+          "query": 15,
+          "query_hit_count": 5,
+          "query_hits": 2970
+        },
+        "control_query_id": "control",
+        "scenario": "S1"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 13950,
+          "missing_sources": 4,
+          "packet": 16564,
+          "query": 50,
+          "query_hit_count": 0,
+          "query_hits": 4
+        },
+        "best_in_hindsight_query_id": "decisions",
+        "control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 13950,
+          "missing_sources": 4,
+          "packet": 22036,
+          "query": 14,
+          "query_hit_count": 8,
+          "query_hits": 5512
+        },
+        "control_query_id": "control",
+        "scenario": "S2"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 9768,
+          "missing_sources": 4,
+          "packet": 13263,
+          "query": 28,
+          "query_hit_count": 2,
+          "query_hits": 1000
+        },
+        "best_in_hindsight_query_id": "window",
+        "control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 9768,
+          "missing_sources": 4,
+          "packet": 14072,
+          "query": 18,
+          "query_hit_count": 3,
+          "query_hits": 1819
+        },
+        "control_query_id": "control",
+        "scenario": "S3"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 13794,
+          "missing_sources": 4,
+          "packet": 17626,
+          "query": 28,
+          "query_hit_count": 2,
+          "query_hits": 1060
+        },
+        "best_in_hindsight_query_id": "window",
+        "control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 0,
+          "fields": 13794,
+          "missing_sources": 4,
+          "packet": 19254,
+          "query": 18,
+          "query_hit_count": 4,
+          "query_hits": 2698
+        },
+        "control_query_id": "control",
+        "scenario": "S4"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 125,
+          "packet": 9119,
+          "query": 18,
+          "query_hit_count": 1,
+          "query_hits": 709
+        },
+        "best_in_hindsight_query_id": "unknown",
+        "control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 125,
+          "packet": 9110,
+          "query": 9,
+          "query_hit_count": 1,
+          "query_hits": 709
+        },
+        "control_query_id": "control",
+        "scenario": "S5"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 2,
+          "packet": 9099,
+          "query": 10,
+          "query_hit_count": 1,
+          "query_hits": 820
+        },
+        "best_in_hindsight_query_id": "marker",
+        "control": {
+          "consuming_cases": 1,
+          "fetch_envelopes": 0,
+          "fields": 6897,
+          "missing_sources": 125,
+          "packet": 11376,
+          "query": 15,
+          "query_hit_count": 5,
+          "query_hits": 2970
+        },
+        "control_query_id": "control",
+        "scenario": "S6"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 4,
+          "fetch_envelopes": 3416,
+          "fields": 17300,
+          "missing_sources": 8,
+          "packet": 23193,
+          "query": 52,
+          "query_hit_count": 0,
+          "query_hits": 8
+        },
+        "best_in_hindsight_query_id": "load",
+        "control": {
+          "consuming_cases": 4,
+          "fetch_envelopes": 3416,
+          "fields": 17300,
+          "missing_sources": 8,
+          "packet": 23172,
+          "query": 32,
+          "query_hit_count": 0,
+          "query_hits": 8
+        },
+        "control_query_id": "control",
+        "scenario": "S7"
+      },
+      {
+        "best_in_hindsight_non_control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 1337,
+          "fields": 17154,
+          "missing_sources": 4,
+          "packet": 20302,
+          "query": 34,
+          "query_hit_count": 1,
+          "query_hits": 822
+        },
+        "best_in_hindsight_query_id": "marker",
+        "control": {
+          "consuming_cases": 2,
+          "fetch_envelopes": 1337,
+          "fields": 17154,
+          "missing_sources": 4,
+          "packet": 19490,
+          "query": 40,
+          "query_hit_count": 0,
+          "query_hits": 4
+        },
+        "control_query_id": "control",
+        "scenario": "S8"
+      }
+    ],
+    "eligible_control_candidate_comparisons": 37,
+    "qualifier": "Raw fields are equal-size but differ in observed_at timestamps. After the predeclared volatile-field stripping, recovered fields are byte-identical across eligible control/candidate comparisons.",
+    "raw_fields_byte_identical_across_all_comparisons": false,
+    "raw_fields_equal_size_across_all_comparisons": true,
+    "s2_zero_hit_observation": {
+      "consuming_cases": 2,
+      "fetch_envelope_bytes": 0,
+      "query_hit_count": 0,
+      "query_id": "decisions"
+    },
+    "stripped_fields_byte_identical_across_all_comparisons": true,
+    "stripped_packet_difference_keys": [
+      "budget",
+      "missing_sources",
+      "query",
+      "query_hits"
+    ]
+  },
+  "predeclaration_history": {
+    "binding_precision": "Each attempt launch-gated the implementation.files hashes in its predeclaration. The fixed_measurement_projection hash was recorded for comparison but is not checked by the harness at runtime.",
+    "changes_before_first_measurement": {
+      "failure_oracles_added": [
+        "S4-after-3s",
+        "S4-immediate",
+        "S6-baseline-edited",
+        "S6-decision-edited",
+        "S6-refresh-recorded",
+        "S7-stale-4000"
+      ],
+      "s6_refresh_recorded_expected_validation": {
+        "after": "rejected",
+        "before": "not_rederivable"
+      },
+      "s7_unbounded_reference_added": true
+    },
+    "end_revision": "aab2944",
+    "start_revision": "5330507"
+  },
+  "s6_duplicate": {
+    "qualifier": "S1 and S6 control/marker packets are canonical/digest equivalents, not literal raw-packet identities; volatile timestamps differ.",
+    "shared_query_comparisons": [
+      {
+        "canonical_packet_byte_identical": true,
+        "estimated_tokens_identical": true,
+        "packet_digest_identical": true,
+        "query_id": "control",
+        "raw_packet_byte_identical": false
+      },
+      {
+        "canonical_packet_byte_identical": true,
+        "estimated_tokens_identical": true,
+        "packet_digest_identical": true,
+        "query_id": "marker",
+        "raw_packet_byte_identical": false
+      }
+    ],
+    "without_s6": {
+      "best_in_hindsight_including_control_estimated_tokens": 38998,
+      "best_in_hindsight_including_control_relative_reduction": 0.08263743501681918,
+      "best_in_hindsight_non_control_estimated_tokens": 39289,
+      "best_in_hindsight_non_control_relative_reduction": 0.07579214791465738,
+      "control_estimated_tokens": 42511
+    }
+  },
+  "schema": "project-recovery-r3-stage-a-posthoc-v1",
+  "source": {
+    "accepted_source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
+    "attempt": 3,
+    "method_revision": "541ea4397574d2a3ed8874085be4aaf5e37ef704",
+    "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+    "raw_result_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d"
+  },
+  "status": "post-hoc analysis; not predeclared; R3 remains deferred"
+}

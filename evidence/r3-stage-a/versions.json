@@ -1,0 +1,20 @@
+{
+  "captured_at_utc": "2026-10-13",
+  "accepted_source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
+  "attempt_1_method_revision": "53b388d17d0838a80cb741fe5f4f4d2051962326",
+  "attempt_1_predeclaration_sha256": "f328275a4318588fcbfa6a9f6f2221a3664719ed7c52231fdd23275e61e34988",
+  "attempt_1_harness_sha256": "ce7e853169abfe6fd793f32a7c37eb45b50c039451fbaa708f256f41634d7726",
+  "attempt_2_method_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
+  "attempt_2_predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
+  "attempt_2_harness_sha256": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
+  "attempt_2_results_sha256": "fef7e6b7eb53e2545777f21e2c32fc96f6b15c1a28220f486dc2d36767934513",
+  "attempt_3_method_revision": "541ea4397574d2a3ed8874085be4aaf5e37ef704",
+  "attempt_3_predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+  "attempt_3_harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
+  "attempt_3_results_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d",
+  "qmd": "2.8.3",
+  "python": "3.11.9",
+  "node": "24.13.0",
+  "network": "not used; not enforced",
+  "models_or_embeddings": "not used"
+}

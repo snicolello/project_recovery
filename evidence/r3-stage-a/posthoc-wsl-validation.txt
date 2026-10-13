@@ -1,0 +1,66 @@
+R3 Stage A post-hoc no-QMD validation
+=====================================
+
+Scope
+-----
+No Stage A harness or QMD command was run. The existing WSL host reported
+Python 3.12.3 and qmd=absent. Fixture verification was 16/16 before and after
+each test or analysis execution.
+
+Initial full-suite attempt
+--------------------------
+Publication HEAD: 9911022392b2a3b62d21c056ad2f2b54a5d97ea5
+Analysis revision under test: 9266a989194fc7a1af9ca5d67c3229eb7a5722e0
+Command: python3 -I -m unittest discover -s tests
+
+........................................................s.....................................................................................E.....
+======================================================================
+ERROR: setUpClass (test_stage_a_analysis.StageAPosthocAnalysisTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/dev/project_recovery/.scratch/overnight-stage-a/tests/test_stage_a_analysis.py", line 19, in setUpClass
+    cls.report = analysis.analyze()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/dev/project_recovery/.scratch/overnight-stage-a/scripts/analyze_stage_a_retained.py", line 438, in analyze
+    "hindsight": hindsight_summary(result),
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/dev/project_recovery/.scratch/overnight-stage-a/scripts/analyze_stage_a_retained.py", line 293, in hindsight_summary
+    assert mean_total == 43477.66666666667
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+----------------------------------------------------------------------
+Ran 147 tests in 18.228s
+
+FAILED (errors=1, skipped=1)
+
+Cause and correction
+--------------------
+Python 3.11's incremental float sum produced 43477.66666666667. Python 3.12's
+sum produced 43477.666666666664. The difference is below the documented
+43,477.667-token rounding and does not change the 6.367% summary. The corrected
+analysis sums scenario means as Fraction values, asserts the exact value
+130433/3, then converts once for JSON. Both runtimes produce
+43477.666666666664. The initial result had 147 test methods run: 146 passed and
+one skipped, with one additional setUpClass error. Seven post-hoc methods did not
+run. The corrected discovery count is 154.
+
+Corrected full no-QMD suite
+---------------------------
+Analysis revision: a2e6cd1e44a35fd7b205e609473057b21157a95c
+Command: python3 -I -m unittest discover -s tests
+
+........................................................s.................................................................................................
+----------------------------------------------------------------------
+Ran 154 tests in 18.645s
+
+OK (skipped=1)
+
+Cross-runtime output
+--------------------
+Windows focused post-hoc tests: 7 run, 7 passed.
+No-QMD WSL full suite: 154 run, 153 passed, 1 skipped.
+Windows checked output SHA-256:
+3c4d416126ae42d288d8e0ecb3cbbb957146967cc281a762d9345b7ab54bf8ec
+No-QMD WSL reproduced output SHA-256:
+3c4d416126ae42d288d8e0ecb3cbbb957146967cc281a762d9345b7ab54bf8ec

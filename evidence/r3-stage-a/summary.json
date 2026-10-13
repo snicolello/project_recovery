@@ -1,0 +1,83 @@
+{
+  "schema": "project-recovery-r3-stage-a-summary-v1",
+  "status": "complete-independent-audit-passed",
+  "independent_review": {
+    "status": "pass-no-findings",
+    "reviewed_evidence_revision": "f63a2781bd5effe5b805aef09138a84bf705187f",
+    "raw_results_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d",
+    "audit_export_sha256": "9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597",
+    "verified": "64 packet round-trips and 1328 receipts; 460 required evidence entries; 42 fetch envelopes; 24 refusal oracles; all row costs, S7 checks, selections, aggregates, fixtures, bounds, ledger and tracked hashes",
+    "recommendation": "decision-ready; no further Stage A run needed"
+  },
+  "retention_evidence": {
+    "successful_rows_with_lossless_packets": 64,
+    "decoded_packet_bytes": 692470,
+    "charged_packet_bytes": 692470,
+    "compact_round_trip_failures": 0,
+    "length_mismatches": 0,
+    "digest_mismatches": 0,
+    "unsuccessful_rows_with_packet_content": 0
+  },
+  "reviewed_retention_amendment": {
+    "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+    "harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
+    "fixed_measurement_projection_sha256": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1",
+    "validation": "independent premeasurement review passed; preflight valid; 21 focused pure tests passed; clean QMD 2.8.3 launch gate; fixtures 16/16 before and after"
+  },
+  "method_revision": "541ea4397574d2a3ed8874085be4aaf5e37ef704",
+  "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+  "harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
+  "results_sha256": "9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597",
+  "raw_attempt_results_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d",
+  "worker_elapsed_seconds": 348.297,
+  "bounded_start_to_finish_seconds": 351.508,
+  "rows": {
+    "total": 88,
+    "eligible": 88,
+    "equal_to_rederived": 64,
+    "expected_not_rederivable": 20,
+    "expected_rejected": 4,
+    "expected_failure_rows": 24,
+    "expected_failure_zero_consumer_bytes": 24,
+    "oracle_problems": 0
+  },
+  "coverage": {"covered": 460, "required": 460},
+  "fetches": {
+    "full_grid": {"rows": 88, "total": 42, "established": 42, "failed": 0, "zero_fetch_rows": 62},
+    "expected_refusals": {"rows": 24, "fetches": 0, "zero_fetch_rows": 24, "trusted_packet_rows": 0},
+    "validated_packets": {"rows": 64, "fetches": 42, "zero_fetch_rows": 38},
+    "diagnostic_references": {"rows": 4, "fetches": 2},
+    "consuming_grid": {"rows": 60, "fetches": 40, "zero_fetch_rows": 36},
+    "selected_non_control_plans": {"consuming_cases": 15, "fetches": 10, "zero_fetch_cases": 9}
+  },
+  "aggregate_status": "final-independent-audit-passed",
+  "aggregate": {
+    "control_estimated_tokens": 46434,
+    "best_non_control_estimated_tokens": 42427,
+    "non_control_relative_reduction": 0.08629452556316493,
+    "best_with_control_estimated_tokens": 42136,
+    "achievable_relative_reduction": 0.09256148511866305,
+    "reference_15_percent_met": false,
+    "interpretation": "best within the fixed query list; not a universal upper bound"
+  },
+  "scenarios": [
+    {"id": "S1", "control": 3923, "best_non_control": 3138, "query": "ATLAS-42", "relative_reduction": 0.200101962783584, "best_with_control": 3138},
+    {"id": "S2", "control": 7600, "best_non_control": 5713, "query": "SQLite PostgreSQL Redis", "relative_reduction": 0.24828947368421053, "best_with_control": 5713},
+    {"id": "S3", "control": 4853, "best_non_control": 4574, "query": "retry-window", "relative_reduction": 0.05749021223985164, "best_with_control": 4574},
+    {"id": "S4", "control": 6640, "best_non_control": 6078, "query": "retry-window", "relative_reduction": 0.08463855421686747, "best_with_control": 6078},
+    {"id": "S5", "control": 3142, "best_non_control": 3145, "query": "UNKNOWN approval", "relative_reduction": -0.0009548058561425843, "best_with_control": 3142},
+    {"id": "S6", "control": 3923, "best_non_control": 3138, "query": "ATLAS-42", "relative_reduction": 0.200101962783584, "best_with_control": 3138},
+    {"id": "S7", "control": 9170, "best_non_control": 9178, "query": "load option", "relative_reduction": -0.0008724100327153762, "best_with_control": 9170},
+    {"id": "S8", "control": 7183, "best_non_control": 7463, "query": "Recovery marker", "relative_reduction": -0.03898092718919671, "best_with_control": 7183}
+  ],
+  "safety": {
+    "fixtures_before_and_after": "16/16; tree unchanged",
+    "timed_out": false,
+    "bounded_stop_reason": null,
+    "lane_current_bytes": 40569165,
+    "lane_cap_bytes": 262144000,
+    "a_worktree_shared_current_bytes": 42750778,
+    "shared_cap_bytes": 1073741824
+  },
+  "full_harness_budget": {"global_attempt": 4, "used": 4, "cap": 20}
+}

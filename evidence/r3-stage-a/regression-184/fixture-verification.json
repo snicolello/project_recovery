@@ -1,0 +1,6 @@
+{
+  "command": "python -I scripts/verify_fixture_hashes.py",
+  "before": {"expected_count": 16, "actual_count": 16, "ok": true},
+  "after": {"expected_count": 16, "actual_count": 16, "ok": true},
+  "note": "Observed immediately before and after the single reserved regression run."
+}

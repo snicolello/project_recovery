@@ -1,0 +1,3 @@
+*.log binary
+attempt-03/*.json -text whitespace=cr-at-eol
+attempt-03/*.jsonl -text whitespace=cr-at-eol

@@ -1,0 +1,12 @@
+{
+  "captured_after_run": true,
+  "roots": {
+    ".scratch": 895629,
+    ".qmd": 1627795,
+    "runtime-vaults": 50631
+  },
+  "shared_total_bytes": 2574055,
+  "shared_cap_bytes": 1073741824,
+  "stage_a_lane_scratch_bytes": 392442,
+  "run_scenarios_scratch_bytes": 503187
+}

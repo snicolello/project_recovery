@@ -48,7 +48,13 @@ class Spec:
         raise NotImplementedError
 
 
+class _ProblemLimitReached(Exception):
+    """Stop nested validation after one problem beyond the reporting limit is found."""
+
+
 def problem(out: list, path: str, kind: str, reason: str) -> None:
+    if len(out) >= MAX_PROBLEMS:
+        raise _ProblemLimitReached
     out.append({"check": "structure", "field": path or "packet", "kind": kind, "reason": reason})
 
 
@@ -206,11 +212,11 @@ PACKET = Obj({
 def check(packet) -> list[dict]:
     """Every structural problem in ``packet`` (capped at ``MAX_PROBLEMS``)."""
     out: list[dict] = []
-    PACKET.check(packet, "", out)
-    if len(out) > MAX_PROBLEMS:
-        extra = len(out) - MAX_PROBLEMS
-        out = out[:MAX_PROBLEMS]
-        problem(out, "packet", "truncated", f"{extra} more structural problems not listed")
+    try:
+        PACKET.check(packet, "", out)
+    except _ProblemLimitReached:
+        out.append({"check": "structure", "field": "packet", "kind": "truncated",
+                    "reason": "more structural problems exist; the rest were not checked or listed"})
     return out
 
 

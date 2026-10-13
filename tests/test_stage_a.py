@@ -108,6 +108,7 @@ class StageAPureTests(unittest.TestCase):
     def test_generated_source_projection_is_predeclared_bounded(self):
         projected = stage_a.projected_generated_source_bytes(self.data)
         self.assertLessEqual(projected, self.data["limits"]["max_generated_source_bytes"])
+        self.assertEqual(20, self.data["limits"]["shared_full_harness_budget"])
 
     def test_s7_cross_budget_check_enforces_protected_and_omission_invariants(self):
         base_projection = {"protected": {"objective": "same"}, "conflicts": ["same"],
@@ -135,6 +136,21 @@ class StageAPureTests(unittest.TestCase):
         rows[1]["s7_projection"]["protected"] = {"objective": "changed"}
         stage_a.apply_s7_budget_checks(rows)
         self.assertFalse(rows[1]["eligible"])
+
+    def test_expected_failure_retains_the_evidence_its_oracle_checks(self):
+        submitted = {"status": "incomplete", "freshness": {"generation_gap": [
+            {"source": "atlas/Project.md", "change": "changed", "detected": "during_assembly"}]},
+            "conflicts": [{"field": "current_state", "kind": "source_changed",
+                           "source": "atlas/Project.md"}]}
+        validation = {"problems": [{"check": "rederivation", "field": "packet",
+                                    "kind": "not_rederivable", "reason": "atlas/Project.md changed"}]}
+        oracle = {"forbidden_stale_text": ["Parser complete"]}
+        observed = stage_a.failure_observation(submitted, validation, oracle)
+        self.assertEqual("incomplete", observed["submitted_status"])
+        self.assertEqual("during_assembly", observed["generation_gap"][0]["detected"])
+        self.assertEqual("source_changed", observed["conflicts"][0]["kind"])
+        self.assertIn("atlas/Project.md", observed["validation_problems"][0]["reason"])
+        self.assertFalse(observed["forbidden_stale_text_present"]["Parser complete"])
 
 
 if __name__ == "__main__":

@@ -29,7 +29,10 @@ that is no longer an ancestor, or installed QMD other than 2.8.3. The attempt
 record captures the actual measurement revision. The runner also refuses
 preexisting over-cap scratch, checks a conservative generated-source bound, polls
 scratch use throughout execution and terminates the complete process tree on the
-250 MiB lane cap or 600-second time cap.
+250 MiB lane cap or 600-second time cap. It reserves the attempt before launch,
+captures complete worker stdout and stderr, verifies fixture hashes after failures,
+and records one increment against the shared 20-full-harness-run budget. The
+separate existing 184-check regression is another orchestrator-counted full run.
 
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:

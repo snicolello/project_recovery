@@ -211,6 +211,20 @@ def failure_oracle_problems(submitted: dict, validation: dict, oracle: dict) -> 
     return problems
 
 
+def failure_observation(submitted: dict, validation: dict, oracle: dict) -> dict:
+    """Retain the compact evidence that the failure oracle evaluated."""
+    text = all_packet_text(submitted)
+    return {"submitted_status": submitted.get("status"),
+            "generation_gap": [{k: gap.get(k) for k in ("source", "detected", "change") if k in gap}
+                               for gap in submitted.get("freshness", {}).get("generation_gap", [])],
+            "conflicts": [{k: conflict.get(k) for k in ("field", "kind", "source") if k in conflict}
+                          for conflict in submitted.get("conflicts", [])],
+            "validation_problems": [{k: problem.get(k) for k in ("check", "field", "kind", "reason")
+                                     if k in problem} for problem in validation.get("problems", [])],
+            "forbidden_stale_text_present": {stale: stale in text
+                                             for stale in oracle.get("forbidden_stale_text", [])}}
+
+
 def oracle_problems(packet: dict, oracle: dict, m: recipe.Manifest, project: str,
                     transport: str | None) -> list[str]:
     problems: list[str] = []
@@ -493,6 +507,8 @@ def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, w
         # consumer, so its charged bytes are explicitly zero.
         result["oracle_problems"].extend(failure_oracle_problems(
             submitted, validation, case["failure_oracle"]))
+        result["failure_observation"] = failure_observation(
+            submitted, validation, case["failure_oracle"])
         result["eligible"] = not result["oracle_problems"]
         result["expected_failure_observation"] = True
         return result
@@ -651,22 +667,24 @@ def terminate_process_tree(proc: subprocess.Popen) -> str | None:
     return detail
 
 
-def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int) -> tuple[int, bool, str | None, str | None]:
+def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int,
+                stdout_path: Path, stderr_path: Path) -> tuple[int, bool, str | None, str | None]:
     """Run one attempt and terminate its process tree if the hard cap expires."""
     kwargs = {"cwd": REPO}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         kwargs["start_new_session"] = True
-    proc = subprocess.Popen(cmd, **kwargs)
-    deadline = time.monotonic() + timeout
-    while proc.poll() is None:
-        if time.monotonic() >= deadline:
-            return 124, True, terminate_process_tree(proc), "time_cap"
-        if dir_size(scratch) > scratch_cap:
-            return 125, False, terminate_process_tree(proc), "scratch_cap"
-        time.sleep(0.25)
-    return proc.returncode, False, None, None
+    with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
+        proc = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, **kwargs)
+        deadline = time.monotonic() + timeout
+        while proc.poll() is None:
+            if time.monotonic() >= deadline:
+                return 124, True, terminate_process_tree(proc), "time_cap"
+            if dir_size(scratch) > scratch_cap:
+                return 125, False, terminate_process_tree(proc), "scratch_cap"
+            time.sleep(0.25)
+        return proc.returncode, False, None, None
 
 
 def git_result(args: list[str]) -> subprocess.CompletedProcess:
@@ -758,7 +776,8 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
                     "predeclaration_sha256": predecl_hash, "fixture_before": before,
                     "launch_environment": observed_environment,
                     "preexisting_scratch_bytes": existing_size,
-                    "projected_generated_source_bytes": projected}
+                    "projected_generated_source_bytes": projected,
+                    "shared_full_harness_budget_increment": 1}
     append_attempt(ledger, start_record)
     if not before["ok"]:
         append_attempt(ledger, {"attempt": attempt_no, "event": "stopped", "at": utc_now(),
@@ -766,14 +785,21 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
         return 2
     cmd = [sys.executable, "-I", str(Path(__file__).resolve()), "_worker",
            "--predeclaration", str(args.predeclaration.resolve()), "--attempt-dir", str(attempt_dir)]
-    code, timed_out, timeout_termination, stop_reason = run_bounded(
-        cmd, predecl["limits"]["seconds_per_attempt"], scratch, cap)
+    launch_error = None
+    try:
+        code, timed_out, timeout_termination, stop_reason = run_bounded(
+            cmd, predecl["limits"]["seconds_per_attempt"], scratch, cap,
+            attempt_dir / "worker-stdout.log", attempt_dir / "worker-stderr.log")
+    except BaseException as exc:
+        code, timed_out, timeout_termination, stop_reason = 126, False, None, "launch_or_runner_error"
+        launch_error = f"{type(exc).__name__}: {exc}"
     after = fixture_status()
     tree_unchanged = tree_digest(FIXTURES) == tree_before
     size = dir_size(scratch)
     final = {"attempt": attempt_no, "event": "finished", "at": utc_now(), "exit_code": code,
              "timed_out": timed_out, "timeout_process_tree_termination": timeout_termination,
              "bounded_stop_reason": stop_reason,
+             "launch_error": launch_error,
              "fixture_after": after, "fixtures_tree_unchanged": tree_unchanged,
              "scratch_bytes": size, "scratch_cap_bytes": cap}
     append_attempt(ledger, final)

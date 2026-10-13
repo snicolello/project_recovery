@@ -13,6 +13,7 @@
   },
   "limits": {
     "attempts": 20,
+    "shared_full_harness_budget": 20,
     "seconds_per_attempt": 600,
     "stage_a_scratch_bytes": 262144000,
     "minimum_free_before_launch_bytes": 209715200,
@@ -21,7 +22,7 @@
   },
   "implementation": {
     "files": {
-      "scripts/measure_stage_a.py": "4bdeae804b3f553c513093068af11dbf091db330180a570cd189edf18da2f841",
+      "scripts/measure_stage_a.py": "b43c3b87bfc81e2916a785ff094c0f4ce56c6263f86a04de04c72fdb4a5311a5",
       "skills/project-recovery/scripts/packet.py": "13a7b8a800960ac271f462363dc54c9b0ceb003fda841b3520087765235bf348",
       "skills/project-recovery/scripts/recipe.py": "f49d20d4a223ff45000a04bcc8ee3c411551dc7ec76264a027891d8077457aeb",
       "skills/project-recovery/scripts/rederive.py": "4ca309c7fe66de67fe61c05628da75c796bd221d3623e477ce93f2010fd098cc",
@@ -32,7 +33,7 @@
       "manifest/fixture-vault.json": "dff414acea6366741a03e9f9d8b3dfa4bfaa23fa23b192c23517cd0e80d52140",
       "manifest/scenario-vault.json": "ad5ad2838c937e082e0bf91e218c41f25dda3d191795d3ffdaae5c3f63068cef"
     },
-    "launch_gate": "all hashes must match, relevant paths must be clean, accepted source revision must be an ancestor, and installed QMD must be exactly 2.8.3"
+    "launch_gate": "all hashes must match, relevant paths must be clean, accepted source revision must be an ancestor, and installed QMD must be exactly 2.8.3; each Stage A invocation records one shared full-harness-budget increment, while the separate 184-check regression is counted by the orchestrator"
   },
   "measurement": {
     "trusted_packet_source": "validate_requery.packet",

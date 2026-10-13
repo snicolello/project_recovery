@@ -1,5 +1,60 @@
 # Reliance gate evidence (project_recovery #6), 2026-10-12
 
+## Structural-diagnostic allocation remediation
+
+Code revision `71e251d`, against the reviewed head `603b6c3`. The earlier matrix in
+`results.json` remains a historical run at `fc2ffa9`; the separate
+`allocation-results.json` records this remediation's before/after measurements,
+source hashes and failing-before regression proof. `versions.json` records the
+existing runtimes used; no dependency was installed.
+
+The structural checker used to accumulate all problems before applying its
+100-problem reporting cap. It now stops nested traversal upon discovering the
+101st problem, retaining the first 100 in order and one truncation marker. That
+marker does not claim a count for errors the checker no longer visits. Below or
+exactly at the cap, diagnostics are unchanged.
+
+| Safe reproduction (10,000 empty hits; 30,064 bytes) | `603b6c3` | `71e251d` |
+|---|---:|---:|
+| Structural check, peak traced Python allocation | 17,213,118 bytes | 36,124 bytes |
+| Full validate, requery stand-in | 18,051,603 bytes | 1,883,139 bytes |
+| Full validate, packet mode | 18,051,603 bytes | 1,882,970 bytes |
+| Result in both modes | rejected | rejected |
+
+`test_structural_limits.py` adds five tests: 99/100/101-problem boundaries;
+nested object/map traversal stops; a 10,000-empty-hit memory and traversal
+regression; an honest assembled packet; and rejection in both validation modes.
+The memory regression fails on the exact old `shape.py` loaded as a separate
+in-memory module (17,212,526 bytes against a 1,000,000-byte ceiling), and all five
+tests pass with the fix. Parsing and other ordinary processing still scale with
+input size; these measurements concern diagnostic amplification, not a constant
+whole-process memory guarantee. No test approached the 4 MB input allowance.
+
+Reproduce the measurements against the old export and the fixed checkout:
+
+```powershell
+python -I evidence/reliance-gate-2026-10-12/allocation_repro.py --code-root PATH_TO_603b6c3
+python -I evidence/reliance-gate-2026-10-12/allocation_repro.py
+python -I -m unittest discover -s tests -p test_structural_limits.py
+```
+
+Validation of the code at `71e251d`: 126 unit tests ran with no failures or errors
+and one symlink-permission skip; the existing Windows junction check passed
+outside the restrictive sandbox. All 184 actual-QMD scenario checks passed,
+including 20 repeat runs and an index rebuild. The existing isolated QMD 2.8.3
+runtime was reused, while all indexes and generated synthetic copies remained in
+the remediation worktree. Fixture hashes matched 16/16 before and after, and the
+entire 44-file fixture tree was unchanged. The product contract and `STATE.md`
+are unchanged; no release gate moved.
+
+A separate agent session, not the implementation author, independently reviewed
+`603b6c3..71e251d`, reran the five focused tests and the fixed-code reproduction,
+and found no defects within that focused scope. PR #8 and issue #6 remain pending
+owner acceptance. The bounded-traversal fix does not alter the documented packet
+mode or trust-root limitations below.
+
+## Earlier reliance-gate matrix
+
 `results.json` records each reproducing case in `tests/reliance_cases.py` run three ways:
 
 - `before`: the R2 validator at the base revision `5ab0ea2`;

@@ -1,0 +1,148 @@
+{
+  "base_revision": "603b6c3222418047a96cd16db8433d7f7659b3dd",
+  "code_revision": "71e251d9b4aefcd1bc5db1ef1277b5e81795e5be",
+  "max_empty_hits_tested": 10000,
+  "before": {
+    "python": "3.11.9",
+    "platform": "win32",
+    "shape_sha256": "3f2d3ba33191323dcd62de272026388062cf7bb1326cbd819da1f1cd85e3fb6e",
+    "measurement": "peak traced Python allocation; input and fixture setup excluded",
+    "cases": [
+      {
+        "empty_hits": 1000,
+        "input_bytes": 3064,
+        "structure": {
+          "problems": 101,
+          "peak_bytes": 1717622
+        },
+        "validate": {
+          "requery": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 1847899
+          },
+          "packet": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 1847899
+          }
+        }
+      },
+      {
+        "empty_hits": 10000,
+        "input_bytes": 30064,
+        "structure": {
+          "problems": 101,
+          "peak_bytes": 17213118
+        },
+        "validate": {
+          "requery": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 18051603
+          },
+          "packet": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 18051603
+          }
+        }
+      }
+    ]
+  },
+  "after": {
+    "python": "3.11.9",
+    "platform": "win32",
+    "shape_sha256": "3db780acf2d742b823b96ebeb560cd6bd8beb0e34bffba5c38fb1f00f03274e3",
+    "measurement": "peak traced Python allocation; input and fixture setup excluded",
+    "cases": [
+      {
+        "empty_hits": 1000,
+        "input_bytes": 3064,
+        "structure": {
+          "problems": 101,
+          "peak_bytes": 36124
+        },
+        "validate": {
+          "requery": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 353899
+          },
+          "packet": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 767551
+          }
+        }
+      },
+      {
+        "empty_hits": 10000,
+        "input_bytes": 30064,
+        "structure": {
+          "problems": 101,
+          "peak_bytes": 36124
+        },
+        "validate": {
+          "requery": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 1883139
+          },
+          "packet": {
+            "result": "rejected",
+            "structure_problems": 101,
+            "peak_bytes": 1882970
+          }
+        }
+      }
+    ]
+  },
+  "regression": {
+    "test": "test_structural_limits.StructuralDiagnosticLimitTests.test_ten_thousand_empty_hits_stop_traversal_with_bounded_allocation",
+    "old_code_result": "FAIL",
+    "old_peak_bytes": 17212526,
+    "required_peak_below_bytes": 1000000,
+    "fixed_focused_suite": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    "method": "The same regression test was run with its shape module replaced by the exact 603b6c3 source loaded into a distinct in-memory module; no old checkout source was edited."
+  },
+  "limits": [
+    "tracemalloc measures Python allocations, not whole-process resident memory",
+    "Only 1,000 and 10,000 empty-hit payloads were measured; no near-4 MB stress was run",
+    "Parsing and ordinary packet processing remain proportional to input size",
+    "The reproduction uses VaultSession for requery; actual QMD is tested separately by the scenario suite"
+  ],
+  "verification": {
+    "unit_suite": {
+      "command": "python -I -m unittest discover -s tests",
+      "tests_run": 126,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skip_reason": "symlink creation not permitted; junction test passed outside restrictive sandbox"
+    },
+    "scenario_suite": {
+      "checks": 184,
+      "passed": 184,
+      "failed": [],
+      "runtime": "existing isolated QMD 2.8.3 reused; state and synthetic copies in remediation worktree"
+    },
+    "fixture_hashes": {
+      "before": 16,
+      "after": 16,
+      "mismatches": 0
+    },
+    "fixture_tree_unchanged": true,
+    "independent_review": {
+      "revision": "71e251d9b4aefcd1bc5db1ef1277b5e81795e5be",
+      "reviewer": "separate agent session; not the implementation author",
+      "scope": "structural diagnostic allocation fix, tests and reproduction harness",
+      "verdict": "no defects found",
+      "focused_tests_passed": 5
+    }
+  }
+}

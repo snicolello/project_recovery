@@ -29,6 +29,8 @@ The run uses three disjoint roots:
 
 The MCP session must advertise exactly `get`, `multi_get`, `query` and `status`. The rehearsal performs a normal read through real QMD and separately proves that a server advertisement containing `write` is rejected at session startup. It also proves that `write`, `edit`, `move`, `delete`, `shell`, `update` and `embed` are refused before transport. Index maintenance remains a separate exact-argument allowlist limited to `collection add <absolute source> --name <safe name>` and `update`; update hooks are refused. A manifest that places derived state inside the source root is refused without creating that directory. Parent traversal and an available symlink or Windows junction escape are rejected by the source locator boundary.
 
+The report also probes the bounded QMD 2.8.3 snippet-label observation from the original evaluation. A reproduced mismatch is recorded but does not fail the rehearsal: the recovery recipe never cites rendered search-snippet labels. It fetches the selected source and verifies the receipt against source bytes. An unsent upstream report is retained under `evidence/transition-rehearsal/` for owner review.
+
 ## Failure and recovery
 
 Stop the affected transition work if the report says `failed`, if either fixture check fails, if the pilot source changes, if a path overlaps, if QMD advertises another tool, or if requery validation does not return `equal_to_rederived`. Preserve the three run paths and the console output for diagnosis. Do not reuse a partially built state directory.

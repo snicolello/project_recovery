@@ -67,6 +67,20 @@ class TransitionRehearsalTests(unittest.TestCase):
             self.assertEqual(result, {"state_dir_inside_source": "rejected", "update_hook": "rejected"})
             self.assertEqual(rehearsal.poisoned_advertisement_probe(base / "output"), "rejected")
 
+    def test_snippet_label_mismatch_is_bounded_and_detected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = Path(tmp)
+            note = vault / "atlas" / "Queue Archive.md"
+            note.parent.mkdir()
+            note.write_text("---\ntitle: Queue Archive\n---\n# Queue Archive\n"
+                            "Atlas queue originally used Redis.\n", encoding="utf-8")
+            hits = [{"file": "atlas/Queue Archive.md", "line": 5,
+                     "snippet": "5: @@ -4,2 @@\n6: # Queue Archive\n7: Atlas queue originally used Redis."}]
+            result = rehearsal.snippet_line_probe(hits, vault)
+            self.assertEqual(result["result"], "reproduced")
+            self.assertEqual((result["rendered_heading_label"], result["actual_heading_line"]), (6, 4))
+            self.assertEqual((result["match_line_field"], result["actual_match_line"]), (5, 5))
+
     def test_run_id_is_bounded(self):
         self.assertIsNotNone(rehearsal.RUN_ID.fullmatch("consumer-check-01"))
         for invalid in ("", "../escape", "space here", "x" * 65):

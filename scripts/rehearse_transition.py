@@ -242,6 +242,33 @@ def reject_mutating_tools(session: McpSession) -> list[str]:
     return refused
 
 
+def snippet_line_probe(hits: list[dict], vault: Path) -> dict:
+    target = next((hit for hit in hits if hit.get("file") == "atlas/Queue Archive.md"), None)
+    if target is None:
+        return {"result": "not_observed", "reason": "Queue Archive was not returned"}
+    rows = []
+    for rendered in str(target.get("snippet", "")).splitlines():
+        match = re.match(r"^(\d+): (.*)$", rendered.rstrip("\r"))
+        if match:
+            rows.append((int(match.group(1)), match.group(2)))
+    heading = next(((label, text) for label, text in rows if text == "# Queue Archive"), None)
+    source_lines = (vault / "atlas" / "Queue Archive.md").read_text(encoding="utf-8").splitlines()
+    actual_heading = next((number for number, text in enumerate(source_lines, 1) if text == "# Queue Archive"), None)
+    match_line = next((number for number, text in enumerate(source_lines, 1)
+                       if "Atlas queue originally used Redis" in text), None)
+    if heading is None or actual_heading is None or match_line is None:
+        return {"result": "not_observed", "reason": "expected synthetic lines were absent"}
+    return {
+        "result": "reproduced" if heading[0] != actual_heading else "not_reproduced",
+        "file": target["file"],
+        "match_line_field": target.get("line"),
+        "actual_match_line": match_line,
+        "rendered_heading_label": heading[0],
+        "actual_heading_line": actual_heading,
+        "snippet": target.get("snippet"),
+    }
+
+
 def run(run_id: str) -> tuple[int, dict]:
     if not RUN_ID.fullmatch(run_id):
         raise RehearsalError("--run-id must be 1-64 letters, digits, dots, underscores or hyphens")
@@ -297,6 +324,7 @@ def run(run_id: str) -> tuple[int, dict]:
         assemble_started = time.perf_counter()
         with McpSession(state) as session:
             refused = reject_mutating_tools(session)
+            snippet_probe = snippet_line_probe(session.query("Atlas queue", "atlas", 10), vault)
             verifier = recipe.make_verifier(manifest, "snapshot", SNAPSHOTS)
             packet = recipe.assemble(manifest, "atlas", "Atlas project", session, None, verifier)
             advertised = session.advertised
@@ -329,6 +357,7 @@ def run(run_id: str) -> tuple[int, dict]:
             "mcp_advertised_tools": advertised,
             "mcp_calls": calls,
             "mutating_tools_refused": refused,
+            "qmd_snippet_line_labels": snippet_probe,
             "validation": {"result": validation["result"], "failures": validation["failures"],
                            "hits": "requery"},
         })

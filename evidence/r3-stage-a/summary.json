@@ -1,0 +1,57 @@
+{
+  "schema": "project-recovery-r3-stage-a-summary-v1",
+  "status": "valid-measurement-complete",
+  "method_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
+  "predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
+  "harness_sha256": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
+  "results_sha256": "fef7e6b7eb53e2545777f21e2c32fc96f6b15c1a28220f486dc2d36767934513",
+  "elapsed_seconds": 346.843,
+  "rows": {
+    "total": 88,
+    "eligible": 88,
+    "equal_to_rederived": 64,
+    "expected_not_rederivable": 20,
+    "expected_rejected": 4,
+    "expected_failure_rows": 24,
+    "expected_failure_zero_consumer_bytes": 24,
+    "oracle_problems": 0
+  },
+  "coverage": {"covered": 460, "required": 460},
+  "fetches": {
+    "full_grid": {"rows": 88, "total": 42, "established": 42, "failed": 0, "zero_fetch_rows": 62},
+    "expected_refusals": {"rows": 24, "fetches": 0, "zero_fetch_rows": 24, "trusted_packet_rows": 0},
+    "validated_packets": {"rows": 64, "fetches": 42, "zero_fetch_rows": 38},
+    "diagnostic_references": {"rows": 4, "fetches": 2},
+    "consuming_grid": {"rows": 60, "fetches": 40, "zero_fetch_rows": 36},
+    "selected_non_control_plans": {"consuming_cases": 15, "fetches": 10, "zero_fetch_cases": 9}
+  },
+  "aggregate": {
+    "control_estimated_tokens": 46434,
+    "best_non_control_estimated_tokens": 42427,
+    "non_control_relative_reduction": 0.08629452556316493,
+    "best_with_control_estimated_tokens": 42136,
+    "achievable_relative_reduction": 0.09256148511866305,
+    "reference_15_percent_met": false,
+    "interpretation": "best within the fixed query list; not a universal upper bound"
+  },
+  "scenarios": [
+    {"id": "S1", "control": 3923, "best_non_control": 3138, "query": "ATLAS-42", "relative_reduction": 0.200101962783584, "best_with_control": 3138},
+    {"id": "S2", "control": 7600, "best_non_control": 5713, "query": "SQLite PostgreSQL Redis", "relative_reduction": 0.24828947368421053, "best_with_control": 5713},
+    {"id": "S3", "control": 4853, "best_non_control": 4574, "query": "retry-window", "relative_reduction": 0.05749021223985164, "best_with_control": 4574},
+    {"id": "S4", "control": 6640, "best_non_control": 6078, "query": "retry-window", "relative_reduction": 0.08463855421686747, "best_with_control": 6078},
+    {"id": "S5", "control": 3142, "best_non_control": 3145, "query": "UNKNOWN approval", "relative_reduction": -0.0009548058561425843, "best_with_control": 3142},
+    {"id": "S6", "control": 3923, "best_non_control": 3138, "query": "ATLAS-42", "relative_reduction": 0.200101962783584, "best_with_control": 3138},
+    {"id": "S7", "control": 9170, "best_non_control": 9178, "query": "load option", "relative_reduction": -0.0008724100327153762, "best_with_control": 9170},
+    {"id": "S8", "control": 7183, "best_non_control": 7463, "query": "Recovery marker", "relative_reduction": -0.03898092718919671, "best_with_control": 7183}
+  ],
+  "safety": {
+    "fixtures_before_and_after": "16/16; tree unchanged",
+    "timed_out": false,
+    "bounded_stop_reason": null,
+    "lane_current_bytes": 19087685,
+    "lane_cap_bytes": 262144000,
+    "a_worktree_shared_current_bytes": 21269298,
+    "shared_cap_bytes": 1073741824
+  },
+  "full_harness_budget": {"global_attempt": 3, "used": 3, "cap": 20}
+}

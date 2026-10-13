@@ -1,0 +1,61 @@
+{
+  "start": {
+    "attempt": 2,
+    "event": "started",
+    "at": "2026-10-13T02:33:49.189017Z",
+    "predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
+    "fixture_before": {
+      "ok": true,
+      "expected_count": 16,
+      "actual_count": 16,
+      "missing": [],
+      "extra": [],
+      "mismatched": []
+    },
+    "launch_environment": {
+      "qmd": "2.8.3",
+      "measurement_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
+      "relevant_status": []
+    },
+    "accounting_roots": {
+      "stage_a_lane": [
+        "C:\\dev\\project_recovery\\.scratch\\overnight-stage-a\\.scratch\\r3-stage-a",
+        "C:\\dev\\project_recovery\\.scratch\\overnight-stage-a\\.qmd\\r3-stage-a"
+      ],
+      "shared": [
+        "C:\\dev\\project_recovery\\.scratch\\overnight-stage-a\\.scratch",
+        "C:\\dev\\project_recovery\\.scratch\\overnight-stage-a\\.qmd",
+        "C:\\dev\\project_recovery\\.scratch\\overnight-stage-a\\runtime-vaults"
+      ]
+    },
+    "preexisting_lane_bytes": 392442,
+    "preexisting_shared_bytes": 2574055,
+    "projected_generated_source_bytes": 25555584,
+    "shared_full_harness_budget_increment": 1
+  },
+  "finish": {
+    "attempt": 2,
+    "event": "finished",
+    "at": "2026-10-13T02:39:38.084409Z",
+    "exit_code": 0,
+    "timed_out": false,
+    "timeout_process_tree_termination": null,
+    "bounded_stop_reason": null,
+    "launch_error": null,
+    "fixture_after": {
+      "ok": true,
+      "expected_count": 16,
+      "actual_count": 16,
+      "missing": [],
+      "extra": [],
+      "mismatched": []
+    },
+    "fixtures_tree_unchanged": true,
+    "scratch_bytes": 3785333,
+    "external_state_bytes": 15299886,
+    "lane_accounted_bytes": 19085219,
+    "lane_cap_bytes": 262144000,
+    "shared_accounted_bytes": 21266832,
+    "shared_cap_bytes": 1073741824
+  }
+}

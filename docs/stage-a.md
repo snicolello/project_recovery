@@ -44,6 +44,19 @@ amendment above was committed and re-predeclared. The candidate list, semantic
 oracles, required coverage, fetch rules, byte estimator, aggregation, failure
 treatment and interpretation are unchanged.
 
+The corrected attempt at reviewed method revision `9fa99e7` completed all 88
+rows with no oracle failures. The fixed-list best non-controls reduced the
+46,434-token control total to 42,427 (8.629%); retaining a cheaper control in S5,
+S7 and S8 reduced the achievable total to 42,136 (9.256%). The 15% reference was
+not met. All 24 expected mutation refusals matched their frozen causes and charged
+zero consumer bytes; successful evidence coverage was 460/460. The full grid had
+42 established fetches, including two for four uncharged S7 references. The 60
+consuming rows had 40 fetches and 36 zero-fetch rows; selected non-control plans
+had 10 fetches across 15 consuming cases, nine of them zero-fetch. S7's `project`
+and `report` plans passed row oracles but were excluded because their semantic
+projections differed from the control. These are best results within the fixed
+lists only.
+
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:
 

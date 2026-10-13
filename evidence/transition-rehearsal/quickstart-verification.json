@@ -18,7 +18,7 @@
       "validate_snapshot": 0.674,
       "total": 4.403
     },
-    "unit_suite": "133 tests in 17.540 seconds; pass; one symlink-permission skip; Windows junction path passed",
+    "unit_suite": "133 tests run in 17.540 seconds: 132 passed, 1 symlink-permission skip; Windows junction path passed",
     "scenario_harness": "not run by package C; package A/root owns the existing 184-check harness"
   },
   "linux": {

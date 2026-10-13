@@ -33,7 +33,7 @@ python -I -m unittest discover -s tests
 python -I scripts/verify_fixture_hashes.py
 ```
 
-Result: 133 tests passed in 17.540 seconds; one existing symlink-permission test skipped. The existing Windows junction test and the rehearsal's explicit junction probe passed outside the restrictive sandbox. The accepted 184-check scenario harness was not run by package C because package A/root owns that shared integration run.
+Result: 133 tests run in 17.540 seconds: 132 passed and one existing symlink-permission test skipped. The retained unittest summary is `Ran 133 tests in 17.540s` and `OK (skipped=1)`; skips are included in the run count. The existing Windows junction test and the rehearsal's explicit junction probe passed outside the restrictive sandbox. The accepted 184-check scenario harness was not run by package C because package A/root owns that shared integration run.
 
 Maintained-install quickstart exercise, using the prose commands in `docs/quickstart.md` and its existing QMD installation:
 

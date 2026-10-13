@@ -1,19 +1,28 @@
 {
   "schema": "project-recovery-r3-stage-a-summary-v1",
-  "status": "provisional-cost-evidence-missing-lossless-packets",
-  "audit_limitation": "Attempt 2 omitted the exact validator-returned packet content for 64 successful rows, so charged packet bytes, receipt-backed coverage and aggregate costs cannot be independently recomputed. Raw attempt-2 evidence and values are preserved unchanged; the figures below are provisional pending a packet-retaining remeasurement.",
-  "retention_amendment": {
+  "status": "complete-pending-final-independent-audit",
+  "retention_evidence": {
+    "successful_rows_with_lossless_packets": 64,
+    "decoded_packet_bytes": 692470,
+    "charged_packet_bytes": 692470,
+    "compact_round_trip_failures": 0,
+    "length_mismatches": 0,
+    "digest_mismatches": 0,
+    "unsuccessful_rows_with_packet_content": 0
+  },
+  "reviewed_retention_amendment": {
     "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
     "harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
     "fixed_measurement_projection_sha256": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1",
-    "validation": "preflight valid; 21 focused pure tests passed; fixtures 16/16 before and after",
-    "authorization": "focused independent review and fresh owner run reservation required"
+    "validation": "independent premeasurement review passed; preflight valid; 21 focused pure tests passed; clean QMD 2.8.3 launch gate; fixtures 16/16 before and after"
   },
-  "method_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
-  "predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
-  "harness_sha256": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
-  "results_sha256": "fef7e6b7eb53e2545777f21e2c32fc96f6b15c1a28220f486dc2d36767934513",
-  "elapsed_seconds": 346.843,
+  "method_revision": "541ea4397574d2a3ed8874085be4aaf5e37ef704",
+  "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+  "harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
+  "results_sha256": "9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597",
+  "raw_attempt_results_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d",
+  "worker_elapsed_seconds": 348.297,
+  "bounded_start_to_finish_seconds": 351.508,
   "rows": {
     "total": 88,
     "eligible": 88,
@@ -33,7 +42,7 @@
     "consuming_grid": {"rows": 60, "fetches": 40, "zero_fetch_rows": 36},
     "selected_non_control_plans": {"consuming_cases": 15, "fetches": 10, "zero_fetch_cases": 9}
   },
-  "aggregate_status": "provisional",
+  "aggregate_status": "final-measurement-pending-independent-audit",
   "aggregate": {
     "control_estimated_tokens": 46434,
     "best_non_control_estimated_tokens": 42427,
@@ -57,10 +66,10 @@
     "fixtures_before_and_after": "16/16; tree unchanged",
     "timed_out": false,
     "bounded_stop_reason": null,
-    "lane_current_bytes": 19087685,
+    "lane_current_bytes": 40569165,
     "lane_cap_bytes": 262144000,
-    "a_worktree_shared_current_bytes": 21269298,
+    "a_worktree_shared_current_bytes": 42750778,
     "shared_cap_bytes": 1073741824
   },
-  "full_harness_budget": {"global_attempt": 3, "used": 3, "cap": 20}
+  "full_harness_budget": {"global_attempt": 4, "used": 4, "cap": 20}
 }

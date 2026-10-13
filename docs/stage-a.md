@@ -66,6 +66,15 @@ and rejects packet content on every unsuccessful row. It changes no consumer cos
 or other frozen measurement field. A focused independent review and fresh owner
 reservation are required before an auditable remeasurement.
 
+That review passed, and the reserved packet-retaining attempt completed all 88
+rows without an oracle or boundary failure. All 64 successful rows retain 692,470
+exact compact packet bytes, with matching charged lengths and digests; all 24
+expected refusals remain packet-free and charge zero. The independently
+recomputable result repeats the 42,427-token best-non-control total (8.629% below
+the 46,434 control) and the 42,136 achievable total when cheaper controls are kept
+(9.256% below). The result is pending final independent evidence audit and owner
+decision.
+
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:
 

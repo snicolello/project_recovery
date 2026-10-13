@@ -1,10 +1,10 @@
 # R3 Stage A evidence
 
-Stage A completed one execution-valid query-headroom measurement, but its cost
-figures are provisional because the successful rows did not retain the lossless
-validator-returned packets needed for independent recomputation. The raw attempt-2
-evidence remains unchanged. A retention-only harness amendment is frozen for
-focused review before any newly reserved measurement.
+Stage A completed a packet-retaining query-headroom measurement under the frozen,
+independently reviewed method. The exact validator-returned packets and fetch
+envelopes now make every charged byte, coverage claim and aggregate independently
+recomputable. Attempt 1 was refused, attempt 2 remains provisional because it
+omitted packet inputs, and attempt 3 is the final auditable measurement.
 
 ## Attempt 1: setup refusal
 
@@ -88,6 +88,45 @@ consumer-visible and does not change any charged bytes or frozen measurement fie
 Preflight accepted this predeclaration and 21 focused pure tests passed with the
 synthetic fixture manifest at 16/16 immediately before and after each check.
 
+## Attempt 3: final auditable Stage A measurement
+
+- Command: `python -I scripts/measure_stage_a.py run --predeclaration evidence/r3-stage-a/predeclaration.json --predeclaration-sha256 11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba`
+- Method revision: `541ea4397574d2a3ed8874085be4aaf5e37ef704`
+- Harness SHA-256: `d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a`
+- Raw result SHA-256: `522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d`
+- LF-normalized audit export SHA-256: `9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597`
+- Result: exit 0; 348.297-second worker and 351.508-second bounded start to
+  finish. There was no timeout, cap stop, launch error, fixture change, or oracle
+  problem. All 88 rows were eligible: 64 `equal_to_rederived`, 20 expected
+  `not_rederivable`, and four expected rejections. The 24 refused rows retained
+  no packet and charged zero bytes.
+- Auditable packets: all 64 successful rows retain the exact compact packet as
+  base64. Their 692,470 decoded bytes exactly equal their charged packet bytes;
+  every compact round-trip, length, and digest check passed.
+- Coverage and fetches: 460/460 requirements were covered. All 42 fetch envelopes
+  were established and retained, totaling 19,870 bytes. Of 62 zero-fetch rows,
+  24 were expected refusals. The 64 packet rows had 38 zero-fetch rows. Excluding
+  four S7 diagnostic references leaves 60 consuming rows, 40 fetches, and 36
+  zero-fetch rows. The selected non-control plans cover 15 consuming cases with
+  10 fetches and nine zero-fetch cases.
+- Aggregate: controls total 46,434 estimated tokens. The best eligible non-control
+  in each fixed list totals 42,427, an 8.629% reduction. Retaining the cheaper
+  control in S5, S7, and S8 totals 42,136, a 9.256% achievable reduction. The
+  15% reference was not met and is not an acceptance threshold.
+
+The per-scenario choices and values are the table above. S7 `project` and `report`
+again passed row oracles but were excluded for semantic mismatch. The raw result,
+lossless packets, fetch envelopes, row stream, complete ledger, boundary summary,
+and empty worker logs are under `attempt-03/`; `results.json` is the same result
+content with LF-normalized line endings and `summary.json` is the concise owner
+view.
+
+The Windows runner wrote attempt-3 JSON and JSONL evidence with CRLF endings. The
+raw files under `attempt-03/` are preserved with explicit
+`-text whitespace=cr-at-eol` attributes, and `files.sha256` hashes those bytes.
+Top-level `results.json` is an LF-normalized audit export with identical parsed
+JSON and base64 packet values. Attempts 1 and 2 remain byte-identical.
+
 ## Accepted R2 regression
 
 The separately reserved baseline command `python -I scripts/run_scenarios.py`
@@ -108,9 +147,9 @@ complete worker process tree.
 
 Those shared roots resolve inside this A worktree. They do not include sibling
 worktrees; the orchestrator enforces the overnight 1 GiB total across worktrees
-using the 250 MiB lane allocations and reported sibling totals. After the valid
-run and its final ledger writes, this A lane used 19,087,685 bytes and all three
-A-worktree shared roots used 21,269,298 bytes.
+using the 250 MiB lane allocations and reported sibling totals. After attempt 3
+and its final ledger writes, this A lane used 40,569,165 bytes and all three
+A-worktree shared roots used 42,750,778 bytes.
 
 The canonical sorted compact JSON projection of `runtime`, `measurement`,
 `evidence` and `scenarios` hashes to
@@ -119,7 +158,6 @@ in both the attempt-1 predeclaration and this amendment. Thus the candidate list
 scenario cases, evidence requirements, oracles, fetch policy, byte estimator,
 aggregation, tie-breaking, failure treatment and interpretation are byte-equivalent.
 
-No additional full run is authorized by this evidence package. The retention-only
-amendment needs focused independent review and a fresh owner reservation before
-remeasurement. The attempt-2 percentages remain provisional; 15% remains context,
-not a release gate.
+No additional full run is authorized by this evidence package. Attempt 3 needs
+the final independent evidence audit and owner decision. Attempt 2 remains
+provisional; 15% remains context, not a release gate.

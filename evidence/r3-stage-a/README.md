@@ -130,9 +130,9 @@ JSON and base64 packet values. Attempts 1 and 2 remain byte-identical.
 
 ## Post-hoc analysis (not predeclared)
 
-The committed [recomputation script](https://github.com/snicolello/project_recovery/blob/9266a989194fc7a1af9ca5d67c3229eb7a5722e0/scripts/analyze_stage_a_retained.py)
-produces the checked [post-hoc output](https://github.com/snicolello/project_recovery/blob/9266a989194fc7a1af9ca5d67c3229eb7a5722e0/evidence/r3-stage-a/posthoc-analysis.json)
-(SHA-256 `0cd925812d95bbe7dec0832213ee507e4570b5513f6c5b60eb068e0fa1d41f26`).
+The committed [recomputation script](https://github.com/snicolello/project_recovery/blob/a2e6cd1e44a35fd7b205e609473057b21157a95c/scripts/analyze_stage_a_retained.py)
+produces the checked [post-hoc output](https://github.com/snicolello/project_recovery/blob/a2e6cd1e44a35fd7b205e609473057b21157a95c/evidence/r3-stage-a/posthoc-analysis.json)
+(SHA-256 `3c4d416126ae42d288d8e0ecb3cbbb957146967cc281a762d9345b7ab54bf8ec`).
 It reads the final raw result (SHA-256
 `522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d`)
 and reapplies the existing [volatile-field stripping and compact-byte estimator](https://github.com/snicolello/project_recovery/blob/541ea4397574d2a3ed8874085be4aaf5e37ef704/skills/project-recovery/scripts/packet.py).
@@ -193,6 +193,12 @@ non-control plan is 43,477.667 tokens (6.367% below control). The sum of each
 scenario's most expensive eligible non-control is 44,428 tokens (4.320% below
 control). These are hindsight summaries of frozen lists, not estimates of unseen
 query strategies.
+
+The mean is summed exactly as `130433/3` before one float conversion. This makes
+the checked JSON byte-identical on the tested Python 3.11 Windows and Python 3.12
+no-QMD WSL runtimes. The initial WSL check exposed a below-rounding float-sum
+difference; its failed output and the corrected 154-test pass are retained in
+`posthoc-wsl-validation.txt`.
 
 The premeasurement history from [revision `5330507`](https://github.com/snicolello/project_recovery/tree/5330507491ea246fc016ad993742cf161b8e0f12)
 to [revision `aab2944`](https://github.com/snicolello/project_recovery/tree/aab29440ff445cdad17dbd2fa8246575079d114c)

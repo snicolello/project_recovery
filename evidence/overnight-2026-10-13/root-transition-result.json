@@ -125,7 +125,7 @@
   },
   "finished_at": "2026-10-13T02:08:00.064Z",
   "evidence_export": {
-    "normalization": "Only absolute worktree prefixes in path values replaced with repository-relative paths. Other values preserved.",
+    "normalization": "Absolute worktree prefixes in path values were replaced with repository-relative paths and path separators were normalized to '/'. Other values were preserved.",
     "raw_sha256": "b8ae134421a22deaeb1078a932417b908a5be0802a683337ba8a9bd338f03c57",
     "observer": "orchestrator documented-command replay"
   }

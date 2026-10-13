@@ -1,0 +1,23 @@
+{
+  "observed_at_utc": "2026-10-13T02:44:13Z",
+  "account_usage": {
+    "start_weekly_used_percent": 5,
+    "latest_weekly_used_percent": 21,
+    "observed_change_percentage_points": 16,
+    "scope": "Shared Codex account window, not attributable exclusively to this task; no task billing estimate established."
+  },
+  "goal_tool_observation": {
+    "tokensUsed": 2527066,
+    "timeUsedSeconds": 3622,
+    "scope": "Raw get_goal counters at checkpoint; token accounting composition is not documented here and is not a provider bill or output-token count."
+  },
+  "project_recovery_product_model_calls": 0,
+  "new_model_or_runtime_downloads": 0,
+  "full_harness_runs_used": 3,
+  "full_harness_run_limit": 20,
+  "unknowns": [
+    "Per-task dollar cost",
+    "Remaining practical overnight capacity",
+    "Performance and benefit of the proposed local model"
+  ]
+}

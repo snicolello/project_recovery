@@ -1,0 +1,129 @@
+{
+  "measured_at_utc": "2026-10-13T02:43:53.757631+00:00",
+  "scope": "Session-owned generated roots in A/B/C worktrees and root control scratch; excludes committed source/evidence, Git objects, unrelated older worktrees, and existing shared runtime junction targets.",
+  "paths": [
+    {
+      "path": ".scratch/overnight-stage-a/.scratch",
+      "bytes": 4290986,
+      "files": 2579,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-stage-a/.qmd",
+      "bytes": 16927681,
+      "files": 679,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-stage-a/runtime-vaults",
+      "bytes": 50631,
+      "files": 146,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-librarian/.scratch",
+      "bytes": 2619,
+      "files": 6,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-librarian/.qmd",
+      "bytes": 157333,
+      "files": 7,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-librarian/runtime-vaults",
+      "bytes": 0,
+      "files": 0,
+      "exists": false,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-transition/.scratch",
+      "bytes": 141763,
+      "files": 38,
+      "exists": true,
+      "skipped_reparse_points": [
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-snippet-precommit-20261013\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-junction-20261013a\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-final-precommit-20261013\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-513457d\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-0fad9f3\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\root-consumer-20261012\\trust-probe\\root\\escape"
+      ]
+    },
+    {
+      "path": ".scratch/overnight-transition/.qmd",
+      "bytes": 1418289,
+      "files": 65,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-transition/runtime-vaults",
+      "bytes": 48720,
+      "files": 128,
+      "exists": true,
+      "skipped_reparse_points": []
+    },
+    {
+      "path": ".scratch/overnight-control",
+      "bytes": 32931,
+      "files": 9,
+      "exists": true,
+      "skipped_reparse_points": []
+    }
+  ],
+  "total_bytes": 23070953,
+  "below_one_decimal_gigabyte": true,
+  "conservative_full_worktree_inventory": [
+    {
+      "path": ".scratch/overnight-stage-a",
+      "bytes": 26942645,
+      "files": 3578,
+      "exists": true,
+      "skipped_reparse_points": [
+        ".scratch\\overnight-stage-a\\qmd-runtime"
+      ]
+    },
+    {
+      "path": ".scratch/overnight-librarian",
+      "bytes": 1785165,
+      "files": 175,
+      "exists": true,
+      "skipped_reparse_points": [
+        ".scratch\\overnight-librarian\\qmd-runtime"
+      ]
+    },
+    {
+      "path": ".scratch/overnight-transition",
+      "bytes": 3449052,
+      "files": 399,
+      "exists": true,
+      "skipped_reparse_points": [
+        ".scratch\\overnight-transition\\qmd-runtime",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-snippet-precommit-20261013\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-junction-20261013a\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-final-precommit-20261013\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-513457d\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\windows-0fad9f3\\trust-probe\\root\\escape",
+        ".scratch\\overnight-transition\\.scratch\\transition-rehearsal\\root-consumer-20261012\\trust-probe\\root\\escape"
+      ]
+    },
+    {
+      "path": ".scratch/overnight-handoff",
+      "bytes": 1099003,
+      "files": 136,
+      "exists": true,
+      "skipped_reparse_points": []
+    }
+  ],
+  "conservative_total_including_tracked_source_evidence_and_bytecode_bytes": 33308796,
+  "conservative_total_below_one_decimal_gigabyte": true
+}

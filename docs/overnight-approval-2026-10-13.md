@@ -2,11 +2,11 @@
 
 ## Owner Attention
 
-**Status: drafting while the corrected Stage A measurement completes. Do not treat this draft as a completed release gate.**
+**Provisional draft: Stage A needs an auditable rerun before a final recommendation.** The executed run reported **8.63%** estimated read-token saving from the best non-control queries, or **9.26%** when retaining R2 in the three scenarios where candidates cost more. Its exact validated packets were not retained, so those cost inputs cannot yet be independently recomputed. They are provisional, not verified final savings. The instrumentation correction will retain the packets while preserving all fixed measurement rules. If confirmed, my recommendation would be to proceed toward a bounded R4 pilot after owner review and defer the optional model trial for now.
 
 The [owner ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6136264847) authorized synthetic implementation, measurement and preparation. Merges, release acceptance, downloads, model trials, real-vault access and actual transition still require explicit approval. The single execution record is [hub #126](https://github.com/snicolello/stephen-project-hub/issues/126), which remains open.
 
-The smallest route toward a real pilot depends on the Stage A result. The optional Librarian can be deferred only through an explicit roadmap ruling permitting R4 without accepting R3. A pilot then needs an exact owner-selected Personal source folder, an external index/cache location and bounded read-only authorization. No source folder has been inspected or selected. Alternatively, the owner may approve the concrete local-model trial below. Neither path follows from merging preparation PRs.
+**Potential next approval, after auditable Stage A evidence replaces the current #12 revision:** review #12 and #11, approve their merges if satisfied, and explicitly permit R4 to proceed while deferring the optional R3 Librarian without accepting R3. To execute the pilot, also name an exact Personal source folder and external index/cache location and approve that bounded read-only scope. No real source folder has been inspected or selected. R4 acceptance and actual transition follow only after pilot evidence and a further owner ruling. Alternatively, approve the fully specified local-model trial below; that adds an experiment before transition evidence and has no demonstrated model benefit yet.
 
 ## Outcome and proposed review order
 
@@ -14,18 +14,36 @@ Accepted `main` remains **`7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28`**, with R2 
 
 | Review order | Proposed work | Published revision | Result |
 |---|---|---|---|
-| 1 — [PR #12](https://github.com/snicolello/project_recovery/pull/12) | Stage A fixed-query headroom | Pending final evidence revision | Method independently reviewed; measurement remediation in progress |
+| 1 — [PR #12](https://github.com/snicolello/project_recovery/pull/12) | Stage A fixed-query headroom | Provisional prior evidence `56c6cd4326b1b6e8ba464f8a5a5f8931fba5b2d7`, pending replacement | Executed at `9fa99e7`; cost evidence audit blocked |
 | 2 — [PR #11](https://github.com/snicolello/project_recovery/pull/11) | Synthetic transition rehearsal and recovery procedure | `f31c231d77e1d4f2789b893aa3ec6b6b7ec4556b` | Implemented, tested and independently reviewed |
 | Optional — [PR #10](https://github.com/snicolello/project_recovery/pull/10) | Deterministic Librarian interface/scoring and approval-only trial proposal | `504d51b4f892437ad4a531f59f3a170fe1ec1098` | Implemented, tested and independently reviewed; no model trial |
 | Last — this documentation package | Current STATE and consolidated approval evidence | Identified by its PR head | Records proposed versus accepted state |
 
 There is no code dependency between #10, #11 and #12: each adds its own files above the accepted core. Review #12 first for the investment decision. #10 is unnecessary for an R4 path that explicitly defers the Librarian. Keep each release decision separate from merge approval. No integrated release or deployment is claimed.
 
-## Stage A — actual results and limitations
+## Stage A — provisional reported execution results and limitations
 
-**Pending corrected measurement.** The fixed candidate queries, required coverage, fetch policy, byte estimator and calculation were committed before the first run. The independent methodology review passed at `53b388d17d0838a80cb741fe5f4f4d2051962326`.
+**Provisional execution report; packet costs and receipt coverage cannot yet be independently audited.** The following table and row claims report the prior run and are not final verified results. The fixed candidate queries, required coverage, fetch policy, byte estimator and calculation were committed before the first run. Independent review passed the original method at `53b388d17d0838a80cb741fe5f4f4d2051962326` and its infrastructure-only correction at `9fa99e743ae7d40d79164876946e408e7a57f673`. The corrected predeclaration SHA-256 is `15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433`. Fixed measurement fields before and after have identical canonical SHA-256 `e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1`.
 
-The first full attempt failed during setup before a valid packet or saving could be observed: 25 state-directory refusals and 63 dependent setup errors left all 88 rows ineligible. It consumed one run, retained its complete failure evidence, and left fixtures unchanged. Null saving is not zero saving. The correction changes setup placement and accounting, not the fixed query list, evidence requirements or cost calculation. Its exact amended method revision and results will be recorded here before publication.
+| Scenario | R2 estimated tokens | Best non-control estimated tokens | Saving | Best non-control query | Explicit fetches / zero-fetch consuming cases |
+|---|---:|---:|---:|---|---|
+| S1 | 3,923 | 3,138 | 20.01% | `ATLAS-42` | 0 / 1 of 1 |
+| S2 | 7,600 | 5,713 | 24.83% | `SQLite PostgreSQL Redis` | 0 / 2 of 2 |
+| S3 | 4,853 | 4,574 | 5.75% | `retry-window` | 0 / 2 of 2 |
+| S4 | 6,640 | 6,078 | 8.46% | `retry-window` | 0 / 2 of 2 |
+| S5 | 3,142 | 3,145 | -0.10% | `UNKNOWN approval` | 0 / 1 of 1 |
+| S6 | 3,923 | 3,138 | 20.01% | `ATLAS-42` | 0 / 1 of 1 |
+| S7 | 9,170 | 9,178 | -0.09% | `load option` | 8 / 0 of 4 |
+| S8 | 7,183 | 7,463 | -3.90% | `Recovery marker` | 2 / 0 of 2 |
+| **Total** | **46,434** | **42,427** | **8.63%** | Best per scenario within fixed list | **10 / 9 of 15** |
+
+Keeping the control in S5, S7 and S8 yields **42,136 tokens, 9.26% saving**. The total sums the predeclared 15 consuming cases; it is not an equally weighted scenario average or a measured real-workload distribution. Negative results remain visible. Two other S7 query plans (`project`, `report`) were excluded because their semantic projections differed from the control even though individual row checks passed.
+
+All 88 rows met their per-row expectations: 64 successful re-derivations (including four unbounded diagnostic references), 20 expected `not_rederivable` and four expected `rejected`. The 24 expected refusals exposed no trusted packet, matched the specified cause and contributed no saving. Coverage was 460/460 spans across the full grid, including diagnostic references. Across the 60 charged grid rows, 36 needed no explicit fetch; the four references and expected refusals are not consuming cases. No fetch failed. Final independent arithmetic/coverage audit is pending.
+
+The successful worker took **346.843 seconds**, 348.895 seconds from recorded start to finish, under the 600-second cap. Fixture hashes were 16/16 before and after, with the entire fixture tree unchanged. The Stage A lane held 19,085,219 bytes at finish, below 250 MiB. No product model call or network authority lookup ran.
+
+The first full attempt is also retained: 27 state-directory refusals and 61 dependent setup errors left all 88 rows ineligible before a valid packet or saving was observed. It consumed one run and left fixtures unchanged. Null saving was not treated as zero saving. The correction changed setup placement and storage accounting, preserving the fixed measurement rules. Four initially ignored raw logs were explicitly committed after review caught their absence; all hashes were checked.
 
 Consumer cost includes the validated packet plus every explicit fetch envelope/span the consumer reads, estimated from UTF-8 bytes divided by 2.9 and rounded up. Candidate exploration and validation traffic are separately reported. The 15% reference is not a pass/fail threshold. Eight synthetic scenarios, a fixed candidate list and a byte-based estimator cannot establish all possible Librarian strategies, real-vault performance, model quality or realized provider savings.
 
@@ -58,7 +76,7 @@ Owner approval must name this proposal explicitly. Merging #10 alone approves ne
 
 ## Unresolved items and dispositions
 
-- Stage A setup failure: retained and under narrow remediation; no acceptance gate weakened. The amended method needs its final review and measurement before this package is complete.
+- Stage A setup failure and missing committed logs: fixed and retained; independently reviewed before the successful execution. Final audit then found that exact validated packets were missing from evidence, so the reported savings remain provisional. Retention remediation and one newly authorized auditable run are pending; no acceptance gate was weakened.
 - Existing subprocess-pipe `ResourceWarning`: observation/no action because processes exited and no functional impact was measured. Re-enter on measured handle growth or failure during a longer trial; accepted core was not reopened speculatively.
 - Reviewer sandbox junction/full-suite restrictions: the denied junction and interrupted broad suite are retained as unavailable/incomplete, not passes. Worker and orchestrator authorized Windows runs cover the junction boundary. No fixture change resulted.
 - QMD 2.8.3 snippet line labels: reproduced and documented in the [unsent upstream report](https://github.com/snicolello/project_recovery/blob/f31c231d77e1d4f2789b893aa3ec6b6b7ec4556b/evidence/transition-rehearsal/upstream-qmd-snippet-line-labels.md). The recovery path verifies fetched source bytes, so this did not compromise evidence receipts. External submission requires approval.
@@ -70,7 +88,7 @@ Resume from [issue #126](https://github.com/snicolello/stephen-project-hub/issue
 
 Session-created worktrees under `C:\dev\project_recovery\.scratch\` are `overnight-stage-a`, `overnight-librarian`, `overnight-transition` and `overnight-handoff`; branches are respectively `codex/126-stage-a`, `codex/126-librarian-prep`, `codex/126-transition-prep` and `codex/126-approval-package`. Retain all for review. Stage A attempt logs/ledger, generated synthetic sources and QMD state are retained in their worktree; B/C keep their focused/integration/rehearsal evidence. Each reuses the existing runtime through a junction; no new runtime was installed. Root drafts/public-metadata intermediates remain in `.scratch/overnight-control/`.
 
-Older worktrees, unrelated `.review-pr17-portable/` and `.review-pr17-retry/`, branches and mixed-provenance caches were preserved. No cleanup or source deletion was performed. Public evidence strips machine-local path prefixes where appropriate. Global full-harness usage and final generated-byte totals will be filled from the final checkpoint before publication.
+Older worktrees, unrelated `.review-pr17-portable/` and `.review-pr17-retry/`, branches and mixed-provenance caches were preserved. No cleanup or source deletion was performed. Public evidence normalizes machine-local path prefixes and separators where stated. **Global full-harness use: 3/20** — failed Stage A setup, passing 184-check regression, successful but incompletely retained Stage A. One packet-retaining rerun is pending method review and a new explicit reservation. The [02:43:53 UTC inventory](../evidence/overnight-2026-10-13/scratch-inventory.json) measured **23,070,953 bytes** in generated roots. A conservative count of all four new worktrees plus root control scratch, including tracked source/evidence and bytecode but excluding existing runtime junction targets, was **33,308,796 bytes**, well below 1 GB. This is a checkpoint before the pending rerun, not a final inventory.
 
 ## What cost time, and what remains unknown
 
@@ -78,4 +96,4 @@ Method review found real issues in failure oracles, S7 budget checks, timing ind
 
 GitHub DNS failures in one execution context were resolved through a working authorized publisher context, with ordinary fast-forward pushes and independent remote SHA checks. No alternative branch history or force push was used. Automatic approval review rejected a research command containing a raw model-file URL; no model bytes were downloaded. Public metadata APIs supplied the approved research instead.
 
-Account usage observations and finish time will be recorded at final publication. They are shared-account readings, not a bill or a reliable per-task cost. No provider inference or download charge occurred in Project Recovery. No ticket was closed as accepted, so no outcome-ledger closure entry is due.
+[Usage checkpoint](../evidence/overnight-2026-10-13/usage-observation.json): the shared weekly Codex counter moved from **5%** at start to **21%** in the 02:44 UTC checkpoint (16 percentage points); unrelated account activity cannot be separated. At that checkpoint, the goal tool reported 2,527,066 tokens used and 3,622 elapsed seconds; its token accounting composition is not established here. These are observations, not a provider bill, output-token total or reliable task cost. No product inference or model/runtime download occurred. No ticket was closed as accepted, so no outcome-ledger closure entry is due.

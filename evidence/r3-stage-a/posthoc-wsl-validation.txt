@@ -41,9 +41,9 @@ sum produced 43477.666666666664. The difference is below the documented
 43,477.667-token rounding and does not change the 6.367% summary. The corrected
 analysis sums scenario means as Fraction values, asserts the exact value
 130433/3, then converts once for JSON. Both runtimes produce
-43477.666666666664. The initial count is 147 because the setUpClass error kept
-the seven post-hoc test methods from running; the corrected discovery count is
-154.
+43477.666666666664. The initial result is 147 run: 145 passed, one skipped, and
+one setUpClass error. That class setup error kept the seven post-hoc test methods
+from running; the corrected discovery count is 154.
 
 Corrected full no-QMD suite
 ---------------------------
@@ -58,8 +58,8 @@ OK (skipped=1)
 
 Cross-runtime output
 --------------------
-Windows focused post-hoc tests: 7 tests, OK.
-No-QMD WSL full suite: 154 tests, OK (skipped=1).
+Windows focused post-hoc tests: 7 run, 7 passed.
+No-QMD WSL full suite: 154 run, 153 passed, 1 skipped.
 Windows checked output SHA-256:
 3c4d416126ae42d288d8e0ecb3cbbb957146967cc281a762d9345b7ab54bf8ec
 No-QMD WSL reproduced output SHA-256:

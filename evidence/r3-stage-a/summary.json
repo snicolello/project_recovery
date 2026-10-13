@@ -1,6 +1,14 @@
 {
   "schema": "project-recovery-r3-stage-a-summary-v1",
-  "status": "complete-pending-final-independent-audit",
+  "status": "complete-independent-audit-passed",
+  "independent_review": {
+    "status": "pass-no-findings",
+    "reviewed_evidence_revision": "f63a2781bd5effe5b805aef09138a84bf705187f",
+    "raw_results_sha256": "522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d",
+    "audit_export_sha256": "9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597",
+    "verified": "64 packet round-trips and 1328 receipts; 460 required evidence entries; 42 fetch envelopes; 24 refusal oracles; all row costs, S7 checks, selections, aggregates, fixtures, bounds, ledger and tracked hashes",
+    "recommendation": "decision-ready; no further Stage A run needed"
+  },
   "retention_evidence": {
     "successful_rows_with_lossless_packets": 64,
     "decoded_packet_bytes": 692470,
@@ -42,7 +50,7 @@
     "consuming_grid": {"rows": 60, "fetches": 40, "zero_fetch_rows": 36},
     "selected_non_control_plans": {"consuming_cases": 15, "fetches": 10, "zero_fetch_cases": 9}
   },
-  "aggregate_status": "final-measurement-pending-independent-audit",
+  "aggregate_status": "final-independent-audit-passed",
   "aggregate": {
     "control_estimated_tokens": 46434,
     "best_non_control_estimated_tokens": 42427,

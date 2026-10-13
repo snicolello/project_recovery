@@ -127,6 +127,19 @@ raw files under `attempt-03/` are preserved with explicit
 Top-level `results.json` is an LF-normalized audit export with identical parsed
 JSON and base64 packet values. Attempts 1 and 2 remain byte-identical.
 
+## Independent final audit
+
+The independent evidence audit passed with no blocking or actionable findings at
+reviewed evidence revision `f63a2781bd5effe5b805aef09138a84bf705187f`.
+It independently decoded all 64 packets; verified all 1,328 packet receipts, 460
+required evidence entries, 42 fetch envelopes, 24 refusal oracles, every row cost,
+the S7 cross-budget checks and semantic exclusions, and both aggregates. It also
+confirmed fixture integrity, runtime and scratch bounds, the global 4/20 run count,
+and tracked-file hashes. The reviewed raw result SHA-256 is
+`522cb351f402e316055f74c3546735de53a9218d440d2e78db1e0aced47eef6d`;
+the reviewed LF audit export SHA-256 is
+`9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597`.
+
 ## Accepted R2 regression
 
 The separately reserved baseline command `python -I scripts/run_scenarios.py`
@@ -158,6 +171,6 @@ in both the attempt-1 predeclaration and this amendment. Thus the candidate list
 scenario cases, evidence requirements, oracles, fetch policy, byte estimator,
 aggregation, tie-breaking, failure treatment and interpretation are byte-equivalent.
 
-No additional full run is authorized by this evidence package. Attempt 3 needs
-the final independent evidence audit and owner decision. Attempt 2 remains
-provisional; 15% remains context, not a release gate.
+No additional full run is authorized or needed. Attempt 3 passed final independent
+evidence audit and is decision-ready for the owner. Attempt 2 remains provisional;
+15% remains context, not a release gate.

@@ -1,6 +1,6 @@
 # Transition rehearsal evidence
 
-Status: tested advance preparation for owner review under [hub issue 126](https://github.com/snicolello/stephen-project-hub/issues/126) and the [recorded owner ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6136264847). This evidence does not accept R3, R4 or R5.
+Status: tested advance preparation for owner review under [hub issue 126](https://github.com/snicolello/stephen-project-hub/issues/126) and the [current owner ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151). This evidence does not accept R3, R4 or R5.
 
 ## Outcome
 
@@ -51,8 +51,9 @@ Result: both validations returned `equal_to_rederived` with zero failures. The f
 
 Available Ubuntu checks:
 
+From the repository root on the available WSL host:
+
 ```bash
-cd /mnt/c/dev/project_recovery/.scratch/overnight-transition
 python3 -I scripts/verify_fixture_hashes.py
 python3 -I -m unittest discover -s tests -p test_transition_rehearsal.py
 python3 -I scripts/verify_fixture_hashes.py
@@ -69,8 +70,8 @@ QMD 2.8.3 still reproduces the original bounded snippet-line issue. In the `Atla
 - The first focused unit invocation used package syntax (`python -I -m unittest tests.test_transition_rehearsal`) even though `tests/` is not a package. It failed during import before running tests; surrounding fixture checks passed. Discovery syntax was used thereafter.
 - The first sandboxed link probe could not create a Windows junction. The harness was corrected to record `not_available` for a denied platform probe, and the authorized outside-sandbox runs then proved the junction escape was rejected.
 - A sandboxed broad unit attempt encountered the accepted suite's Windows junction permission boundary. The final outside-sandbox suite passed. These environment failures are not product failures and are retained here rather than hidden.
-- Another work package observed baseline `ResourceWarning` messages for unclosed subprocess pipes. Package C's standard outputs did not emit that warning, and no concrete impact appeared in this rehearsal, so accepted core code was not changed. The orchestrator should retain it as a baseline observation for any later focused diagnosis.
-- This was a maintained-install engineering rehearsal by the implementation agent. It was not a fresh clone, fresh dependency install or outside-reader trial and therefore does not satisfy the R5 15-minute Windows-and-Linux usability criterion.
+- The baseline `ResourceWarning` has a source-confirmed unclosed-log-handle cause when `McpSession.__enter__` fails before entering its cleanup block. It is recorded as [Project Recovery issue 14](https://github.com/snicolello/project_recovery/issues/14) for WP7; accepted core code is outside this package and was not changed.
+- This was a maintained-install engineering rehearsal by a separate Codex agent session. It was not a fresh clone, fresh dependency install or outside-reader trial and therefore does not satisfy the R5 15-minute Windows-and-Linux usability criterion.
 
 ## Recovery
 

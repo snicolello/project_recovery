@@ -1,9 +1,10 @@
 # R3 Stage A evidence
 
-Stage A completed one valid query-headroom measurement. The first reserved run
-was an infrastructure refusal; its negative result is retained separately and did
-not tune the fixed measurement contract. A focused independent review approved
-the narrow setup amendment before the successful run.
+Stage A completed one execution-valid query-headroom measurement, but its cost
+figures are provisional because the successful rows did not retain the lossless
+validator-returned packets needed for independent recomputation. The raw attempt-2
+evidence remains unchanged. A retention-only harness amendment is frozen for
+focused review before any newly reserved measurement.
 
 ## Attempt 1: setup refusal
 
@@ -26,7 +27,7 @@ The exact original method is recoverable from the method revision above. Raw
 attempt evidence is under `attempt-01/`, including the ledger, per-row JSONL,
 aggregate result, full empty stdout/stderr logs and attempt summary.
 
-## Attempt 2: valid Stage A measurement
+## Attempt 2: execution valid, cost evidence provisional
 
 - Command: `python -I scripts/measure_stage_a.py run --predeclaration evidence/r3-stage-a/predeclaration.json --predeclaration-sha256 15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433`
 - Method revision: `9fa99e743ae7d40d79164876946e408e7a57f673`
@@ -43,7 +44,7 @@ aggregate result, full empty stdout/stderr logs and attempt summary.
   Excluding four S7 diagnostic references leaves 60 consuming rows, 40 fetches
   and 36 zero-fetch rows. The eight selected non-control plans span 15 consuming
   cases with 10 fetches and nine zero-fetch cases.
-- Aggregate: the R2 controls total 46,434 estimated tokens. The best eligible
+- Provisional aggregate: the R2 controls total 46,434 estimated tokens. The best eligible
   non-control query in each fixed list totals 42,427, an 8.629% reduction. Keeping
   the R2 control when it is cheaper totals 42,136, a 9.256% achievable reduction.
   The 15% owner reference was not met and is not an acceptance threshold.
@@ -65,9 +66,27 @@ from the control. `load option` was the only eligible S7 non-control plan. These
 results identify the best choices only within the frozen query lists; they do not
 bound other Librarian strategies.
 
-Raw evidence is under `attempt-02/`; the full final result is also `results.json`
+Raw evidence is under `attempt-02/`; the full attempt result is also `results.json`
 and the compact audit view is `summary.json`. The full result SHA-256 is
 `fef7e6b7eb53e2545777f21e2c32fc96f6b15c1a28220f486dc2d36767934513`.
+These files are preserved byte-for-byte. They omit the exact trusted packet
+content for all 64 successful rows, so their charged packet bytes, coverage and
+aggregate costs cannot be independently reconstructed and are not final findings.
+
+## Evidence-retention amendment
+
+The frozen amended predeclaration SHA-256 is
+`11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba` and the
+amended harness SHA-256 is
+`d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a`.
+The amended harness stores the exact compact UTF-8 validator-returned packet as
+base64 for every `equal_to_rederived` row. It decodes and parses that content,
+requires byte-for-byte equality with the packet compactor, checks its length
+against `trusted_packet_bytes`, and checks its digest against `packet_digest`.
+Expected refusals and failures retain no packet content. This bookkeeping is not
+consumer-visible and does not change any charged bytes or frozen measurement field.
+Preflight accepted this predeclaration and 21 focused pure tests passed with the
+synthetic fixture manifest at 16/16 immediately before and after each check.
 
 ## Accepted R2 regression
 
@@ -100,6 +119,7 @@ in both the attempt-1 predeclaration and this amendment. Thus the candidate list
 scenario cases, evidence requirements, oracles, fetch policy, byte estimator,
 aggregation, tie-breaking, failure treatment and interpretation are byte-equivalent.
 
-No additional full run is authorized by this evidence package. The result needs
-the final independent evidence audit and owner decision; 15% remains context,
+No additional full run is authorized by this evidence package. The retention-only
+amendment needs focused independent review and a fresh owner reservation before
+remeasurement. The attempt-2 percentages remain provisional; 15% remains context,
 not a release gate.

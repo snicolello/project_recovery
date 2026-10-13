@@ -45,7 +45,10 @@ oracles, required coverage, fetch rules, byte estimator, aggregation, failure
 treatment and interpretation are unchanged.
 
 The corrected attempt at reviewed method revision `9fa99e7` completed all 88
-rows with no oracle failures. The fixed-list best non-controls reduced the
+rows with no oracle failures, but its cost findings are provisional because the
+successful rows omitted the lossless validator-returned packet content required
+to independently recompute charged packet bytes, receipts and coverage. Its raw
+evidence remains byte-identical. The provisional fixed-list best non-controls reduced the
 46,434-token control total to 42,427 (8.629%); retaining a cheaper control in S5,
 S7 and S8 reduced the achievable total to 42,136 (9.256%). The 15% reference was
 not met. All 24 expected mutation refusals matched their frozen causes and charged
@@ -56,6 +59,12 @@ had 10 fetches across 15 consuming cases, nine of them zero-fetch. S7's `project
 and `report` plans passed row oracles but were excluded because their semantic
 projections differed from the control. These are best results within the fixed
 lists only.
+
+The retention-only amendment records the exact compact packet bytes as base64 on
+every successful row, verifies their compact round-trip, charged length and digest,
+and rejects packet content on every unsuccessful row. It changes no consumer cost
+or other frozen measurement field. A focused independent review and fresh owner
+reservation are required before an auditable remeasurement.
 
 Before methodology approval, run only the preflight and focused pure tests, with
 fixture hash checks immediately before and after:

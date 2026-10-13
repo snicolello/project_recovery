@@ -1,6 +1,14 @@
 {
   "schema": "project-recovery-r3-stage-a-summary-v1",
-  "status": "valid-measurement-complete",
+  "status": "provisional-cost-evidence-missing-lossless-packets",
+  "audit_limitation": "Attempt 2 omitted the exact validator-returned packet content for 64 successful rows, so charged packet bytes, receipt-backed coverage and aggregate costs cannot be independently recomputed. Raw attempt-2 evidence and values are preserved unchanged; the figures below are provisional pending a packet-retaining remeasurement.",
+  "retention_amendment": {
+    "predeclaration_sha256": "11c071e9260c34dca3e3d601a94177a380e2a8db971ec21ae5ca01265d2b55ba",
+    "harness_sha256": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
+    "fixed_measurement_projection_sha256": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1",
+    "validation": "preflight valid; 21 focused pure tests passed; fixtures 16/16 before and after",
+    "authorization": "focused independent review and fresh owner run reservation required"
+  },
   "method_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
   "predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
   "harness_sha256": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
@@ -25,6 +33,7 @@
     "consuming_grid": {"rows": 60, "fetches": 40, "zero_fetch_rows": 36},
     "selected_non_control_plans": {"consuming_cases": 15, "fetches": 10, "zero_fetch_cases": 9}
   },
+  "aggregate_status": "provisional",
   "aggregate": {
     "control_estimated_tokens": 46434,
     "best_non_control_estimated_tokens": 42427,

@@ -1,6 +1,6 @@
 {
   "schema": "project-recovery-r3-stage-a-predeclaration-v1",
-  "status": "amended-after-setup-refusal-before-valid-measurement",
+  "status": "amended-after-provisional-cost-evidence-before-auditable-remeasurement",
   "source_revision": "7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28",
   "authority": {
     "ticket": "https://github.com/snicolello/stephen-project-hub/issues/126",
@@ -22,6 +22,19 @@
     "fixed_measurement_projection": "canonical sorted compact JSON of runtime, measurement, evidence and scenarios",
     "fixed_measurement_projection_sha256_before_and_after": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1"
   },
+  "evidence_retention_amendment": {
+    "after_attempt": 2,
+    "attempt_2_method_revision": "9fa99e743ae7d40d79164876946e408e7a57f673",
+    "attempt_2_predeclaration_sha256": "15e585a258ef723be740e26fdc2f68fb39a783bf9c22157fce8077279ac15433",
+    "attempt_2_harness_sha256": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
+    "attempt_2_results_sha256": "fef7e6b7eb53e2545777f21e2c32fc96f6b15c1a28220f486dc2d36767934513",
+    "classification": "evidence-retention-only amendment before an independently auditable cost measurement",
+    "observed_boundary": "attempt 2 completed the frozen measurement, but omitted the lossless validator-returned packets needed to independently recompute charged packet bytes, receipts, coverage and aggregate costs; its figures remain provisional",
+    "change": "retain exact compact validator-returned packet bytes as base64 for every equal_to_rederived row; verify compact round-trip, byte length and packet digest; retain no packet content for refused or failed rows",
+    "frozen_unchanged": "candidate queries, scenario cases, evidence requirements, oracles, fetch policy, byte estimator, aggregation, tie-breaking, failure treatment and interpretation",
+    "fixed_measurement_projection": "canonical sorted compact JSON of runtime, measurement, evidence and scenarios",
+    "fixed_measurement_projection_sha256_before_and_after": "e63b5514a235f956474cd540765f72d3ba8eeef5ed08c43beb860286b4312fc1"
+  },
   "runtime": {
     "qmd": "2.8.3",
     "python": "3.11+ standard library only",
@@ -38,7 +51,7 @@
   },
   "implementation": {
     "files": {
-      "scripts/measure_stage_a.py": "aaa614c9e29fd891a9cd144d14b990fe0c1385d6fd42b5f500ac95c10eadf743",
+      "scripts/measure_stage_a.py": "d9fde7bf98813249f571299ff3117d5308b1a7e8a21a03d081fb687ccf9bf89a",
       "skills/project-recovery/scripts/packet.py": "13a7b8a800960ac271f462363dc54c9b0ceb003fda841b3520087765235bf348",
       "skills/project-recovery/scripts/recipe.py": "f49d20d4a223ff45000a04bcc8ee3c411551dc7ec76264a027891d8077457aeb",
       "skills/project-recovery/scripts/rederive.py": "4ca309c7fe66de67fe61c05628da75c796bd221d3623e477ce93f2010fd098cc",

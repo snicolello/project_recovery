@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import importlib.util
 import hashlib
 import json
@@ -45,6 +46,36 @@ class StageAPureTests(unittest.TestCase):
             self.assertEqual(math.ceil(byte_count / 2.9), stage_a.estimate_bytes(byte_count))
         self.assertEqual(1, stage_a.estimate_bytes(1 + 1))
         self.assertEqual(2, stage_a.estimate_bytes(1) + stage_a.estimate_bytes(1))
+
+    def test_successful_packet_retention_round_trips_and_matches_accounting(self):
+        packet = {"schema": "project-recovery-packet-v1", "status": "complete",
+                  "fields": {"objective": "synthetic"}, "unknowns": [], "conflicts": []}
+        raw = stage_a.pk.compact(packet)
+        row = {"validation": "equal_to_rederived",
+               "trusted_packet_encoding": "base64-compact-utf8-json",
+               "trusted_packet_compact_base64": base64.b64encode(raw).decode("ascii"),
+               "trusted_packet_bytes": len(raw), "packet_digest": stage_a.pk.digest(packet)}
+        self.assertEqual([], stage_a.retained_packet_problems(row))
+        self.assertEqual(raw, base64.b64decode(row["trusted_packet_compact_base64"], validate=True))
+
+        wrong_length = dict(row, trusted_packet_bytes=len(raw) + 1)
+        self.assertIn("retained trusted packet byte length differs from charged bytes",
+                      stage_a.retained_packet_problems(wrong_length))
+        wrong_digest = dict(row, packet_digest="0" * 64)
+        self.assertIn("retained trusted packet digest differs from packet_digest",
+                      stage_a.retained_packet_problems(wrong_digest))
+
+    def test_packet_content_is_present_if_and_only_if_validation_succeeds(self):
+        self.assertEqual(["successful row omitted lossless trusted packet content"],
+                         stage_a.retained_packet_problems(
+                             {"validation": "equal_to_rederived"}))
+        self.assertEqual([], stage_a.retained_packet_problems(
+            {"validation": "not_rederivable", "trusted_packet_bytes": 0}))
+        self.assertEqual(["non-successful row retained trusted packet content"],
+                         stage_a.retained_packet_problems(
+                             {"validation": "rejected",
+                              "trusted_packet_encoding": "base64-compact-utf8-json",
+                              "trusted_packet_compact_base64": "e30="}))
 
     def test_best_selection_excludes_failures_and_uses_declared_order_for_ties(self):
         plans = [

@@ -12,6 +12,7 @@ No network, model, download, install, or live authority transport is used.
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import hashlib
 import json
@@ -64,6 +65,31 @@ def estimate_bytes(byte_count: int, divisor: float = 2.9) -> int:
     if byte_count < 0 or divisor <= 0:
         raise ValueError("byte_count must be non-negative and divisor positive")
     return math.ceil(byte_count / divisor)
+
+
+def retained_packet_problems(row: dict) -> list[str]:
+    """Verify lossless retained bytes for exactly the rows with trusted packets."""
+    encoding_key = "trusted_packet_encoding"
+    packet_key = "trusted_packet_compact_base64"
+    successful = row.get("validation") == "equal_to_rederived"
+    present = encoding_key in row or packet_key in row
+    if not successful:
+        return ["non-successful row retained trusted packet content"] if present else []
+    if row.get(encoding_key) != "base64-compact-utf8-json" or packet_key not in row:
+        return ["successful row omitted lossless trusted packet content"]
+    try:
+        raw = base64.b64decode(row[packet_key], validate=True)
+        packet = json.loads(raw.decode("utf-8"))
+    except (ValueError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return [f"retained trusted packet is not valid compact UTF-8 JSON: {type(exc).__name__}"]
+    problems: list[str] = []
+    if pk.compact(packet) != raw:
+        problems.append("retained trusted packet is not exact compact packet bytes")
+    if len(raw) != row.get("trusted_packet_bytes"):
+        problems.append("retained trusted packet byte length differs from charged bytes")
+    if pk.digest(packet) != row.get("packet_digest"):
+        problems.append("retained trusted packet digest differs from packet_digest")
+    return problems
 
 
 def select_best(plans: list[dict]) -> dict | None:
@@ -542,14 +568,19 @@ def run_candidate(predecl: dict, scenario: dict, case: dict, query_plan: dict, w
     result["coverage"] = {"covered": len(covered), "required": len(requirements)}
     if len(covered) != len(requirements):
         result["oracle_problems"].append(f"evidence coverage {len(covered)}/{len(requirements)}")
-    packet_bytes = len(pk.compact(trusted))
+    retained_packet = pk.compact(trusted)
+    packet_bytes = len(retained_packet)
     fetch_bytes = sum(len(compact(envelope)) for envelope in result["fetches"])
     result.update({"trusted_packet_bytes": packet_bytes, "fetch_envelope_bytes": fetch_bytes,
                    "total_consumer_bytes": packet_bytes + fetch_bytes,
                    "estimated_tokens": estimate_bytes(packet_bytes + fetch_bytes),
                    "packet_digest": pk.digest(trusted), "semantic_projection": semantic_projection(trusted),
+                   "trusted_packet_encoding": "base64-compact-utf8-json",
+                   "trusted_packet_compact_base64": base64.b64encode(retained_packet).decode("ascii"),
                    "s7_projection": s7_projection(trusted) if scenario["id"] == "S7" else None,
-                   "eligible": not result["oracle_problems"]})
+                   "eligible": False})
+    result["oracle_problems"].extend(retained_packet_problems(result))
+    result["eligible"] = not result["oracle_problems"]
     return result
 
 

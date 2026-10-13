@@ -667,6 +667,14 @@ def terminate_process_tree(proc: subprocess.Popen) -> str | None:
     return detail
 
 
+class BoundedRunError(RuntimeError):
+    """Monitoring failed after launch, and the worker tree was stopped."""
+
+    def __init__(self, cause: BaseException, termination_detail: str | None):
+        super().__init__(f"{type(cause).__name__}: {cause}")
+        self.termination_detail = termination_detail
+
+
 def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int,
                 stdout_path: Path, stderr_path: Path) -> tuple[int, bool, str | None, str | None]:
     """Run one attempt and terminate its process tree if the hard cap expires."""
@@ -677,14 +685,18 @@ def run_bounded(cmd: list[str], timeout: int, scratch: Path, scratch_cap: int,
         kwargs["start_new_session"] = True
     with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
         proc = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, **kwargs)
-        deadline = time.monotonic() + timeout
-        while proc.poll() is None:
-            if time.monotonic() >= deadline:
-                return 124, True, terminate_process_tree(proc), "time_cap"
-            if dir_size(scratch) > scratch_cap:
-                return 125, False, terminate_process_tree(proc), "scratch_cap"
-            time.sleep(0.25)
-        return proc.returncode, False, None, None
+        try:
+            deadline = time.monotonic() + timeout
+            while proc.poll() is None:
+                if time.monotonic() >= deadline:
+                    return 124, True, terminate_process_tree(proc), "time_cap"
+                if dir_size(scratch) > scratch_cap:
+                    return 125, False, terminate_process_tree(proc), "scratch_cap"
+                time.sleep(0.25)
+            return proc.returncode, False, None, None
+        except BaseException as exc:
+            termination_detail = terminate_process_tree(proc)
+            raise BoundedRunError(exc, termination_detail) from exc
 
 
 def git_result(args: list[str]) -> subprocess.CompletedProcess:
@@ -790,8 +802,12 @@ def command_run(args, predecl: dict, predecl_hash: str) -> int:
         code, timed_out, timeout_termination, stop_reason = run_bounded(
             cmd, predecl["limits"]["seconds_per_attempt"], scratch, cap,
             attempt_dir / "worker-stdout.log", attempt_dir / "worker-stderr.log")
+    except BoundedRunError as exc:
+        code, timed_out, timeout_termination, stop_reason = (
+            126, False, exc.termination_detail, "launch_or_runner_error")
+        launch_error = str(exc)
     except BaseException as exc:
-        code, timed_out, timeout_termination, stop_reason = 126, False, None, "launch_or_runner_error"
+        code, timed_out, timeout_termination, stop_reason = 126, False, None, "launch_error"
         launch_error = f"{type(exc).__name__}: {exc}"
     after = fixture_status()
     tree_unchanged = tree_digest(FIXTURES) == tree_before

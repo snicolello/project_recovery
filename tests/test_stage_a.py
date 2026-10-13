@@ -4,8 +4,10 @@ import importlib.util
 import json
 import math
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "measure_stage_a.py"
@@ -151,6 +153,22 @@ class StageAPureTests(unittest.TestCase):
         self.assertEqual("source_changed", observed["conflicts"][0]["kind"])
         self.assertIn("atlas/Project.md", observed["validation_problems"][0]["reason"])
         self.assertFalse(observed["forbidden_stale_text_present"]["Parser complete"])
+
+    def test_monitor_failure_terminates_worker_tree_and_retains_detail(self):
+        proc = mock.Mock()
+        proc.poll.return_value = None
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            with (mock.patch.object(stage_a.subprocess, "Popen", return_value=proc),
+                  mock.patch.object(stage_a, "dir_size", side_effect=OSError("scratch vanished")),
+                  mock.patch.object(stage_a, "terminate_process_tree",
+                                    return_value="terminated pid tree") as terminate):
+                with self.assertRaises(stage_a.BoundedRunError) as caught:
+                    stage_a.run_bounded(["worker"], 600, root, 1024,
+                                        root / "stdout.log", root / "stderr.log")
+        terminate.assert_called_once_with(proc)
+        self.assertEqual("terminated pid tree", caught.exception.termination_detail)
+        self.assertIn("scratch vanished", str(caught.exception))
 
 
 if __name__ == "__main__":

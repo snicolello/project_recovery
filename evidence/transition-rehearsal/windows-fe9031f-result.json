@@ -1,0 +1,198 @@
+{
+  "schema": "project-recovery-transition-rehearsal-v1",
+  "status": "pass",
+  "advance_preparation_only": true,
+  "run_id": "windows-fe9031f",
+  "started_at": "2026-10-13T16:21:45.194Z",
+  "source_revision": "fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840",
+  "platform": {
+    "system": "Windows",
+    "release": "10",
+    "python": "3.11.9",
+    "node_qmd_required": "Node 24; QMD 2.8.3"
+  },
+  "paths": {
+    "fixture_root": "fixtures/synthetic-vault",
+    "pilot_vault": "runtime-vaults/transition-rehearsal/windows-fe9031f",
+    "state": ".qmd/transition-rehearsal-windows-fe9031f",
+    "index": ".qmd/transition-rehearsal-windows-fe9031f/index.sqlite",
+    "cache": ".qmd/transition-rehearsal-windows-fe9031f/xdg-cache",
+    "output": ".scratch/transition-rehearsal/windows-fe9031f"
+  },
+  "checks": {
+    "fixture_before": {
+      "result": "pass",
+      "files": 16
+    },
+    "isolated_paths": "pass",
+    "trust_root": {
+      "parent_traversal": "rejected",
+      "link_kind": "junction",
+      "link_escape": "rejected"
+    },
+    "configuration": {
+      "state_dir_inside_source": {
+        "result": "rejected",
+        "error": "state dir must not equal, contain, or sit inside the vault root"
+      },
+      "state_probe_vault": ".qmd/transition-overlap-probes/windows-fe9031f/vault",
+      "update_hook": {
+        "result": "rejected",
+        "error": "QMD config defines an update hook; refusing to run: index.yml"
+      }
+    },
+    "poisoned_mcp_advertisement": {
+      "result": "rejected",
+      "error": "QMD advertises tools outside the read-only allowlist: ['get', 'multi_get', 'query', 'status', 'write']"
+    },
+    "pilot_source_unchanged": {
+      "result": "pass",
+      "files": 16
+    },
+    "isolated_storage": {
+      "result": "pass",
+      "state": ".qmd/transition-rehearsal-windows-fe9031f",
+      "index": {
+        "path": "index.sqlite",
+        "exists": true,
+        "bytes": 122880
+      },
+      "cache": {
+        "path": "xdg-cache",
+        "exists": true,
+        "entries": 0,
+        "bytes": 0,
+        "fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "config": {
+        "path": "config",
+        "exists": true,
+        "entries": 1,
+        "bytes": 577,
+        "fingerprint": "80ff95f4ff0e5b53fcf3e3dffdb75d1b5edb20fbf21d074d17fb5b295ed888d3"
+      }
+    },
+    "mcp_advertised_tools": [
+      "get",
+      "multi_get",
+      "query",
+      "status"
+    ],
+    "mcp_calls": [
+      "query",
+      "multi_get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "query",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get",
+      "get"
+    ],
+    "mutating_tools_refused": [
+      "write",
+      "edit",
+      "move",
+      "delete",
+      "shell",
+      "update",
+      "embed"
+    ],
+    "qmd_snippet_line_labels": {
+      "result": "reproduced",
+      "file": "atlas/Queue Archive.md",
+      "match_line_field": 9,
+      "actual_match_line": 9,
+      "rendered_heading_label": 10,
+      "actual_heading_line": 8,
+      "snippet": "9: @@ -8,4 @@ (7 before, 0 after)\n10: # Queue Archive\r\n11: Atlas queue originally used Redis in an abandoned prototype.\r\n12: This decision is superseded by [[Queue Decision]] and must not govern current work.\r\n13: "
+    },
+    "validation": {
+      "result": "equal_to_rederived",
+      "failures": 0,
+      "hits": "requery"
+    },
+    "default_home_before": {
+      "cache": {
+        "path": "~/.cache/qmd",
+        "exists": false,
+        "entries": 0,
+        "bytes": 0,
+        "fingerprint": null
+      },
+      "config": {
+        "path": "~/.config/qmd",
+        "exists": false,
+        "entries": 0,
+        "bytes": 0,
+        "fingerprint": null
+      }
+    },
+    "default_home_after": {
+      "cache": {
+        "path": "~/.cache/qmd",
+        "exists": false,
+        "entries": 0,
+        "bytes": 0,
+        "fingerprint": null
+      },
+      "config": {
+        "path": "~/.config/qmd",
+        "exists": false,
+        "entries": 0,
+        "bytes": 0,
+        "fingerprint": null
+      }
+    },
+    "default_home_unchanged": {
+      "result": "pass",
+      "targets": [
+        "cache",
+        "config"
+      ]
+    },
+    "fixture_after": {
+      "result": "pass",
+      "files": 16
+    }
+  },
+  "timings_seconds": {
+    "refresh": 0.903,
+    "assemble": 0.462,
+    "validate_requery": 0.349,
+    "total": 1.797
+  },
+  "generation": "qmd-2.8.3:d3096a01a1830271",
+  "documents": 9,
+  "packet": {
+    "path": ".scratch/transition-rehearsal/windows-fe9031f/atlas-packet.json",
+    "sha256": "9a047f642aa00d7e6310ea83c6c33f260b14bd8f5b72572af856ba059aae143e",
+    "status": "complete",
+    "accepted_decisions": 1
+  },
+  "finished_at": "2026-10-13T16:21:46.991Z"
+}

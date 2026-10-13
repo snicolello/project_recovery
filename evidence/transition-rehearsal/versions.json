@@ -1,0 +1,25 @@
+{
+  "recorded": "2026-10-12 America/New_York",
+  "source_revision": "fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840",
+  "windows": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "python": "3.11.9",
+    "node": "24.13.0",
+    "npm": "11.6.2",
+    "qmd": "2.8.3 (facd35e)"
+  },
+  "ubuntu_wsl2": {
+    "kernel": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64",
+    "python": "3.12.3",
+    "node": "22.21.0",
+    "npm": "10.9.4",
+    "git": "2.43.0"
+  },
+  "qmd_lock_sha256": "57258e4644f66dfcceeb50a2179910d4e8cc12e1cdd0c90a24a0a738e30ea88f",
+  "generated_scratch_at_final_measurement": {
+    "bytes": 3156239,
+    "megabytes_decimal": 3.16,
+    "cap_megabytes_decimal": 250,
+    "excludes_reused_qmd_runtime_junction": true
+  }
+}

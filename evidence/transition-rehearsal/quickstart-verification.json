@@ -1,0 +1,34 @@
+{
+  "schema": "project-recovery-quickstart-verification-v1",
+  "advance_preparation_only": true,
+  "windows": {
+    "mode": "maintained existing installation",
+    "result": "pass",
+    "runtime_install": "not run; existing pinned QMD 2.8.3 junction reused under the no-new-install boundary",
+    "fixture_checks": "16/16 before and after",
+    "generation": "qmd-2.8.3:d3096a01a1830271",
+    "documents": 9,
+    "offline_packet_validation": "equal_to_rederived; failures 0",
+    "snapshot_packet_validation": "equal_to_rederived; failures 0",
+    "timings_seconds": {
+      "refresh": 1.739,
+      "assemble_offline": 0.674,
+      "assemble_snapshot": 0.642,
+      "validate_offline": 0.674,
+      "validate_snapshot": 0.674,
+      "total": 4.403
+    },
+    "unit_suite": "140 tests run in 20.678 seconds: 139 passed, 1 symlink-permission skip; Windows junction path passed",
+    "scenario_harness": "not run by package C; package A/root owns the existing 184-check harness"
+  },
+  "linux": {
+    "environment": "Ubuntu on WSL2; Linux 6.6.87.2-microsoft-standard-WSL2 x86_64",
+    "python": "3.12.3",
+    "node": "22.21.0",
+    "npm": "10.9.4",
+    "git": "2.43.0",
+    "dependency_free_tests": "full 140-test suite at fe9031f109bfe9f6aecfc2b4b1e1d75d57fc0840 without qmd-runtime or qmd on PATH; 139 passed, 1 existing skip, 17.652 seconds; fixtures 16/16 before and after",
+    "native_qmd_rehearsal": "not run: available Node is below the documented Node 24 prerequisite and no approved native Linux QMD 2.8.3 installation exists"
+  },
+  "r5_usability_criterion": "not established: no fresh install and no outside reader; the 15-minute Windows plus Linux criterion remains pending"
+}

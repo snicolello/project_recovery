@@ -2,16 +2,16 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Level-0 routing baseline for the accepted release state, current gates and one safe continuation.
-- Status: Current project facts. R2 and reliance gate #6 are accepted; R3 is deferred; R4 is open and blocked at owner confirmation of both paths. No R3 or R4 release is accepted.
+- Status: Current project facts. R2 and reliance gate #6 are accepted; R3 is deferred; the private R4 workflow is in progress with both paths and the temporary sync pause owner-confirmed. No R3 or R4 release is accepted.
 - As of: 2026-10-13, verified against [`project_recovery` `main` at `54ad8b021721040130c69a953f61a07177569f11`](https://github.com/snicolello/project_recovery/commit/54ad8b021721040130c69a953f61a07177569f11).
 - Authority: Stephen (owner), through rulings on [hub Epic #113](https://github.com/snicolello/stephen-project-hub/issues/113). The current R3/R4 ruling and its precision correction are [recorded here](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151); only the owner can accept a release or change its gate.
-- Sources: the [current owner instruction and verified merge state](https://github.com/snicolello/stephen-project-hub/issues/126#issuecomment-6151931166), [LF-retention and merge disposition](https://github.com/snicolello/stephen-project-hub/issues/126#issuecomment-6151101009), private [R4 ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127), and the commit-pinned evidence linked below.
+- Sources: the [current owner instruction and verified merge state](https://github.com/snicolello/stephen-project-hub/issues/126#issuecomment-6151931166), [LF-retention and merge disposition](https://github.com/snicolello/stephen-project-hub/issues/126#issuecomment-6151101009), private [R4 path-approval record](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6153662945), [sync-pause and workflow record](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6153678244), and the commit-pinned evidence linked below.
 - Objective: preserve the accepted R2 plus #6 baseline while preparing the owner-gated R4 read-only live-folder pilot without exposing private source metadata or accepting R3.
-- Next action: on private [R4 ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127), obtain the owner's explicit confirmation of both the source and index/cache paths. Metadata-only preparation is authorized; do not execute the pilot before both confirmations.
+- Next action: continue R4 through private [ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127) under its current workflow: read the current run conditions, perform only the authorized read-only work, preserve source integrity and private evidence, and stop at its publication-sign-off and release-acceptance gates.
 - Read when:
   - [`PROJECT.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/PROJECT.md): checking project identity, outcome, trust zone or scope.
   - [`docs/recovery-contract.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract.
-  - [R4 ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127): preparing or reviewing the live-folder pilot, its private path gate or publication controls.
+  - [R4 ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127): preparing or reviewing the live-folder pilot, current run conditions, private evidence controls, publication sign-off or release gate.
   - [`evidence/r3-stage-a/README.md`](https://github.com/snicolello/project_recovery/blob/7c77b70fdfc779570a19bb60b14f9153e41db5d2/evidence/r3-stage-a/README.md): interpreting Stage A, its measurement population and retained evidence.
   - [`evidence/transition-rehearsal/README.md`](https://github.com/snicolello/project_recovery/blob/644613e4a27c4697f069f0c87c07c5951c07f9dc/evidence/transition-rehearsal/README.md): reviewing synthetic transition checks and their limits.
   - [`skills/project-recovery/SKILL.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/skills/project-recovery/SKILL.md) and [`docs/quickstart.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/docs/quickstart.md): running the accepted recipe or checking its validation guarantees.
@@ -32,8 +32,8 @@ Current merged `main` adds tested synthetic transition preparation and Stage A e
 
 ## Pending
 
-- R4 ticket [#127](https://github.com/snicolello/stephen-project-hub/issues/127) is open in the private Personal hub. R3 was waived only as its predecessor; no R3 or R4 acceptance followed. The ticket awaits explicit owner confirmation of both paths, and no pilot has executed. Public records intentionally contain no real source or index/cache path metadata.
-- After both paths are confirmed, R4 still requires its ticketed read-only, source-integrity, privacy, validation and separate-review gates. There is no operating-system sandbox around the recipe; client enforcement and before/after source hashes are the applicable controls.
+- R4 ticket [#127](https://github.com/snicolello/stephen-project-hub/issues/127) is open in the private Personal hub. Both paths and the temporary sync pause are owner-confirmed; the prior request for another source or path approval is superseded. R3 was waived only as R4's predecessor, and no R3 or R4 acceptance followed. Public records intentionally contain no real source or index/cache path metadata.
+- R4 still requires the ticket's current read-only, source-integrity, privacy, validation, separate-review, publication-sign-off and release-acceptance gates. There is no operating-system sandbox around the recipe; client enforcement and before/after source hashes are the applicable controls.
 
 ## Deferred
 
@@ -45,7 +45,7 @@ Current merged `main` adds tested synthetic transition preparation and Stage A e
 
 ## Blocked
 
-- R4 pilot execution is blocked only at the explicit confirmation of both paths and the remaining pre-run conditions on private ticket #127. Metadata-only preparation may continue within that ticket's bounds.
+- No path-approval or sync-pause decision is outstanding. Public pilot-derived output remains blocked at the owner sign-off gate on private ticket #127; R4 acceptance remains blocked pending ticketed evidence, separate review and an owner ruling.
 
 ## Evidence
 

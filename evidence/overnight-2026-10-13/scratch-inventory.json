@@ -1,18 +1,18 @@
 {
-  "measured_at_utc": "2026-10-13T02:43:53.757631+00:00",
+  "measured_at_utc": "2026-10-13T03:05:12.265498+00:00",
   "scope": "Session-owned generated roots in A/B/C worktrees and root control scratch; excludes committed source/evidence, Git objects, unrelated older worktrees, and existing shared runtime junction targets.",
   "paths": [
     {
       "path": ".scratch/overnight-stage-a/.scratch",
-      "bytes": 4290986,
-      "files": 2579,
+      "bytes": 10475049,
+      "files": 4665,
       "exists": true,
       "skipped_reparse_points": []
     },
     {
       "path": ".scratch/overnight-stage-a/.qmd",
-      "bytes": 16927681,
-      "files": 679,
+      "bytes": 32227567,
+      "files": 1295,
       "exists": true,
       "skipped_reparse_points": []
     },
@@ -80,13 +80,13 @@
       "skipped_reparse_points": []
     }
   ],
-  "total_bytes": 23070953,
+  "total_bytes": 44554902,
   "below_one_decimal_gigabyte": true,
   "conservative_full_worktree_inventory": [
     {
       "path": ".scratch/overnight-stage-a",
-      "bytes": 26942645,
-      "files": 3578,
+      "bytes": 54909275,
+      "files": 6289,
       "exists": true,
       "skipped_reparse_points": [
         ".scratch\\overnight-stage-a\\qmd-runtime"
@@ -118,12 +118,12 @@
     },
     {
       "path": ".scratch/overnight-handoff",
-      "bytes": 1099003,
-      "files": 136,
+      "bytes": 1106206,
+      "files": 138,
       "exists": true,
       "skipped_reparse_points": []
     }
   ],
-  "conservative_total_including_tracked_source_evidence_and_bytecode_bytes": 33308796,
+  "conservative_total_including_tracked_source_evidence_and_bytecode_bytes": 61282629,
   "conservative_total_below_one_decimal_gigabyte": true
 }

@@ -30,7 +30,7 @@ The approval package records exact tested and published revisions, failed attemp
 
 - Owner review and merge decisions for every proposed PR, then an explicit R3 disposition. Stage A alone does not accept the full Librarian release.
 - Any local-model trial needs its own ruling naming the pinned model/runtime and bounded trial. The prepared proposal grants no download, installation or inference authority.
-- R4 requires its release gate and explicit approval of a named Personal vault/source scope. No real vault has been accessed or selected.
+- Starting R4 requires an explicit roadmap/authorization ruling and permission for a named Personal vault/source scope. Accepting R4 requires a later ruling on pilot evidence. No real vault has been accessed or selected.
 - R5 still requires a reader outside the project to complete the sample recovery from the quickstart alone within 15 minutes on Windows and one Linux environment. Maintained-install and dependency-free WSL checks do not satisfy that criterion.
 - No later release ticket was opened. No deployment, upstream submission, access change, spending or actual transition is authorized by preparation evidence.
 

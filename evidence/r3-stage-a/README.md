@@ -227,8 +227,9 @@ content depends on the query, or that frontier-token cost becomes material.
 ## Separate Codex audit session
 
 A separate Codex agent session verified arithmetic and evidence integrity with no
-blocking or actionable findings at the
-[reviewed evidence revision](https://github.com/snicolello/project_recovery/blob/f63a2781bd5effe5b805aef09138a84bf705187f/evidence/r3-stage-a/README.md#independent-final-audit).
+blocking or actionable findings. The
+[completed review record](https://github.com/snicolello/project_recovery/blob/10849760e6eb380eb8b55308cfffa594276a1a3f/evidence/r3-stage-a/README.md#independent-final-audit)
+identifies reviewed evidence revision `f63a2781bd5effe5b805aef09138a84bf705187f`.
 That session decoded all 64 packets; verified all 1,328 packet receipts, 460
 required evidence entries, 42 fetch envelopes, 24 refusal oracles, every row cost,
 the S7 cross-budget checks and semantic exclusions, and both aggregates. It also
@@ -270,6 +271,7 @@ in both the attempt-1 predeclaration and this amendment. Thus the candidate list
 scenario cases, evidence requirements, oracles, fetch policy, byte estimator,
 aggregation, tie-breaking, failure treatment and interpretation are byte-equivalent.
 
-No additional full run is authorized or needed. Attempt 3 passed final independent
-evidence audit and is decision-ready for the owner. Attempt 2 remains provisional;
-15% remains context, not a release gate.
+No additional full run is authorized or needed. A separate Codex agent session
+verified attempt 3's arithmetic and evidence integrity, and the result is
+decision-ready for the owner. Attempt 2 remains provisional; 15% remains context,
+not a release gate.

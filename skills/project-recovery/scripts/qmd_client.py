@@ -127,7 +127,7 @@ class McpSession:
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._stderr,
                 text=True, encoding="utf-8", errors="replace", bufsize=1,
             )
-            threading.Thread(target=self._read, daemon=True).start()
+            threading.Thread(target=self._read, args=(self._proc.stdout,), daemon=True).start()
             self._rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "capabilities": {},
                                      "clientInfo": {"name": "project-recovery", "version": "0.1"}})
             self._send({"jsonrpc": "2.0", "method": "notifications/initialized"})
@@ -161,9 +161,9 @@ class McpSession:
                 stderr, self._stderr = self._stderr, None
                 stderr.close()
 
-    def _read(self) -> None:
-        assert self._proc is not None and self._proc.stdout is not None
-        for line in self._proc.stdout:
+    def _read(self, stdout) -> None:
+        # The pipe is passed in: close() may clear self._proc before this thread first runs.
+        for line in stdout:
             try:
                 self._responses.put(json.loads(line))
             except json.JSONDecodeError:

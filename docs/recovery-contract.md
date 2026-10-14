@@ -1,6 +1,6 @@
 # Recovery contract
 
-Version 0.1, release R0, 2026-10-11. Governs every later release. Changes to this contract are owner rulings recorded on [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113).
+Version 0.1, release R0, 2026-10-11. Governs every later release. Changes to this contract are owner rulings recorded on [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Amended 2026-10-14 under the owner ruling on [project_recovery #16](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662): blank notes and empty collections (section 4).
 
 This contract derives from two existing records: the hub's fresh-session recovery protocol (six acceptance items for a reader with no conversation history) and the Phase 0 MVP (minimum viable product) acceptance criteria in `discovery/mvp-acceptance-criteria.md`. Where they differ, this document governs.
 
@@ -52,6 +52,8 @@ The cited text must validate against `content_sha` from the same bytes that were
 Verification requests run serially. Concurrent GitHub GraphQL requests are an untested cause of earlier failures and are avoided by design.
 
 **Freshness.** Freshness is eventually consistent and is stated, not assumed. The packet separates `file_mtime`, `observed_at`, `generation` and `verified_at`. Before assembly the recipe refreshes the index and records the generation; a read whose generation differs from the one recorded is `incomplete`, and the packet says so. Byte equality means integrity, not currency or approval. Both checks are the orchestrator's responsibility at session start.
+
+**Blank notes and empty collections.** The generation covers every Markdown file in scope. A file the engine does not index (for QMD 2.8.3, one whose text is empty after JavaScript's `trim()`, such as an empty, whitespace-only or byte-order-mark-only file) is **present, not indexable**: its hash is kept in the generation record, it is never cited, and a change to it still makes a packet `incomplete`. Refresh fails unless the engine serves exactly the indexable files, byte for byte. A declared collection the engine does not list is **verified empty** only when the scan finds no indexable file in its root and the engine serves nothing for it; every field is then `unknown`.
 
 ## 5. Read-only and isolation rules
 

@@ -178,8 +178,8 @@ def clear_state(state_dir: Path) -> None:
 # QMD (ECMAScript WhiteSpace and LineTerminator), confirmed exhaustively by
 # evidence/qmd-blank-notes-2026-10-14/. Python's str.isspace() differs (U+0085, U+001C to
 # U+001F), so it is not used.
-JS_WHITESPACE = frozenset("\t\n\x0b\x0c\r \xa0         "
-                          "       　﻿")
+JS_WHITESPACE = frozenset("\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003"
+                          "\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff")
 
 
 def indexable(data: bytes) -> bool:
@@ -245,6 +245,11 @@ def refresh(m: Manifest, rebuild: bool = False) -> dict:
         indexed_roots = {c["name"]: os.path.normcase(c["path"]) for c in status.get("collections", [])}
         for proj in m.projects.values():
             base = m.vault_root if proj.root == "." else safe_resolve(m.vault_root, proj.root)
+            # A missing or renamed root scans as empty; it must never be verified empty. safe_resolve
+            # has already rejected a root reached through a link or junction.
+            if not base.is_dir():
+                raise RecipeError(f"project root {proj.root!r} for collection {proj.collection} "
+                                  "does not exist as a directory")
             # Every Markdown file is hashed and accounted for; QMD serves exactly the indexable ones.
             scan = disk_scan(m, proj)
             disk = {source: sha for source, (sha, _) in scan.items()}
@@ -253,8 +258,9 @@ def refresh(m: Manifest, rebuild: bool = False) -> dict:
                       for q, t in session.multi_get(f"{proj.collection}/**/*.md").items()}
             if proj.collection not in indexed_roots:
                 # QMD's status omits a collection with no indexed document, so its root cannot
-                # be read back. It is verified empty only when the disk scan proves there is
-                # nothing to serve and QMD serves nothing for it.
+                # be read back. It is verified empty only when its root exists as a directory
+                # (checked above), the disk scan proves there is nothing to serve and QMD serves
+                # nothing for it.
                 if expected or served:
                     raise RecipeError(f"collection {proj.collection} is not in the index although "
                                       f"{len(expected)} indexable note(s) are in the manifest root")

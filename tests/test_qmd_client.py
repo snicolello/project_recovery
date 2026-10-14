@@ -115,6 +115,21 @@ class SessionStartTests(unittest.TestCase):
             with self.assertRaisesRegex(qmd_client.QmdError, "timeout waiting for initialize"):
                 session.__enter__()
         proc.terminate.assert_called_once()
+        proc.kill.assert_called_once()
+        self.assert_no_open_handle(session)
+
+    def test_close_kills_when_terminate_fails_and_still_closes_the_log(self):
+        proc = mock.Mock()
+        proc.terminate.side_effect = OSError("cannot terminate")
+        proc.kill.side_effect = OSError("cannot kill")
+        session = qmd_client.McpSession(self.state)
+        session._proc = proc
+        session._stderr = open(self.state.parent / "log.txt", "a", encoding="utf-8")
+        log = session._stderr
+        with self.assertRaisesRegex(OSError, "cannot kill"):
+            session.close()
+        proc.kill.assert_called_once()
+        self.assertTrue(log.closed)
         self.assert_no_open_handle(session)
 
     def test_disallowed_tools_close_session(self):

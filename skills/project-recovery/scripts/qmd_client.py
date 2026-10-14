@@ -151,11 +151,14 @@ class McpSession:
         try:
             if self._proc is not None:
                 proc, self._proc = self._proc, None
-                proc.terminate()
                 try:
+                    proc.terminate()
                     proc.wait(timeout=10)
                 except subprocess.TimeoutExpired:
                     proc.kill()
+                except OSError:
+                    proc.kill()  # terminate failed: still try to stop it, then report why
+                    raise
         finally:
             if self._stderr is not None:
                 stderr, self._stderr = self._stderr, None

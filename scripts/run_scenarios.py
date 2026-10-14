@@ -712,6 +712,22 @@ def run_s9(g: Gates, out_dir: Path) -> None:
     g.check("blank-notes", "S9 note emptied after indexing -> refresh fails naming --rebuild; rebuild passes",
             refusal is not None and "--rebuild" in refusal and "atlas/Restart Runbook.md" in rebuilt["not_indexable"]
             and restored == record["generation"], f"refusal {refusal and refusal[:70]!r}")
+    # A missing or renamed root scans as empty; against an existing index it must fail, not be
+    # verified empty (independent review of PR #19, B1). Beacon has notes; vacant has none.
+    for name in ("beacon", "vacant"):
+        moved = S9_DIR / f"{name}-moved"
+        shutil.move(str(vault / name), str(moved))
+        refusal = None
+        try:
+            recipe.refresh(m)
+        except recipe.RecipeError as exc:
+            refusal = str(exc)
+        shutil.move(str(moved), str(vault / name))
+        restored = recipe.refresh(m)["generation"]
+        g.check("blank-notes", f"S9 {name} root removed after indexing -> refresh fails, never verified empty",
+                refusal is not None and "does not exist as a directory" in refusal
+                and restored == record["generation"],
+                f"refusal {refusal and refusal[:70]!r}; generation after restore {restored}")
 
 
 # S8 adversarial instructions ----------------------------------------------------

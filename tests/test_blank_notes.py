@@ -43,6 +43,7 @@ class IndexableRuleTests(unittest.TestCase):
                 self.assertEqual(r["in_status"], r["indexed"], "status lists a collection iff it has a document")
 
     def test_whitespace_set_equals_node_trim(self):
+        self.assertEqual(len(recipe.JS_WHITESPACE), 25)
         self.assertTrue(self.probe["trim"]["rule_equals_node"])
         self.assertEqual(sorted(f"U+{ord(c):04X}" for c in recipe.JS_WHITESPACE),
                          self.probe["trim"]["trimmed_code_points"])
@@ -169,6 +170,18 @@ class RefreshTests(unittest.TestCase):
     def test_absent_collection_with_indexable_note_fails(self):
         self.write("beacon/Project.md", NOTE)
         self.assert_refused("collection beacon is not in the index although 1 indexable")
+
+    def test_missing_or_renamed_root_is_never_verified_empty(self):
+        first = self.refresh()
+        self.assertEqual(first["verified_empty"], ["beacon"])
+        shutil.rmtree(self.vault / "beacon")
+        with self.assertRaisesRegex(recipe.RecipeError,
+                                    "project root 'beacon' for collection beacon does not exist as a directory"):
+            self.refresh()
+        (self.vault / "beacon").write_bytes(b"")  # a file where the root should be
+        with self.assertRaisesRegex(recipe.RecipeError, "does not exist as a directory"):
+            self.refresh()
+        self.assertEqual(recipe.load_generation(self.m), first, "the earlier generation is kept")
 
     def test_every_collection_empty(self):
         self.served = {}

@@ -48,12 +48,12 @@ PROBES = {
     "frontmatter-only": b"---\ntitle: Probe\n---\n",
     "frontmatter-empty": b"---\n---\n",
     "vt-ff": b"\x0b\x0c",
-    "nbsp": " ".encode("utf-8"),
-    "ideographic-space-and-line-separator": "　  ".encode("utf-8"),
+    "nbsp": "\u00a0".encode("utf-8"),
+    "ideographic-space-and-line-separator": "\u3000\u2028\u2029".encode("utf-8"),
     "nel-U+0085": "\u0085".encode("utf-8"),
     "file-separator-U+001C": b"\x1c",
-    "zero-width-space-U+200B": "​".encode("utf-8"),
-    "mongolian-vowel-separator-U+180E": "᠎".encode("utf-8"),
+    "zero-width-space-U+200B": "\u200b".encode("utf-8"),
+    "mongolian-vowel-separator-U+180E": "\u180e".encode("utf-8"),
 }
 
 

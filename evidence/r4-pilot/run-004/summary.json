@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "retained-run-004-only",
+  "source_revision": "54ad8b021721040130c69a953f61a07177569f11",
+  "release_accepted": true,
+  "attempts": 1,
+  "elapsed_seconds": 2.234,
+  "exit_code": 0,
+  "guard_triggered": false,
+  "stages": [
+    {
+      "name": "refresh",
+      "result": "completed",
+      "documents": 1
+    },
+    {
+      "name": "assemble",
+      "result": "completed"
+    },
+    {
+      "name": "validate_requery",
+      "result": "equal_to_rederived"
+    }
+  ],
+  "validation": {
+    "result": "equal_to_rederived",
+    "failures": 0,
+    "input_failures": 0,
+    "structural_failures": 0,
+    "rederivation_performed": true,
+    "rederivation_hits": "requery",
+    "rederivation_differences": 0,
+    "returned_packet_matches_retained_validation": true
+  },
+  "integrity": {
+    "source_unchanged": true,
+    "fixtures_before": {
+      "expected": 16,
+      "actual": 16,
+      "matched": true
+    },
+    "fixtures_after": {
+      "expected": 16,
+      "actual": 16,
+      "matched": true
+    },
+    "fixtures_unchanged": true,
+    "default_home_unchanged": true,
+    "state_config_unchanged": true
+  },
+  "recovery": {
+    "status": "complete",
+    "objective": "established",
+    "current_state": "established",
+    "blockers": "established",
+    "next_action": "established",
+    "authority_status": "unknown",
+    "authority_state": "local_only",
+    "approver_status": "established",
+    "accepted_decisions": "unknown",
+    "decision_candidates": 3,
+    "candidate_authority_states": [
+      "local_only",
+      "local_only",
+      "local_only"
+    ],
+    "unknown_fields": [
+      "accepted_decisions",
+      "authority"
+    ],
+    "recovery_complete": false,
+    "query_hits": 1,
+    "packet_status_meaning": "generation health; consult recovery_complete for field completeness"
+  },
+  "freshness_complete": true,
+  "conflicts": 0,
+  "budget": {
+    "limit": 4000,
+    "estimated_tokens": 3335,
+    "within_limit": true,
+    "truncated": false
+  },
+  "tool_surface": {
+    "advertised_read_tools": [
+      "get",
+      "multi_get",
+      "query",
+      "status"
+    ],
+    "observed_call_count": 30,
+    "observed_calls_within_read_allowlist": true
+  },
+  "placement": {
+    "state_outside_source": true,
+    "state_in_approved_local_lane": true,
+    "configured_status_root_matches_manifest": true,
+    "default_home_configured_before": false,
+    "default_home_configured_after": false
+  },
+  "runtime": {
+    "source_revision": "54ad8b021721040130c69a953f61a07177569f11",
+    "python": "3.11.9",
+    "node": "24.13.0",
+    "npm": "11.6.2",
+    "qmd": "2.8.3",
+    "runtime_lock_matches": true,
+    "runtime_package_matches": true
+  },
+  "offline_environment_only": true,
+  "os_network_isolation_established": false,
+  "release_acceptance": {
+    "scope": "bounded-read-only-mechanics-pilot",
+    "authority": "owner-ruling",
+    "record": "https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227",
+    "recorded_date": "2026-10-14",
+    "measurement_is_acceptance": false,
+    "transition_ready": false,
+    "r3_accepted": false,
+    "r5_accepted": false,
+    "transition_blockers": [
+      {
+        "issue": "https://github.com/snicolello/project_recovery/issues/16",
+        "reason": "blank-note-refresh"
+      },
+      {
+        "issue": "https://github.com/snicolello/project_recovery/issues/17",
+        "reason": "authority-format-and-offline-decision-provenance"
+      }
+    ]
+  },
+  "limits": {
+    "source": "one-agent-authored-starter-note-derived-from-prior-public-STATE",
+    "representativeness_established": false,
+    "authority_unknown_due_to_missing_expected_yaml_field": true,
+    "accepted_decisions_verified_offline": false,
+    "recovery_complete": false,
+    "packet_complete_means_generation_health": true,
+    "os_sandbox_established": false,
+    "os_network_isolation_established": false,
+    "placement_evidence": "retained-configuration-and-status-only",
+    "fresh_filesystem_or_cloud_attestation": false,
+    "second_sync_engine_added": false,
+    "source_also_in_OneDrive": "owner-reported",
+    "co_sync_behavior_independently_verified": false,
+    "vault_move": "owner-planned-not-authorized-by-acceptance",
+    "moved_source_path_reconfirmation_required": true,
+    "external_truth_or_submitter_provenance_established": false
+  }
+}

@@ -109,7 +109,9 @@ class RefreshTests(unittest.TestCase):
         (self.vault / rel).write_bytes(data)
 
     def refresh(self) -> dict:
-        roots = {c: str(self.vault / c) for c in ("atlas", "beacon")}
+        # Status reports the path refresh registered: the manifest's resolved root (on Windows a
+        # temporary directory may be an 8.3 short path that resolves to its long form).
+        roots = {c: str(self.m.vault_root / c) for c in ("atlas", "beacon")}
         with mock.patch.object(recipe, "McpSession", FakeSession(self.served, roots)):
             return recipe.refresh(self.m)
 
@@ -192,7 +194,7 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(len(record["not_indexable"]), len(record["files"]))
 
     def test_listed_collection_must_still_point_at_the_root(self):
-        roots = {"atlas": str(self.vault / "beacon"), "beacon": str(self.vault / "beacon")}
+        roots = {"atlas": str(self.m.vault_root / "beacon"), "beacon": str(self.m.vault_root / "beacon")}
         with mock.patch.object(recipe, "McpSession", FakeSession(self.served, roots)):
             with self.assertRaisesRegex(recipe.RecipeError, "does not point at the manifest root"):
                 recipe.refresh(self.m)

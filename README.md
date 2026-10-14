@@ -6,22 +6,22 @@ Recover a project's governing state from Markdown notes and GitHub, read-only, w
 
 A fresh agent session that resumes an interrupted project needs five things: the objective, the accepted decisions, the current state, the blockers, and the next authorized action. Searching notes is only part of that job. This project defines the recovery contract, ships synthetic fixtures and scenarios to test it, and builds a thin verification and assembly layer over an existing retrieval engine ([QMD](https://github.com/tobi/qmd)) rather than a new one.
 
-## Status
-
-As of 2026-10-14: releases R0, R1 and R2 and reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) are accepted. R3 (a local-model "Librarian") is deferred without acceptance. R4 is accepted as a bounded, read-only mechanics pilot on one owner-selected folder: it shows the mechanics work on a live folder, not that the project is ready for real use. Real use is blocked by two open issues:
-
-- [#16](https://github.com/snicolello/project_recovery/issues/16): a blank note, or a collection with no indexable notes, breaks refresh. Fix authorized by the owner; see #16 for its status.
-- [#17](https://github.com/snicolello/project_recovery/issues/17): the authority mapping expects a YAML frontmatter field that real notes may not use. The owner chose a configurable labelled-line mapping; not yet implemented.
-
-R5 (public v1.0) is not started. Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Current baseline: [`STATE.md`](STATE.md).
-
 ## What this demonstrates
 
 - **A read-only recovery path.** The recipe exposes read tools only: no write, edit, move, delete or shell capability. Changes to notes happen outside it, through ordinary governed git and filesystem actions. The scenario suite checks that every fixture note hashes identically before and after it runs.
 - **Verified authority, with an explicit unverified state.** A note that calls itself accepted is only a decision candidate. A decision reaches `accepted_decisions` only when an approver's GitHub acceptance record is read, serially, and binds to the SHA-256 of the note's exact bytes. Offline, the decision stays `unverified` and the packet says so, rather than guessing.
 - **Deterministic requery validation.** `validate` re-derives a received packet from the source bytes at its recorded index generation, re-reads every acceptance record and compares value by value; edited, deleted or added content is rejected. A pass shows the packet is what the deterministic assembler produces from those bytes, not that the notes are true.
-- **Adversarial scenarios.** Eight restart scenarios, scored offline by `scripts/run_scenarios.py`, including instructions planted in a note, cross-project bleed, and approval text that is quoted, negated, fenced, in a merge or commit message, or written by a non-approver. None of these binds.
-- **Measured before building more.** The predeclared Stage A measurement found that query choice could reduce packet size by 8.629% best-in-hindsight across 37 eligible synthetic comparisons. Recovered fields were identical in every eligible comparison; the savings came from smaller echoed search results. The figure is limited to frozen query lists on synthetic fixtures. It did not reach the 15% reference, which was never an acceptance threshold. The model-based Librarian (R3) is deferred, to be reopened only if live evidence shows recovered content depending on the query or token cost becomes material. Details: [`evidence/r3-stage-a/README.md`](evidence/r3-stage-a/README.md).
+- **Adversarial scenarios.** The offline restart scenarios scored by `scripts/run_scenarios.py` include instructions planted in a note, cross-project bleed, and approval text that is quoted, negated, fenced, in a merge or commit message, or written by a non-approver. None of these binds.
+- **Measured before building more.** The predeclared Stage A measurement asked how much choosing a better search query could save. Its figure of record is an 8.629% best-in-hindsight estimated token reduction (packets plus fetches) against the control queries, across 37 eligible synthetic comparisons. Once timestamps were normalized, the recovered fields were identical in every eligible comparison; the savings came from smaller echoed search results. The figure is limited to frozen query lists on synthetic fixtures. It did not reach the 15% reference, which was never an acceptance threshold. The planned Librarian (R3: a local language model that would run retrieval and return a packet for deterministic checking) is deferred, to be reopened only if live evidence shows recovered content depending on the query or token cost becomes material. Details: [`evidence/r3-stage-a/README.md`](evidence/r3-stage-a/README.md).
+
+## Status
+
+As of 2026-10-14: releases R0, R1 and R2 are accepted, as is reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) (the check that makes `validate` strong enough to rely on a packet received from elsewhere). R3, the Librarian, is deferred without acceptance. R4 is accepted as a bounded, read-only mechanics pilot: one live run on one owner-selected folder showed that refresh, assembly and validation work outside the fixtures. It does not show that recovery is complete or that the project is ready for real use. At R4 acceptance, real use was blocked by two issues; each issue has its current status:
+
+- [#16](https://github.com/snicolello/project_recovery/issues/16): refresh failed under QMD 2.8.3 on a blank note or a collection with no indexable notes. The owner authorized a fix; see #16 for its status.
+- [#17](https://github.com/snicolello/project_recovery/issues/17): the authority mapping expects a YAML frontmatter field that ordinary notes may not carry. The owner chose a configurable labelled-line mapping; see #17 for its status.
+
+R5 (public v1.0) is not started. Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 
@@ -40,7 +40,7 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 | `fixtures/scenario-plan.json` | Eight restart scenarios with expectations written before execution. |
 | `manifest/` | Manifest schema, the fixture and scenario manifests (with their authority policies), and pinned tool versions. |
 | `skills/project-recovery/` | The recipe as an agent skill: `SKILL.md`, the pinned QMD lockfile, and stdlib Python scripts. |
-| `scripts/run_scenarios.py` | Runs S1 to S8 offline and scores every gate; exits non-zero on any failure. `scripts/live_gh_smoke.py` is an optional live check of the GitHub verifier. |
+| `scripts/run_scenarios.py` | Runs the restart scenarios offline and scores every gate; exits non-zero on any failure. `scripts/live_gh_smoke.py` is an optional live check of the GitHub verifier. |
 | `evidence/scoped-evaluation-2026-10-10/` | Executed tool responses, source-integrity checks, versions, tool schemas, MCP (Model Context Protocol) request logs, and the harness scripts. Workspace paths are replaced with `<workspace>`. |
 | `evidence/` (other folders) | Reliance gate #6, Stage A measurement, synthetic transition rehearsal, and R4 pilot aggregates. |
 | `.github/workflows/ci.yml` | CI: fixture hashes, pinned QMD install, all scenarios and unit tests on Ubuntu and Windows. |
@@ -53,7 +53,7 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 | R1 | Project manifest and a read, refresh, assemble recipe over QMD, shipped as an agent skill; passes the five scenarios. | Accepted |
 | R2 | Serial GitHub acceptance verification with an explicit "unverified" state offline; index generation in every result; three more scenarios (concurrent edit, budget stress, adversarial cross-project). | Accepted (bounded); reliance gate #6 accepted |
 | R3 | Librarian: a local model takes a bounded field list, runs retrieval, and returns a packet that a deterministic verifier checks span by span. | Deferred, not accepted |
-| R4 | Pilot against a user-selected Obsidian-synced folder, indexes outside the vault. | Accepted as a bounded mechanics pilot; real use blocked by [#16](https://github.com/snicolello/project_recovery/issues/16) and [#17](https://github.com/snicolello/project_recovery/issues/17) |
+| R4 | Pilot against a user-selected Obsidian-synced folder, indexes outside the vault. | Accepted as a bounded mechanics pilot; at acceptance, real use blocked by [#16](https://github.com/snicolello/project_recovery/issues/16) and [#17](https://github.com/snicolello/project_recovery/issues/17) |
 | R5 | Public v1.0 with a 15-minute quickstart on Windows and Linux, uninstall steps, stated limitations, and an upstream QMD issue or PR. | Not started |
 
 Each release is gated by an owner ruling. The public summary of every gate, with its date, what was accepted and its stated limits, is in [`docs/releases.md`](docs/releases.md). Detailed coordination records live in the owner's private project hub.

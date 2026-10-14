@@ -81,7 +81,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "refresh":
         record = recipe.refresh(m, rebuild=args.rebuild)
-        emit({k: record[k] for k in ("generation", "refreshed_at", "engine")} | {"documents": len(record["files"])})
+        emit({k: record[k] for k in ("generation", "refreshed_at", "engine")}
+             | {"documents": len(record["files"]) - len(record["not_indexable"]),
+                "not_indexable": len(record["not_indexable"]), "verified_empty": record["verified_empty"]})
         return 0
     if args.cmd == "validate":
         try:

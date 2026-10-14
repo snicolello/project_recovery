@@ -75,8 +75,9 @@ class VaultSession:
 
     ``get`` and ``multi_get`` serve the bytes on disk for the documents indexed at the
     recorded generation (validate first checks the vault still matches it, so these are
-    the bytes QMD would serve). ``query`` returns the replayed hit list for the packet's
-    collection and nothing for any other."""
+    the bytes QMD would serve). A file QMD does not index (``recipe.indexable``) is not
+    served, as QMD would not serve it. ``query`` returns the replayed hit list for the
+    packet's collection and nothing for any other."""
 
     def __init__(self, m: recipe.Manifest, collection: str, hits: list[dict]):
         self.m = m
@@ -85,7 +86,7 @@ class VaultSession:
 
     def _documents(self, proj: recipe.Project) -> dict[str, str]:
         prefix = proj.source("")
-        return {src[len(prefix):]: src for src in recipe.disk_files(self.m, proj)}
+        return {src[len(prefix):]: src for src, (_, ok) in recipe.disk_scan(self.m, proj).items() if ok}
 
     def _read(self, qmd_path: str) -> bytes | None:
         collection, _, rel = qmd_path.partition("/")
@@ -311,7 +312,7 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
             factory = session_factory or (lambda: McpSession(m.state_dir))
             with factory() as session:
                 return recipe.assemble(m, project, query, session, limit, verifier()), []
-        indexed = set(record["files"])
+        indexed = recipe.indexed_sources(record)
         hits, omitted = replay_hits(packet, proj, indexed, m.search_limit)
         with VaultSession(m, proj.collection, hits) as session:
             first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted)

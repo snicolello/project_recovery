@@ -46,4 +46,3 @@ require exact-file-list sign-off before a push to PR #15. Merging remains the
 owner's. After owner merge of the signed-off evidence, close private #127 as
 accepted, mark hub #17 item (4) complete and add the outcome-ledger line.
 The whole hub #17 Epic is not closed. Raw evidence stays local.
-

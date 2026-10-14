@@ -1,0 +1,62 @@
+# Runs the offline gates from docs/quickstart.md on Ubuntu and Windows.
+# Needs no secrets and no live GitHub access; scripts/live_gh_smoke.py is excluded.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: gates (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history: tests/test_stage_a_analysis.py reads blobs from earlier commits.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Tool versions
+        run: |
+          python --version
+          node --version
+          npm --version
+
+      - name: Fixture hashes (before)
+        run: python -I scripts/verify_fixture_hashes.py
+
+      - name: Install pinned QMD (lockfile, package scripts disabled)
+        run: python -I skills/project-recovery/scripts/install_qmd.py
+
+      - name: Scenarios and gates
+        run: python -I scripts/run_scenarios.py
+
+      - name: Unit tests
+        run: python -I -m unittest discover -s tests
+
+      - name: Fixture hashes (after)
+        if: ${{ !cancelled() }}
+        run: python -I scripts/verify_fixture_hashes.py

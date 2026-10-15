@@ -243,9 +243,39 @@ class ExampleLineTests(unittest.TestCase):
                     self.assertEqual(v.validate(p, mode)["result"], "equal_to_rederived")
 
     def test_trailing_comment_on_a_real_line_is_cited_verbatim(self):
-        _, p = self.assemble(f"{LABEL} Active. <!-- was: Blocked -->")
+        v, p = self.assemble(f"{LABEL} Active. <!-- was: Blocked -->")
         a = p["fields"]["authority"]
+        self.assertEqual(a["status"], "established")
         self.assertEqual([i["text"] for i in a["items"]], [f"{LABEL} Active. <!-- was: Blocked -->"])
+        for mode in rederive.MODES:
+            self.assertEqual(v.validate(p, mode)["result"], "equal_to_rederived")
+
+    def test_comment_only_status_value_is_unknown_with_raw_evidence(self):
+        for eol in ("\n", "\r\n"):
+            for value in ("<!-- old status removed -->", "<!-- unclosed old status"):
+                with self.subTest(eol=repr(eol), value=value):
+                    v, p = self.assemble(f"{LABEL} {value}", eol=eol)
+                    a = p["fields"]["authority"]
+                    self.assertEqual(a["status"], "unknown")
+                    self.assertIn("states no value", a["reason"])
+                    self.assertEqual(a["items"], [])
+                    self.assertEqual(a["evidence"][0]["text"], f"{LABEL} {value}")
+                    self.assertEqual(a["evidence"][0]["receipt"]["span"], [3, 3])
+                    self.assertEqual(pk.unsupported_assertions(p, v.m.vault_root), [])
+                    for mode in rederive.MODES:
+                        self.assertEqual(v.validate(p, mode)["result"], "equal_to_rederived")
+
+    def test_unknown_after_a_comment_is_unknown_with_raw_evidence(self):
+        for value in ("<!-- old --> UNKNOWN", "<!-- old --> **`UNKNOWN`** pending a ruling"):
+            with self.subTest(value=value):
+                v, p = self.assemble(f"{LABEL} {value}")
+                a = p["fields"]["authority"]
+                self.assertEqual((a["status"], a["reason"]), ("unknown", "source states UNKNOWN"))
+                self.assertEqual(a["items"], [])
+                self.assertEqual(a["evidence"][0]["text"], f"{LABEL} {value}")
+                self.assertEqual(pk.unsupported_assertions(p, v.m.vault_root), [])
+                for mode in rederive.MODES:
+                    self.assertEqual(v.validate(p, mode)["result"], "equal_to_rederived")
 
     def test_approval_and_approver_labels_inside_examples_do_not_count(self):
         approvals = [{"name": "rollout", "note": "STATE.md", "label": "Rollout approval:"}]

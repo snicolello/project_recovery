@@ -2,20 +2,21 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Level-0 routing baseline for the accepted release state, current gates and one safe continuation.
-- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. On `main`, [PR #19](https://github.com/snicolello/project_recovery/pull/19) fixed the blank-note refresh blocker [#16](https://github.com/snicolello/project_recovery/issues/16) and the stderr-handle leak [#14](https://github.com/snicolello/project_recovery/issues/14), and [PR #20](https://github.com/snicolello/project_recovery/pull/20) fixed the authority-format blocker [#17](https://github.com/snicolello/project_recovery/issues/17) with a configurable labelled-line mapping, both on synthetic evidence. Neither fix nor its merge is release acceptance. The named blockers to actual use (#16 and #17) are fixed on `main`; their issues await the owner's closure. Readiness for actual use is not established: neither fix has run against a live folder, and accepted decisions still need verified acceptance records. Authority and accepted decisions remain unknown in run-004, and recovery completeness is false.
-- As of: 2026-10-14, at the merge of PR #20.
+- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. On `main`, [PR #19](https://github.com/snicolello/project_recovery/pull/19) fixed the blank-note refresh blocker [#16](https://github.com/snicolello/project_recovery/issues/16) and the stderr-handle leak [#14](https://github.com/snicolello/project_recovery/issues/14), and [PR #20](https://github.com/snicolello/project_recovery/pull/20) fixed the authority-format gap within [#17](https://github.com/snicolello/project_recovery/issues/17) with a configurable labelled-line mapping, both on synthetic evidence. Neither fix nor its merge is release acceptance. Offline decision provenance, the remaining part of #17, still needs an owner-approved workflow or ruling. Readiness for actual use is not established: neither fix has run against a live folder, and accepted decisions still need verified acceptance records. Authority and accepted decisions remain unknown in run-004, and recovery completeness is false.
+- As of: 2026-10-15, governing-record contract amendment.
 - Authority: Stephen (owner), through rulings on the hub coordination Epic #113. Only the owner can change acceptance or scope. The hub is private: its links below work only for the owner and owner-side agents.
 - Sources:
   - the owner rulings authorizing the [#16 fix](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662), the [#14 fix](https://github.com/snicolello/project_recovery/issues/14#issuecomment-6177400983) and the [#17 labelled-line mapping](https://github.com/snicolello/project_recovery/issues/17#issuecomment-6177401293);
+  - the governing-record contract amendment and stricter frontmatter behavior accepted by the owner ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6198390697));
   - the R4 acceptance ruling ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227)) and the R3 deferral and predecessor waiver ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151)), both still in force;
   - the public evidence below.
 
   Live pilot conditions and run detail are kept in the owner's private coordination record, not here.
-- Objective: preserve accepted R2/#6 and bounded R4 mechanics evidence, with the #16 and #17 fixes on `main`, without claiming readiness for actual use.
-- Next action: stop for an owner ruling. Closing #14, #16 and #17 is the owner's. Whether to run the fixes against a live folder, and any readiness or transition gate, are owner decisions. No live run, source write or move, or new install is authorized. Any later live run needs its source path reconfirmed by the owner first.
+- Objective: preserve accepted R2/#6 and bounded R4 mechanics evidence, with the blank-note and authority-format fixes on `main`, and resolve #17's remaining offline decision-provenance requirement before claiming readiness for actual use.
+- Next action: stop for an owner ruling on #17's remaining offline decision-provenance workflow and whether to run the fixes against a live folder. Any readiness or transition gate is an owner decision. No live run, source write or move, or new install is authorized. Any later live run needs its source path reconfirmed by the owner first.
 - Read when:
   - [`PROJECT.md`](PROJECT.md): checking project identity, outcome, trust zone or scope.
-  - [`docs/recovery-contract.md`](docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract. Section 4 was amended on 2026-10-14 for blank notes and empty collections under the #16 ruling, and for the governing-record mapping under the #17 ruling.
+  - [`docs/recovery-contract.md`](docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract. Section 4 was amended on 2026-10-14 for blank notes and empty collections under the #16 ruling, and on 2026-10-15 for the governing-record mapping and stricter frontmatter behavior under the Epic #113 ruling.
   - [`skills/project-recovery/SKILL.md`](skills/project-recovery/SKILL.md) and [`docs/quickstart.md`](docs/quickstart.md): running the accepted recipe, configuring the governing-record mapping or checking its validation guarantees.
   - [`evidence/qmd-blank-notes-2026-10-14/README.md`](evidence/qmd-blank-notes-2026-10-14/README.md): QMD 2.8.3's observed blank-note and empty-collection behaviour behind the #16 rule.
   - [`evidence/r4-pilot/run-004/README.md`](evidence/r4-pilot/run-004/README.md): the public aggregate of the accepted R4 pilot and its limits.
@@ -38,7 +39,7 @@ PR #20 changed the governing-record mapping under the owner's ruling on #17:
 
 - **Labelled line.** A manifest may set `authority.record_label` (for example `- **Status:**`) instead of the frontmatter `authority.record_key`. The one body line starting with that label is cited with a receipt, read by the same reader as labelled fields and approvals.
 - **One mapping.** Configuring both, or an unknown `authority` key, is refused when the manifest loads, and a label never falls back to frontmatter.
-- **Examples ignored.** The shared labelled-line reader skips lines inside fenced code blocks and HTML comments (the patterns approval markers already ignore), for the status line, labelled fields, the approver and approvals. An inline-code `UNKNOWN` counts as `UNKNOWN`, for the status line and approvals.
+- **Examples ignored.** The shared labelled-line reader skips lines inside fenced code blocks and HTML comments (the patterns approval markers already ignore), for the status line, labelled fields, the approver and approvals. Governing status is classified from the visible value after comments are hidden; comment-only values and `UNKNOWN` after a comment stay unknown, while receipts retain the raw line. An inline-code `UNKNOWN` counts as `UNKNOWN`, for the status line and approvals.
 - **Fails closed, both mappings.** No matching line, more than one (an `authority_ambiguous` conflict), or a value that is empty or starts with `UNKNOWN` leaves authority `unknown`, with the matching lines kept as evidence. For the frontmatter mapping, a repeated key and an empty or `UNKNOWN` value are newly unknown; a single key behaves as before: the eight repeatability packets (S1 to S8) keep the canonical digests retained in `evidence/r3-stage-a/regression-184/stdout.log`.
 - **Decision acceptance unchanged.** Decisions are accepted only through configured acceptance records. Offline, unavailable and local claims stay candidate, unknown or unverified.
 
@@ -68,6 +69,7 @@ Recovery contract section 4 records both changes.
   - No accepted decision offline.
   - Packet `status: complete` means generation health only.
   - No operating-system sandbox or network isolation: client enforcement and before/after source hashes are the controls.
+- Offline decision provenance (the remaining part of [#17](https://github.com/snicolello/project_recovery/issues/17)) needs an owner-approved workflow or ruling. No alternative acceptance authority, snapshot workflow or verifier change is selected. Offline, decisions stay unverified candidates, and accepted decisions stay unknown.
 - R3 was waived only as R4's predecessor, without acceptance. Public records omit real source, index and cache paths, note names and content.
 - Limits of the labelled mapping: the label must match the start of the line exactly (an indented, nested or differently written label is absent); a line inside a fenced code block or HTML comment never matches, and an unclosed fence or comment hides the rest of the note; a status line that runs onto a second line is cited as its first line only.
 
@@ -80,11 +82,10 @@ Recovery contract section 4 records both changes.
 - Follow-ups noted on PR #19, not authorized:
   - QMD skips dot-folders and some build folders that refresh still scans; such a note fails refresh closed.
   - The MCP client does not close its subprocess pipes.
-- Offline decision provenance (raised with #17): no alternative acceptance authority, snapshot workflow or verifier change is selected. Offline, decisions stay unverified candidates, and accepted decisions stay unknown, by design.
 
 ## Blocked
 
-- The named blockers #16 and #17 are fixed on `main` and their issues await the owner's closure; no other named defect blocks work. Readiness for actual use and broader transition need owner rulings and, for any live evidence, a separately authorized run. No complete-recovery or transition readiness is established.
+- The blank-note blocker (#16) and authority-format gap within #17 are fixed on synthetic evidence. Actual-use readiness remains blocked on #17's offline decision-provenance requirement and owner rulings; the mapping fix does not resolve that requirement. Any live evidence needs a separately authorized run. No complete-recovery or transition readiness is established.
 
 ## Evidence
 
@@ -93,4 +94,4 @@ Recovery contract section 4 records both changes.
 - [Synthetic transition evidence](evidence/transition-rehearsal/README.md) and its stated limits.
 - [Run-004 aggregate evidence and limits](evidence/r4-pilot/run-004/README.md) and [aggregate results](evidence/r4-pilot/run-004/summary.json): retained measurements only.
 - [QMD 2.8.3 blank-note probe](evidence/qmd-blank-notes-2026-10-14/README.md). On PR #19, fixture hashes matched 16/16 before and after, every scenario check passed (220: the 184 from before plus 36 in S9) and the unit suite passed.
-- On PR #20, fixture hashes matched 16/16 before and after, every scenario check passed (258: the 220 from before plus 38 in S10), the unit suite passed (226 tests, 1 skipped), and CI passed on Ubuntu and Windows.
+- [PR #20](https://github.com/snicolello/project_recovery/pull/20) retains the synthetic validation evidence: before/after fixture hashes, scenarios S1 to S10, unit tests and CI, including the comment-value regressions and unchanged raw receipts.

@@ -532,7 +532,10 @@ class Assembler:
             return self.node("authority", [], "the governing record's line failed receipt validation")
         else:
             cited = items[0]["text"]
-            value = stated_value(cited[len(label):] if label is not None else front_value(Line(0, cited)))
+            # Classify the visible body value; comments cannot supply a status or hide
+            # UNKNOWN. Keep the original cited bytes for evidence and its receipt.
+            value = stated_value(note["visible"][lines[0].number - 1][len(label):]
+                                 if label is not None else front_value(Line(0, cited)))
             if value and not states_unknown(value):
                 return {"status": "established", "items": items}
             reason = "source states UNKNOWN" if value else f"the governing record's {mapping} states no value"

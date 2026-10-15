@@ -117,14 +117,17 @@ class McpSession:
 
     def __enter__(self) -> "McpSession":
         self.state_dir.mkdir(parents=True, exist_ok=True)
+        # Resolve the command before acquiring anything: a missing Node or QMD raises here
+        # with no handle open (project_recovery #14).
+        command = _command() + ["mcp"]
         self._stderr = open(self.state_dir / "mcp-stderr.log", "a", encoding="utf-8")
-        self._proc = subprocess.Popen(
-            _command() + ["mcp"], env=environment(self.state_dir), cwd=self.state_dir,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._stderr,
-            text=True, encoding="utf-8", errors="replace", bufsize=1,
-        )
-        threading.Thread(target=self._read, daemon=True).start()
         try:
+            self._proc = subprocess.Popen(
+                command, env=environment(self.state_dir), cwd=self.state_dir,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._stderr,
+                text=True, encoding="utf-8", errors="replace", bufsize=1,
+            )
+            threading.Thread(target=self._read, args=(self._proc.stdout,), daemon=True).start()
             self._rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "capabilities": {},
                                      "clientInfo": {"name": "project-recovery", "version": "0.1"}})
             self._send({"jsonrpc": "2.0", "method": "notifications/initialized"})
@@ -133,7 +136,10 @@ class McpSession:
             if set(self.advertised) != ALLOWED_TOOLS:
                 raise QmdError(f"QMD advertises tools outside the read-only allowlist: {self.advertised}")
         except BaseException:
-            self.close()
+            try:
+                self.close()
+            except Exception:  # noqa: BLE001 - the original failure is the one to report
+                pass
             raise
         return self
 
@@ -141,20 +147,26 @@ class McpSession:
         self.close()
 
     def close(self) -> None:
-        if self._proc is not None:
-            self._proc.terminate()
-            try:
-                self._proc.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                self._proc.kill()
-            self._proc = None
-        if self._stderr is not None:
-            self._stderr.close()
-            self._stderr = None
+        """Stop the server and close the stderr log; the log is closed even if stopping fails."""
+        try:
+            if self._proc is not None:
+                proc, self._proc = self._proc, None
+                try:
+                    proc.terminate()
+                    proc.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                except OSError:
+                    proc.kill()  # terminate failed: still try to stop it, then report why
+                    raise
+        finally:
+            if self._stderr is not None:
+                stderr, self._stderr = self._stderr, None
+                stderr.close()
 
-    def _read(self) -> None:
-        assert self._proc is not None and self._proc.stdout is not None
-        for line in self._proc.stdout:
+    def _read(self, stdout) -> None:
+        # The pipe is passed in: close() may clear self._proc before this thread first runs.
+        for line in stdout:
             try:
                 self._responses.put(json.loads(line))
             except json.JSONDecodeError:

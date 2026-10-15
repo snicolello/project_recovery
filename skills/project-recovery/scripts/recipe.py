@@ -172,18 +172,49 @@ def clear_state(state_dir: Path) -> None:
 
 # Refresh -------------------------------------------------------------------
 
-def disk_files(m: Manifest, proj: Project) -> dict[str, str]:
-    """source path -> SHA-256 of the bytes on disk, for Markdown files in the project root.
-    Links (symlinks, junctions) are skipped; they are outside the allowlist."""
+# QMD 2.8.3 skips a Markdown file whose text, read as UTF-8, is empty after JavaScript's
+# String.prototype.trim() (dist/cli/qmd.js, indexFiles: ``if (!content.trim())``): it is
+# never indexed or served. These are the code points trim() removes in the Node that runs
+# QMD (ECMAScript WhiteSpace and LineTerminator), confirmed exhaustively by
+# evidence/qmd-blank-notes-2026-10-14/. Python's str.isspace() differs (U+0085, U+001C to
+# U+001F), so it is not used.
+JS_WHITESPACE = frozenset("\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003"
+                          "\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff")
+
+
+def indexable(data: bytes) -> bool:
+    """Whether QMD 2.8.3 indexes a file with these bytes. Like Node's UTF-8 read, decoding
+    keeps a byte-order mark and turns invalid bytes into U+FFFD, which is not whitespace."""
+    return any(ch not in JS_WHITESPACE for ch in data.decode("utf-8", errors="replace"))
+
+
+def disk_scan(m: Manifest, proj: Project) -> dict[str, tuple[str, bool]]:
+    """source path -> (SHA-256 of the bytes on disk, whether QMD indexes them), for every
+    Markdown file in the project root, from one read of each file. Links (symlinks,
+    junctions) are skipped; they are outside the allowlist."""
     base = safe_resolve(m.vault_root, proj.root) if proj.root != "." else m.vault_root
     out = {}
     for p in sorted(base.rglob("*.md")):
         rel = p.relative_to(base).as_posix()
         try:
-            out[proj.source(rel)] = sha256_hex(safe_resolve(m.vault_root, proj.source(rel)).read_bytes())
+            data = safe_resolve(m.vault_root, proj.source(rel)).read_bytes()
         except SourceError:
             continue
+        out[proj.source(rel)] = (sha256_hex(data), indexable(data))
     return out
+
+
+def disk_files(m: Manifest, proj: Project) -> dict[str, str]:
+    """source path -> SHA-256 of the bytes on disk, for every Markdown file in the project
+    root, indexable or not."""
+    return {source: sha for source, (sha, _) in disk_scan(m, proj).items()}
+
+
+def indexed_sources(record: dict) -> set:
+    """The sources QMD serves at a recorded generation: every recorded file except those
+    recorded as present, not indexable. A record written before that field existed could
+    hold no blank file (refresh refused one), so its absence means none."""
+    return set(record["files"]) - set(record.get("not_indexable", []))
 
 
 def generation_path(m: Manifest) -> Path:
@@ -207,22 +238,52 @@ def refresh(m: Manifest, rebuild: bool = False) -> dict:
             index_cli(m.state_dir, ["collection", "add", str(base), "--name", proj.collection])
     index_cli(m.state_dir, ["update"])
     files: dict[str, str] = {}
+    not_indexable: list[str] = []
+    verified_empty: list[str] = []
     with McpSession(m.state_dir) as session:
         status = session.status()
         indexed_roots = {c["name"]: os.path.normcase(c["path"]) for c in status.get("collections", [])}
         for proj in m.projects.values():
             base = m.vault_root if proj.root == "." else safe_resolve(m.vault_root, proj.root)
-            if indexed_roots.get(proj.collection) != os.path.normcase(str(base)):
-                raise RecipeError(f"collection {proj.collection} does not point at the manifest root")
+            # A missing or renamed root scans as empty; it must never be verified empty. safe_resolve
+            # has already rejected a root reached through a link or junction.
+            if not base.is_dir():
+                raise RecipeError(f"project root {proj.root!r} for collection {proj.collection} "
+                                  "does not exist as a directory")
+            # Every Markdown file is hashed and accounted for; QMD serves exactly the indexable ones.
+            scan = disk_scan(m, proj)
+            disk = {source: sha for source, (sha, _) in scan.items()}
+            expected = {source: sha for source, (sha, ok) in scan.items() if ok}
             served = {proj.source(q[len(proj.collection) + 1:]): sha256_hex(t.encode("utf-8"))
                       for q, t in session.multi_get(f"{proj.collection}/**/*.md").items()}
-            if served != disk_files(m, proj):
+            if proj.collection not in indexed_roots:
+                # QMD's status omits a collection with no indexed document, so its root cannot
+                # be read back. It is verified empty only when its root exists as a directory
+                # (checked above), the disk scan proves there is nothing to serve and QMD serves
+                # nothing for it.
+                if expected or served:
+                    raise RecipeError(f"collection {proj.collection} is not in the index although "
+                                      f"{len(expected)} indexable note(s) are in the manifest root")
+                verified_empty.append(proj.collection)
+            elif indexed_roots[proj.collection] != os.path.normcase(str(base)):
+                raise RecipeError(f"collection {proj.collection} does not point at the manifest root")
+            if served != expected:
+                emptied = sorted(s for s in served if s in disk and s not in expected)
+                if emptied:
+                    raise RecipeError(
+                        f"index for {proj.collection} still serves earlier content for {len(emptied)} note(s) "
+                        f"now blank on disk ({', '.join(emptied[:3])}): QMD 2.8.3 keeps a note's last indexed "
+                        "content when the note is emptied; run refresh with --rebuild")
                 raise RecipeError(f"index for {proj.collection} does not match source bytes after refresh")
-            files.update(served)
+            files.update(disk)
+            not_indexable.extend(s for s in disk if s not in expected)
+    # The generation is derived from every file's bytes; whether a file is indexable follows from them.
     canonical = json.dumps(sorted(files.items()), separators=(",", ":")).encode("utf-8")
     record = {
         "generation": "qmd-2.8.3:" + hashlib.sha256(canonical).hexdigest()[:16],
         "files": dict(sorted(files.items())),
+        "not_indexable": sorted(not_indexable),
+        "verified_empty": sorted(verified_empty),
         "refreshed_at": now(),
         "engine": {"name": "qmd", "version": installed_version(), "search": "lex", "rerank": False},
     }

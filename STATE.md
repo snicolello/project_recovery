@@ -2,61 +2,83 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Level-0 routing baseline for the accepted release state, current gates and one safe continuation.
-- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. Actual use / transition readiness is blocked by blank-note refresh [#16](https://github.com/snicolello/project_recovery/issues/16) and authority/decision format [#17](https://github.com/snicolello/project_recovery/issues/17). Authority and accepted decisions remain unknown in run-004; recovery completeness is false.
-- As of: 2026-10-14, reconciled to the owner's R4 acceptance and publication instructions. Retained run-004 implementation baseline: [`54ad8b021721040130c69a953f61a07177569f11`](https://github.com/snicolello/project_recovery/commit/54ad8b021721040130c69a953f61a07177569f11).
-- Authority: Stephen (owner), through rulings on [hub Epic #113](https://github.com/snicolello/stephen-project-hub/issues/113). The [R4 acceptance ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227) accepts the written mechanics gate and names transition blockers; only the owner can change acceptance or scope. The [R3 deferral and predecessor waiver](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151) remain in force.
-- Sources: the [R4 acceptance ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227), [final publication and closeout instructions](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6172661490), private [run-004 completion/review](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6155465241), [LF-retention/merge disposition](https://github.com/snicolello/stephen-project-hub/issues/126#issuecomment-6151101009), and the evidence below. The latest direct owner report on 2026-10-14 says Sync is paused; current private detail belongs on #127.
-- Objective: preserve accepted R2/#6 and bounded R4 mechanics evidence, complete the gated publication/closeout, and keep the two transition blockers explicit without claiming readiness for actual use.
-- Next action: obtain owner sign-off on the final exact three-file list and hashes on private [#127](https://github.com/snicolello/stephen-project-hub/issues/127); that sign-off authorizes the push to [PR #15](https://github.com/snicolello/project_recovery/pull/15). Merging remains the owner's. After the owner merges the signed-off evidence, close #127 as accepted, mark hub #17 item (4) complete and add the outcome-ledger line. No new live run, vault write/move or blocker implementation is authorized; a moved source needs path reconfirmation on #127 before any later authorized run.
+- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. On `main`, [PR #19](https://github.com/snicolello/project_recovery/pull/19) fixed the blank-note refresh blocker [#16](https://github.com/snicolello/project_recovery/issues/16) and the stderr-handle leak [#14](https://github.com/snicolello/project_recovery/issues/14) on synthetic evidence. Neither the fix nor its merge is release acceptance. Actual use / transition readiness remains blocked by authority/decision format [#17](https://github.com/snicolello/project_recovery/issues/17). Authority and accepted decisions remain unknown in run-004, and recovery completeness is false.
+- As of: 2026-10-14, at the merge of PR #19.
+- Authority: Stephen (owner), through rulings on the hub coordination Epic #113. Only the owner can change acceptance or scope. The hub is private: its links below work only for the owner and owner-side agents.
+- Sources:
+  - the owner rulings authorizing the [#16 fix](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662) and the [#14 fix](https://github.com/snicolello/project_recovery/issues/14#issuecomment-6177400983);
+  - the R4 acceptance ruling ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227)) and the R3 deferral and predecessor waiver ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151)), both still in force;
+  - the public evidence below.
+
+  Live pilot conditions and run detail are kept in the owner's private coordination record, not here.
+- Objective: preserve accepted R2/#6 and bounded R4 mechanics evidence, and resolve the remaining transition blocker (#17) without claiming readiness for actual use.
+- Next action: #17's labelled-line authority mapping. It needs its own dispatch and work contract, and #17's backlog record authorizes no implementation by itself. Closing #16 and #14 is the owner's. No live run, source write or move, or new install is authorized. Any later live run needs its source path reconfirmed by the owner first.
 - Read when:
-  - [`PROJECT.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/PROJECT.md): checking project identity, outcome, trust zone or scope.
-  - [`docs/recovery-contract.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract.
-  - [R4 ticket #127](https://github.com/snicolello/stephen-project-hub/issues/127): preparing or reviewing the live-folder pilot, current run conditions, private evidence controls, publication sign-off or release gate.
-  - [`evidence/r3-stage-a/README.md`](https://github.com/snicolello/project_recovery/blob/7c77b70fdfc779570a19bb60b14f9153e41db5d2/evidence/r3-stage-a/README.md): interpreting Stage A, its measurement population and retained evidence.
-  - [`evidence/transition-rehearsal/README.md`](https://github.com/snicolello/project_recovery/blob/644613e4a27c4697f069f0c87c07c5951c07f9dc/evidence/transition-rehearsal/README.md): reviewing synthetic transition checks and their limits.
-  - [`skills/project-recovery/SKILL.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/skills/project-recovery/SKILL.md) and [`docs/quickstart.md`](https://github.com/snicolello/project_recovery/blob/54ad8b021721040130c69a953f61a07177569f11/docs/quickstart.md): running the accepted recipe or checking its validation guarantees.
+  - [`PROJECT.md`](PROJECT.md): checking project identity, outcome, trust zone or scope.
+  - [`docs/recovery-contract.md`](docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract. Section 4 was amended on 2026-10-14 for blank notes and empty collections under the #16 ruling.
+  - [`skills/project-recovery/SKILL.md`](skills/project-recovery/SKILL.md) and [`docs/quickstart.md`](docs/quickstart.md): running the accepted recipe or checking its validation guarantees.
+  - [`evidence/qmd-blank-notes-2026-10-14/README.md`](evidence/qmd-blank-notes-2026-10-14/README.md): QMD 2.8.3's observed blank-note and empty-collection behaviour behind the #16 rule.
+  - [`evidence/r4-pilot/run-004/README.md`](evidence/r4-pilot/run-004/README.md): the public aggregate of the accepted R4 pilot and its limits.
+  - [`evidence/r3-stage-a/README.md`](evidence/r3-stage-a/README.md) and [`evidence/transition-rehearsal/README.md`](evidence/transition-rehearsal/README.md): Stage A and the synthetic transition checks, and their limits.
 
 ## Current baseline
 
-The accepted implementation baseline is R2 plus reliance gate #6, recorded at [`7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28`](https://github.com/snicolello/project_recovery/commit/7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28), plus merged preparation through `54ad8b02`. The accepted release position now also includes R4's bounded read-only mechanics pilot under the owner's 2026-10-14 ruling. R4 acceptance changes no core code or product contract and does not establish transition readiness. The recovery path exposes no write, edit, move or delete tools. Fixtures remain synthetic.
+The accepted implementation baseline is R2 plus reliance gate #6, recorded at [`7e73ca4`](https://github.com/snicolello/project_recovery/commit/7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28), plus merged preparation through [`54ad8b02`](https://github.com/snicolello/project_recovery/commit/54ad8b021721040130c69a953f61a07177569f11) (the run-004 implementation baseline). The accepted release position also includes R4's bounded read-only mechanics pilot. R4 acceptance changed no core code or product contract. The recovery path exposes no write, edit, move or delete tools. Fixtures remain synthetic.
 
-Current merged `main` adds tested synthetic transition preparation and Stage A evidence through PRs [#11](https://github.com/snicolello/project_recovery/pull/11) and [#12](https://github.com/snicolello/project_recovery/pull/12). Those merges accept no release and do not turn the preparation into a live R4 pilot.
+PR #19 changed the accepted core under the owner's rulings on #16 and #14:
+
+- **Indexability rule.** Refresh mirrors QMD 2.8.3: text that is empty after JavaScript's `trim()` is not indexed.
+- **Blank notes.** They are recorded as present, not indexable, with their hashes kept in the generation record.
+- **Verified empty.** A collection QMD does not list is verified empty only when its root exists as a directory and the disk scan finds no indexable note in it. Every field of a verified-empty project is `unknown`. A missing or renamed root fails refresh.
+- **Integrity gates unchanged.** Every Markdown file is hashed, and a changed, added or deleted non-blank note still fails refresh.
+- **Emptied notes.** QMD keeps an emptied note's last indexed content, so refresh then fails closed and names `--rebuild`.
+- **MCP client (#14).** It resolves the QMD command before opening its stderr log, and closes the log on every failed start.
+
+Recovery contract section 4 records the new states.
 
 ## Completed
 
-- R0, R1 and R2 were accepted through owner rulings on Epic #113. Reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) was later accepted and closed; the accepted-state revision is [`7e73ca4`](https://github.com/snicolello/project_recovery/commit/7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28).
-- PR [#11](https://github.com/snicolello/project_recovery/pull/11) merged reviewed head `644613e` as [`15add318`](https://github.com/snicolello/project_recovery/commit/15add318df1a262b8f8935bf2eb0e6c27a1e2603). Its synthetic transition rehearsal passed the recorded read-only, containment, isolation and requery checks; it is advance preparation only.
-- PR [#12](https://github.com/snicolello/project_recovery/pull/12) merged reviewed head `7c77b70` as [`54ad8b02`](https://github.com/snicolello/project_recovery/commit/54ad8b021721040130c69a953f61a07177569f11). Stage A's predeclared figure of record is an 8.629% best-in-hindsight estimated reduction. Across all 37 eligible comparisons, timestamp-normalized recovered `fields` were identical; eligible savings came from echoed `query_hits` and `missing_sources`. This is not a claim of universal raw-byte identity. The earlier 15% figure was a reference only, not an acceptance threshold.
-- The owner retained the LF audit export; its recorded and locally verified SHA-256 is `9c1bfb832ff2948100f5de1bcfab3e097fca2301328b813ba145cd9c6401e597`.
-- PR [#13](https://github.com/snicolello/project_recovery/pull/13) was closed unmerged. Its historical approval memo remains at [`fb84324`](https://github.com/snicolello/project_recovery/commit/fb84324e142c97ef33bde03170fbc262e868f09a) and is superseded by this fresh baseline.
-- The first live R4 attempt stopped safely at refresh before assembly: source integrity remained intact and no retry occurred. A separately reviewed synthetic reproduction verified QMD 2.8.3's blank-note/empty-collection incompatibility; open backlog [#16](https://github.com/snicolello/project_recovery/issues/16) owns the defect. Neither integrity gate was weakened.
-- The owner-approved starter-note write was completed and separately verified through ordinary governed filesystem actions. It supplied the populated baseline for run-004; the recovery path remained read-only.
-- Retained run-004 evidence and separate review establish live retrieval, assembly and `validate --hits requery` returning `equal_to_rederived`, with source, fixture and default-home integrity preserved. The owner [accepted R4](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227) against its written gate, "read-only enforcement demonstrated; owner approval", as a bounded mechanics pilot. Authority and accepted decisions remain unknown in the retained result; recovery completeness is false. Acceptance is not readiness for actual use.
+- R0, R1 and R2 were accepted through owner rulings on Epic #113. Reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) was accepted and closed.
+- PR [#11](https://github.com/snicolello/project_recovery/pull/11) added a synthetic transition rehearsal; it is advance preparation only.
+- PR [#12](https://github.com/snicolello/project_recovery/pull/12) added Stage A.
+  - Its predeclared figure of record is an 8.629% best-in-hindsight estimated reduction.
+  - Across all 37 eligible comparisons, timestamp-normalized recovered `fields` were identical. This is not a claim of universal raw-byte identity.
+- PR [#13](https://github.com/snicolello/project_recovery/pull/13) was closed unmerged; its approval memo is historical.
+- R4 run-004 established live retrieval, assembly and `validate --hits requery` returning `equal_to_rederived`, with source and fixture integrity preserved.
+  - The owner accepted R4 against its written gate, "read-only enforcement demonstrated; owner approval", as a bounded mechanics pilot.
+  - The public aggregate was published through PR [#15](https://github.com/snicolello/project_recovery/pull/15), and the R4 ticket was closed.
+  - Acceptance is not readiness for actual use.
+- The first live R4 attempt stopped safely at refresh, before assembly, on a blank note. PR #19 fixed that defect (#16) on synthetic evidence (probes, scenario S9, unit tests) without weakening either integrity gate. The fix has not been run against a live folder.
+- PR #19 also fixed the missing-QMD stderr-handle leak (#14).
 
 ## Pending
 
-- Private R4 [#127](https://github.com/snicolello/stephen-project-hub/issues/127) remains open for gated publication/closeout, not for another acceptance decision. Exact-file-list sign-off authorizes pushing all three files on PR #15; owner merge must happen before closing #127, marking hub #17 item (4) complete and adding the outcome-ledger line. The broader hub #17 Epic remains open for its other scope.
-- The latest owner report says Sync is paused, with a planned vault move. Existing path approval covers the tested location; a moved source needs explicit reconfirmation on #127. R3 was waived only as R4's predecessor, without acceptance. Public records omit real source/index/cache paths, note names and content.
-- Run-004 used one agent-authored starter note derived from prior public STATE, not the owner's own notes. Main authority is unknown because the expected YAML field is absent; offline mode established no accepted decision. Packet `status: complete` means generation health only. There is no operating-system sandbox or network isolation; client enforcement and before/after source hashes are the controls. Index/cache/config placement is retained configuration evidence, not fresh cloud attestation. Recovery added no sync engine, but the source is also inside OneDrive by owner report.
+- Run-004's limits remain as stated in its public aggregate:
+  - One agent-authored starter note, not the owner's own notes.
+  - Main authority unknown, because the expected frontmatter field is absent.
+  - No accepted decision offline.
+  - Packet `status: complete` means generation health only.
+  - No operating-system sandbox or network isolation: client enforcement and before/after source hashes are the controls.
+- R3 was waived only as R4's predecessor, without acceptance. Public records omit real source, index and cache paths, note names and content.
 
 ## Deferred
 
-- R3 query selection and the Stage B model trial are deferred without acceptance. Re-enter only if R4 pilot evidence shows query-dependent recovered content or frontier-token cost becomes material.
+- R3 query selection and the Stage B model trial are deferred without acceptance. Re-enter only if pilot evidence shows query-dependent recovered content, or frontier-token cost becomes material.
 - PR [#10](https://github.com/snicolello/project_recovery/pull/10) is parked and closed unmerged. Its runtime/model proposal is prepared, not approved, and deferred with R3.
-- The QMD snippet-label report is prepared but unsent; upstream submission still requires separate owner approval.
-- R5 public v1.0 remains gated on its owner ruling and the recovery contract's outside-reader usability evidence.
-- Open backlog issue [#14](https://github.com/snicolello/project_recovery/issues/14) owns the missing-QMD stderr-handle leak; it is not a release acceptance or R4 pilot change.
-- Transition blocker [#16](https://github.com/snicolello/project_recovery/issues/16): blank or whitespace-only notes and collections without indexable notes break refresh under QMD 2.8.3. The starter-note write was a workaround, not a fix; implementation needs its own bounded authorization and any applicable contract ruling.
-- Transition blocker [project_recovery #17](https://github.com/snicolello/project_recovery/issues/17): authority/decision format and offline provenance. Owner notes need an approved format/acceptance workflow or a configurable alternative to the current frontmatter mapping. Local labels never prove decision acceptance. The new backlog issue authorizes no implementation.
+- The QMD snippet-label report is prepared but unsent; upstream submission requires separate owner approval.
+- R5 public v1.0 remains gated on its owner ruling and the contract's outside-reader usability evidence.
+- Follow-ups noted on PR #19, not authorized:
+  - QMD skips dot-folders and some build folders that refresh still scans; such a note fails refresh closed.
+  - The MCP client does not close its subprocess pipes.
 
 ## Blocked
 
-- Actual use / transition readiness is blocked by [#16](https://github.com/snicolello/project_recovery/issues/16) and [project_recovery #17](https://github.com/snicolello/project_recovery/issues/17), despite bounded R4 acceptance. Public publication awaits exact-file-list sign-off on private #127, and closeout awaits owner merge of PR #15. A vault move requires source-path reconfirmation before any further authorized live run. No complete-recovery or broader transition readiness is established.
+- Actual use / transition readiness is blocked by [#17](https://github.com/snicolello/project_recovery/issues/17), authority/decision format and offline provenance. Owner notes need an approved format and acceptance workflow, or a configurable alternative to the current frontmatter mapping. Local labels never prove decision acceptance. No complete-recovery or broader transition readiness is established.
 
 ## Evidence
 
 - [R2 plus #6 accepted-state revision](https://github.com/snicolello/project_recovery/commit/7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28) and [#6 acceptance record](https://github.com/snicolello/project_recovery/issues/6#issuecomment-6136067672).
-- [Stage A evidence and post-hoc interpretation](https://github.com/snicolello/project_recovery/blob/7c77b70fdfc779570a19bb60b14f9153e41db5d2/evidence/r3-stage-a/README.md), including the 8.629% figure, 37-comparison scope, fixture integrity and accepted-core regression evidence.
-- [Synthetic transition evidence](https://github.com/snicolello/project_recovery/blob/644613e4a27c4697f069f0c87c07c5951c07f9dc/evidence/transition-rehearsal/README.md), including the retained Windows rehearsal, negative guards, cross-host tests and stated limits.
-- [Run-004 aggregate evidence and limits](evidence/r4-pilot/run-004/README.md) and [aggregate results](evidence/r4-pilot/run-004/summary.json): retained measurements only; accepted R4 mechanics with false recovery completeness and both transition blockers.
-- [R4 acceptance ruling](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227) and [publication/closeout instructions](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6172661490). Private [run-004 completion/review](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6155465241) and [negative/diagnosis history](https://github.com/snicolello/stephen-project-hub/issues/127#issuecomment-6154019117) retain the detail. Raw evidence and source metadata stay local/private; this update uses no new execution.
+- [Stage A evidence](evidence/r3-stage-a/README.md), with the 8.629% figure, the 37-comparison scope and fixture integrity.
+- [Synthetic transition evidence](evidence/transition-rehearsal/README.md) and its stated limits.
+- [Run-004 aggregate evidence and limits](evidence/r4-pilot/run-004/README.md) and [aggregate results](evidence/r4-pilot/run-004/summary.json): retained measurements only.
+- [QMD 2.8.3 blank-note probe](evidence/qmd-blank-notes-2026-10-14/README.md). On PR #19, fixture hashes matched 16/16 before and after, every scenario check passed (220: the 184 from before plus 36 in S9) and the unit suite passed.

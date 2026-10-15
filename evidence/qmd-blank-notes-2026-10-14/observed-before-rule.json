@@ -1,0 +1,415 @@
+{
+  "qmd": "2.8.3",
+  "alone": {
+    "empty": {
+      "bytes_hex": "",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "empty.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "spaces": {
+      "bytes_hex": "202020",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "spaces.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "tabs-and-spaces": {
+      "bytes_hex": "2009200920",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "tabs-and-spaces.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "newline-lf": {
+      "bytes_hex": "0a",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "newline-lf.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "newlines-crlf": {
+      "bytes_hex": "0d0a0d0a",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "newlines-crlf.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "mixed-whitespace": {
+      "bytes_hex": "20090d0a200a09",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "mixed-whitespace.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "bom": {
+      "bytes_hex": "efbbbf",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "bom.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "bom-newline": {
+      "bytes_hex": "efbbbf0d0a",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "bom-newline.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "frontmatter-only": {
+      "bytes_hex": "2d2d2d0a7469746c653a2050726f62650a2d2d2d0a",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-frontmatter-only/frontmatter-only.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "frontmatter-only.md": true
+      },
+      "query_is_error": false,
+      "query_results": 1,
+      "query_error_text": null
+    },
+    "frontmatter-empty": {
+      "bytes_hex": "2d2d2d0a2d2d2d0a",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-frontmatter-empty/frontmatter-empty.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "frontmatter-empty.md": true
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "vt-ff": {
+      "bytes_hex": "0b0c",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "vt-ff.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "nbsp": {
+      "bytes_hex": "c2a0",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "nbsp.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "ideographic-space-and-line-separator": {
+      "bytes_hex": "e38080e280a8e280a9",
+      "in_status": false,
+      "status_documents": null,
+      "indexed": false,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [],
+      "multi_get_is_error": false,
+      "get_served": {
+        "ideographic-space-and-line-separator.md": false
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "nel-U+0085": {
+      "bytes_hex": "c285",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-nel-U0085/nel-U+0085.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "nel-U+0085.md": true
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "file-separator-U+001C": {
+      "bytes_hex": "1c",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-file-separator-U001C/file-separator-U+001C.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "file-separator-U+001C.md": true
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "zero-width-space-U+200B": {
+      "bytes_hex": "e2808b",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-zero-width-space-U200B/zero-width-space-U+200B.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "zero-width-space-U+200B.md": true
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    },
+    "mongolian-vowel-separator-U+180E": {
+      "bytes_hex": "e1a08e",
+      "in_status": true,
+      "status_documents": 1,
+      "indexed": true,
+      "predicate_indexable": null,
+      "predicate_agrees": false,
+      "multi_get_served": [
+        "alone-mongolian-vowel-separator-U180E/mongolian-vowel-separator-U+180E.md"
+      ],
+      "multi_get_is_error": false,
+      "get_served": {
+        "mongolian-vowel-separator-U+180E.md": true
+      },
+      "query_is_error": false,
+      "query_results": 0,
+      "query_error_text": null
+    }
+  },
+  "mixed": {
+    "in_status": true,
+    "status_documents": 7,
+    "multi_get_served": [
+      "mixed/file-separator-U+001C.md",
+      "mixed/frontmatter-empty.md",
+      "mixed/frontmatter-only.md",
+      "mixed/mongolian-vowel-separator-U+180E.md",
+      "mixed/nel-U+0085.md",
+      "mixed/real.md",
+      "mixed/zero-width-space-U+200B.md"
+    ],
+    "multi_get_is_error": false,
+    "get_served": {
+      "real.md": true,
+      "empty.md": false,
+      "spaces.md": false,
+      "tabs-and-spaces.md": false,
+      "newline-lf.md": false,
+      "newlines-crlf.md": false,
+      "mixed-whitespace.md": false,
+      "bom.md": false,
+      "bom-newline.md": false,
+      "frontmatter-only.md": true,
+      "frontmatter-empty.md": true,
+      "vt-ff.md": false,
+      "nbsp.md": false,
+      "ideographic-space-and-line-separator.md": false,
+      "nel-U+0085.md": true,
+      "file-separator-U+001C.md": true,
+      "zero-width-space-U+200B.md": true,
+      "mongolian-vowel-separator-U+180E.md": true
+    },
+    "query_is_error": false,
+    "query_results": 2,
+    "query_error_text": null,
+    "predicate_agrees": false
+  },
+  "no_markdown": {
+    "in_status": false,
+    "multi_get_served": [],
+    "multi_get_is_error": false,
+    "get_served": {},
+    "query_is_error": false,
+    "query_results": 0,
+    "query_error_text": null
+  },
+  "transitions": {
+    "1 indexed with content": {
+      "status": {
+        "one": 2,
+        "solo": 1
+      },
+      "one_served": {
+        "one/note.md": "# Note\nFirst content.\n",
+        "one/real.md": "# Real note\nObjective: probe the blank-note rule.\n"
+      },
+      "solo_served": [
+        "solo/only.md"
+      ]
+    },
+    "2 after emptying note.md and only.md, update": {
+      "status": {
+        "one": 2,
+        "solo": 1
+      },
+      "one_served": {
+        "one/note.md": "# Note\nFirst content.\n",
+        "one/real.md": "# Real note\nObjective: probe the blank-note rule.\n"
+      },
+      "solo_served": [
+        "solo/only.md"
+      ]
+    },
+    "3 after refilling note.md, update": {
+      "status": {
+        "one": 2,
+        "solo": 1
+      },
+      "one_served": {
+        "one/note.md": "# Note\nSecond content.\n",
+        "one/real.md": "# Real note\nObjective: probe the blank-note rule.\n"
+      },
+      "solo_served": [
+        "solo/only.md"
+      ]
+    },
+    "4 after deleting note.md and only.md, update": {
+      "status": {
+        "one": 1
+      },
+      "one_served": {
+        "one/real.md": "# Real note\nObjective: probe the blank-note rule.\n"
+      },
+      "solo_served": []
+    },
+    "5 fresh index of the same blank files": {
+      "status": {
+        "one": 1
+      },
+      "one_served": {
+        "one/real.md": "# Real note\nObjective: probe the blank-note rule.\n"
+      },
+      "solo_served": []
+    }
+  },
+  "predicate_disagreements": [
+    "empty",
+    "spaces",
+    "tabs-and-spaces",
+    "newline-lf",
+    "newlines-crlf",
+    "mixed-whitespace",
+    "bom",
+    "bom-newline",
+    "frontmatter-only",
+    "frontmatter-empty",
+    "vt-ff",
+    "nbsp",
+    "ideographic-space-and-line-separator",
+    "nel-U+0085",
+    "file-separator-U+001C",
+    "zero-width-space-U+200B",
+    "mongolian-vowel-separator-U+180E",
+    "mixed"
+  ]
+}

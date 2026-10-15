@@ -184,6 +184,16 @@ CONFLICT = Obj({"field": STR, "kind": STR},
                {"source": STR_OR_NULL, "span": SPAN_OR_NULL, "claimed_sha": STR_OR_NULL, "reason": STR,
                 "reference": STR_OR_NULL, "revision": STR_OR_NULL, "approved_digest": STR_OR_NULL,
                 "current_digest": STR_OR_NULL, "sources": ListOf(STR)})
+LAST_CHECKED = Obj({
+    "status": enum("historical", "unavailable", "invalid"), "reason": STR, "replayed_at": TS,
+    "bundle_sha256": STR, "statement": STR, "trust_root": STR,
+    "entries": ListOf(Obj({
+        "source": STR, "reference": STR, "revision": STR, "actor": STR, "last_checked_at": TS,
+        "approved_digest": SHA, "policy_sha256": SHA,
+        "applicability": enum("matches", "note_changed", "policy_changed", "reference_changed", "missing_source"),
+        "acceptance_effect": enum("none"),
+    }), "source"),
+})
 PACKET = Obj({
     "contract_version": STR,
     "recipe_version": STR,
@@ -205,9 +215,10 @@ PACKET = Obj({
     "conflicts": ListOf(CONFLICT),
     "unknowns": ListOf(Obj({"field": STR, "reason": STR})),
     "budget": Obj({"limit": POSITIVE, "tokenizer": STR, "tokens": COUNT, "truncated": BOOL,
-                   "omitted": Obj({"query_hits": COUNT, "other_decisions": COUNT, "decision_candidates": COUNT}),
+                   "omitted": Obj({"query_hits": COUNT, "other_decisions": COUNT, "decision_candidates": COUNT},
+                                  {"last_checked": COUNT}),
                    "within_limit": BOOL}),
-})
+}, {"last_checked": LAST_CHECKED})
 
 
 def check(packet) -> list[dict]:

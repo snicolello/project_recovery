@@ -72,6 +72,10 @@ Release R2. Product contract: `docs/recovery-contract.md` (sections 1 to 6). R2 
 
 Cited bytes are lines `start` to `end` (1-indexed, inclusive), split on LF and joined with LF without a trailing terminator; a CR before an LF stays in its line. `content_sha` is SHA-256 of exactly those bytes; QMD's ranged `get` returns the same bytes, so the served text and the file are compared directly. The canonical packet used for repeatability drops only wall-clock fields (`observed_at`, `refreshed_at`, `assembled_at`).
 
+## Last-checked decision evidence (optional)
+
+The owner-approved option 2 for #17 adds historical context with `--last-checked BUNDLE --last-checked-sha256 RETAINED_SHA256` on `assemble` and `validate`. Use `--verifier offline` for ordinary offline recovery: current acceptance remains unverified, while top-level `last_checked` preserves the original check time, reference/revision, approver, note digest and policy. Its entries have `acceptance_effect: none`. A separately retained pin checks bundle integrity; it does not prove authenticity or reveal later GitHub changes. Validation uses its own supplied history and checks historical timestamps exactly. Missing or invalid bundles yield no history; changed notes/references/policy are labelled. Optional history is budgeted and counted when omitted. Capture is a separate governed utility, never a recovery tool; all live runs remain on hold. See [`docs/last-checked-evidence.md`](../../docs/last-checked-evidence.md) for the capture/replay workflow, synthetic checks and trust limits. Packets without these options are unchanged.
+
 ## Governing record (manifest `projects.<name>.authority`)
 
 `fields.authority` cites the one line of the governing record (`record`, default the baseline note) that states its status. The manifest picks exactly one mapping (recovery contract section 4; project_recovery #17):

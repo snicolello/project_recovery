@@ -5,8 +5,10 @@
     python -I recover.py fetch    --manifest M --project P --source "atlas/Project.md" --start 9 --end 10
     python -I recover.py assemble --manifest M --project P --query "Atlas project" [--max-tokens 4000] [--out F]
                                   [--verifier offline|snapshot|gh] [--snapshots DIR]
+                                  [--last-checked BUNDLE --last-checked-sha256 RETAINED_SHA256]
     python -I recover.py validate --manifest M --packet packet.json [--hits requery|packet]
                                   [--verifier ...] [--snapshots DIR]
+                                  [--last-checked BUNDLE --last-checked-sha256 RETAINED_SHA256]
 
 Every command prints JSON on stdout. ``assemble`` prints compact JSON, the exact form
 the 4,000-token bound is counted on; the other commands print indented JSON. Only
@@ -31,6 +33,7 @@ import packet as pk  # noqa: E402
 import recipe  # noqa: E402
 import rederive  # noqa: E402
 import shape  # noqa: E402
+from last_checked import Replay  # noqa: E402
 from qmd_client import McpSession  # noqa: E402
 from receipts import SourceError, make_receipt, normalize_text, safe_resolve, validate_receipt  # noqa: E402
 
@@ -76,7 +79,12 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--verifier", choices=("offline", "snapshot", "gh"),
                            help="acceptance-record transport (default: the manifest's)")
             p.add_argument("--snapshots", type=Path, help="snapshot directory for --verifier snapshot")
+            p.add_argument("--last-checked", type=Path, help="historical capture bundle (read-only context)")
+            p.add_argument("--last-checked-sha256", help="bundle digest retained independently of the bundle/packet")
     args = ap.parse_args(argv)
+    if args.cmd in ("assemble", "validate") and bool(args.last_checked) != bool(args.last_checked_sha256):
+        ap.error("--last-checked and --last-checked-sha256 must be supplied together")
+    history = Replay(args.last_checked, args.last_checked_sha256) if getattr(args, "last_checked", None) else None
     m = recipe.load_manifest(args.manifest, args.vault_root, args.state_dir)
 
     if args.cmd == "refresh":
@@ -93,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
             result = {"result": "not_rederivable", "failures": 1, "packet": None,
                       "problems": [{"check": "input", "field": "packet", "kind": "unreadable", "reason": str(exc)}]}
         if data is not None:
-            result = rederive.validate(m, data, args.verifier, args.snapshots, args.hits)
+            result = rederive.validate(m, data, args.verifier, args.snapshots, args.hits, history=history)
         emit(result)
         return 0 if result["result"] == "equal_to_rederived" else 1
 
@@ -130,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
             emit({"text": normalize_text(cited), "receipt": receipt, "valid": ok, "reason": why})
             return 0 if ok else 1
         verifier = recipe.make_verifier(m, args.verifier, args.snapshots)
-        result = recipe.assemble(m, args.project, args.query, session, args.max_tokens, verifier)
+        result = recipe.assemble(m, args.project, args.query, session, args.max_tokens, verifier, history=history)
         if args.out:
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(pk.compact(result).decode("utf-8") + "\n", encoding="utf-8")

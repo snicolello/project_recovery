@@ -1,0 +1,12 @@
+{
+  "scope": "project_recovery #17 option 2, synthetic last-checked evidence capture and replay",
+  "baseline": "c2cd381b1a5c79e0557e978815df57955322d716",
+  "python": "3.11.9",
+  "node": "24.13.0",
+  "qmd": "2.8.3",
+  "qmd_pin": "skills/project-recovery/qmd/package-lock.json",
+  "platform": "Windows",
+  "dependencies_installed_locally": false,
+  "live_capture_or_real_vault_run": false,
+  "acceptance_inputs": "committed synthetic REST responses through mocked GhTransport.get"
+}

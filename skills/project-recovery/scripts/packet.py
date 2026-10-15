@@ -21,7 +21,7 @@ from receipts import SourceError, cited_text, read_source, validate_receipt
 
 TOKENIZER = "approx-utf8-bytes-div-2.9"
 DEFAULT_LIMIT = 4000
-VOLATILE_KEYS = frozenset({"observed_at", "refreshed_at", "assembled_at", "verified_at"})
+VOLATILE_KEYS = frozenset({"observed_at", "refreshed_at", "assembled_at", "verified_at", "replayed_at"})
 # Droppable lists, in the order they are trimmed (last element first).
 # conflicts, unknowns, the mandatory fields and accepted_decisions are never dropped.
 DROPPABLE = ("query_hits", "other_decisions", "decision_candidates")
@@ -36,6 +36,8 @@ def estimate_tokens(packet: dict) -> int:
 
 
 def _droppable_list(packet: dict, name: str) -> list:
+    if name == "last_checked":
+        return packet["last_checked"]["entries"]
     if name in ("other_decisions", "decision_candidates"):
         node = packet.get("fields", {}).get(name)
         return node["decisions"] if isinstance(node, dict) and isinstance(node.get("decisions"), list) else []
@@ -47,10 +49,11 @@ def bound(packet: dict, limit: int = DEFAULT_LIMIT, omitted_hits: int = 0) -> di
 
     ``omitted_hits`` counts query hits already left out before bounding; only validate's
     replay mode passes it (the hit count it cannot re-derive without QMD)."""
-    omitted = {name: 0 for name in DROPPABLE} | {"query_hits": omitted_hits}
+    droppable = (("last_checked",) if "last_checked" in packet else ()) + DROPPABLE
+    omitted = {name: 0 for name in droppable} | {"query_hits": omitted_hits}
     packet["budget"] = {"limit": limit, "tokenizer": TOKENIZER, "tokens": 0,
                         "truncated": omitted_hits > 0, "omitted": omitted, "within_limit": True}
-    for name in DROPPABLE:
+    for name in droppable:
         items = _droppable_list(packet, name)
         while items and estimate_tokens(packet) > limit:
             items.pop()

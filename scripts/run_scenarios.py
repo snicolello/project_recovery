@@ -1,4 +1,4 @@
-"""Run scenarios S1 to S10 against the fixture vaults and score the R1 and R2 gates.
+"""Run scenarios S1 to S11 against the fixture vaults and score the R1 and R2 gates.
 
     python -I scripts/run_scenarios.py [--runs 20]
 
@@ -10,13 +10,16 @@ fixture-hash integrity before and after, and the R3 reliance gate (project_recov
 #6): every packet re-derives to itself under validate, in both hit modes, and forged
 packets are rejected; blank notes and empty collections (S9, project_recovery #16);
 and the labelled-line authority mapping on plain STATE.md-style notes (S10,
-project_recovery #17). Exits non-zero if any gate fails.
+project_recovery #17); S11 retained last-checked evidence without offline acceptance.
+Exits non-zero if any gate fails.
 
 Offline only: acceptance records are read from the fixed synthetic snapshots in
 fixtures/github-snapshots/ or not at all. Packets and a results file are written to
 .scratch/run_scenarios/ (git-ignored). fixtures/ is never written; S4, S6, S7, S8 and
 S9 use throwaway copies under runtime-vaults/ (git-ignored); S10 reads the committed
-fixtures/authority-notes/ in place, read-only.
+fixtures/authority-notes/ in place, read-only. S11 replaces GhTransport.get with
+synthetic responses; it makes no live request and writes captures only to temporary
+derived state outside source roots.
 """
 from __future__ import annotations
 
@@ -28,7 +31,9 @@ import shutil
 import subprocess
 import sys
 import time
+import tempfile
 from pathlib import Path
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "skills" / "project-recovery" / "scripts"))
@@ -37,6 +42,8 @@ import authority as au  # noqa: E402
 import packet as pk  # noqa: E402
 import recipe  # noqa: E402
 import rederive  # noqa: E402
+import last_checked  # noqa: E402
+import shape  # noqa: E402
 from qmd_client import ALLOWED_TOOLS, McpSession  # noqa: E402
 from receipts import SourceError, safe_resolve, validate_receipt  # noqa: E402
 
@@ -1191,6 +1198,53 @@ def reliance_forgeries(g: Gates, scen, p: dict, bounded: dict) -> None:
             f"omitted {bounded['budget']['omitted']['query_hits']}; {[x['field'] for x in r['problems'][:2]]}")
 
 
+def run_s11(g: Gates, m, out_dir: Path) -> None:
+    """Synthetic REST capture plus read-only history through the real QMD read tools."""
+    snapshots = au.SnapshotTransport(FIXTURES / "github-snapshots")
+    def synthetic_get(_transport, host, path):
+        return snapshots.get(host, path)
+    with mock.patch.object(au.GhTransport, "get", synthetic_get):
+        bundle = last_checked.capture(m, "atlas")
+    g.check("last-checked", "S11 capture retains the bound GitHub approval, using synthetic GET responses",
+            len(bundle["decisions"]) == 1 and bundle["captured_via"] == "gh"
+            and bundle["decisions"][0]["source"] == "atlas/Queue Decision.md")
+    with tempfile.TemporaryDirectory(prefix="history-s11-", dir=recipe.STATE_BASE) as tmp:
+        path = Path(tmp) / "capture.json"
+        pin = last_checked.write_capture(m, bundle, path)
+        history = last_checked.Replay(path, pin)
+        with mock.patch.object(au.GhTransport, "get", side_effect=AssertionError("history used network")):
+            with McpSession(m.state_dir) as session:
+                packet = recipe.assemble(m, "atlas", "queue", session, 100000,
+                                         recipe.make_verifier(m, "offline"), history=history)
+        block = packet["last_checked"]
+        g.check("last-checked", "S11 offline accepted decisions remain unknown, with unverified candidates",
+                packet["fields"]["accepted_decisions"]["status"] == "unknown"
+                and not packet["fields"]["accepted_decisions"]["decisions"]
+                and any(d["authority_state"] == "unverified" for d in
+                        packet["fields"]["decision_candidates"]["decisions"]))
+        g.check("last-checked", "S11 historical time and trusted bundle digest retained, not refreshed by replay",
+                block["status"] == "historical" and block["bundle_sha256"] == pin
+                and block["entries"][0]["last_checked_at"] == bundle["decisions"][0]["last_checked_at"]
+                and block["entries"][0]["acceptance_effect"] == "none")
+        g.check("last-checked", "S11 history packet obeys the strict structure", not shape.check(packet))
+        g.check("unsupported", "S11 cited note spans still validate", not pk.unsupported_assertions(packet, m.vault_root))
+        for mode in rederive.MODES:
+            result = rederive.validate(m, pk.compact(packet), "offline", None, mode, history=history)
+            g.check("reliance", f"S11 history re-derives to itself ({mode})", result["result"] == "equal_to_rederived")
+            forged = copy.deepcopy(packet)
+            forged["last_checked"]["entries"][0]["last_checked_at"] = "2999-01-01T00:00:00.000Z"
+            result = rederive.validate(m, pk.compact(forged), "offline", None, mode, history=history)
+            g.check("last-checked", f"S11 forged historical verification time rejected ({mode})",
+                    result["result"] == "rejected")
+        g.check("last-checked", "S11 altered bundle fails closed against independent pin",
+                last_checked.Replay(path, "0" * 64).read(m, "atlas")["status"] == "invalid")
+        g.check("last-checked", "S11 wrong-project history never crosses scope",
+                history.read(m, "cobalt")["status"] == "invalid")
+        g.check("last-checked", "S11 missing bundle is explicitly unavailable",
+                last_checked.Replay(Path(tmp) / "absent.json", pin).read(m, "atlas")["status"] == "unavailable")
+        (out_dir / "S11-atlas-history.json").write_bytes(pk.compact(packet))
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
@@ -1245,6 +1299,7 @@ def main() -> int:
     run_s8(g, scen, scen_packets, OUT / "packets")
     run_s9(g, OUT / "packets")
     run_s10(g, OUT / "packets")
+    run_s11(g, scen, OUT / "packets")
 
     # Repeatability: identical canonical packets and ordered receipts, one rebuild midway.
     reference = {sid: (pk.digest(p), pk.ordered_receipts(p)) for sid, p in {**packets, **scen_packets}.items()}

@@ -38,7 +38,7 @@ import shape
 from qmd_client import McpSession, QmdError
 from receipts import SourceError, read_source
 
-WALL_CLOCK = frozenset({"observed_at", "assembled_at", "verified_at", "refreshed_at"})
+WALL_CLOCK = frozenset({"observed_at", "assembled_at", "verified_at", "refreshed_at", "replayed_at"})
 MAX_DIFFERENCES = 100
 MODES = ("requery", "packet")
 
@@ -57,6 +57,8 @@ GUARANTEE = {
         "for the submitter",
         "that the query was a good question to ask, or that the packet is the right one for a task",
         "that the vault or the acceptance records stay as they were after validation",
+        "GitHub authenticity or current acceptance from last-checked history: the operator supplies "
+        "the historical bundle and independent digest; a local replay cannot reveal later changes",
     ],
     "not_rederived_in_packet_mode": [
         "which query hits were selected, their order and titles, and budget.omitted.query_hits: "
@@ -279,7 +281,7 @@ def oversized_ranks(m: recipe.Manifest, packet: dict) -> list[dict]:
 
 
 def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, snapshot_dir: Path | None = None,
-             mode: str = "requery", session_factory=None) -> tuple[dict | None, list[dict]]:
+             mode: str = "requery", session_factory=None, history=None) -> tuple[dict | None, list[dict]]:
     """(re-derived packet or None, problems that prevent re-derivation). The verifier is
     built fresh from the manifest (``transport`` and ``snapshot_dir`` override it), so
     every acceptance record is read again and request counts start at zero."""
@@ -311,11 +313,11 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
         if mode == "requery":
             factory = session_factory or (lambda: McpSession(m.state_dir))
             with factory() as session:
-                return recipe.assemble(m, project, query, session, limit, verifier()), []
+                return recipe.assemble(m, project, query, session, limit, verifier(), history=history), []
         indexed = recipe.indexed_sources(record)
         hits, omitted = replay_hits(packet, proj, indexed, m.search_limit)
         with VaultSession(m, proj.collection, hits) as session:
-            first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted)
+            first = recipe.assemble(m, project, query, session, limit, verifier(), omitted_hits=omitted, history=history)
         # missing_sources and the unknowns for uncitable hits are computed before the budget
         # trims hits, so they may come from a hit the packet no longer shows. Each note those
         # traces name that the replay did not reproduce is re-cited as a hidden, already-trimmed
@@ -328,7 +330,8 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
                 for s in hidden]
         with VaultSession(m, proj.collection, hits + tail) as session:
             return recipe.assemble(m, project, query, session, limit, verifier(),
-                                   omitted_hits=max(omitted - len(tail), 0), hidden_from_rank=len(hits) + 1), []
+                                   omitted_hits=max(omitted - len(tail), 0), hidden_from_rank=len(hits) + 1,
+                                   history=history), []
     except (QmdError, OSError, recipe.RecipeError) as exc:
         hint = "; use --hits packet to replay the packet's hits without QMD" if mode == "requery" else ""
         return None, [not_rederivable(f"re-assembly failed: {exc}{hint}")]
@@ -339,7 +342,7 @@ def rederive(m: recipe.Manifest, packet: dict, transport: str | None = None, sna
 
 
 def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snapshot_dir: Path | None = None,
-             mode: str = "requery", session_factory=None) -> dict:
+             mode: str = "requery", session_factory=None, history=None) -> dict:
     """Validation result for packet bytes. ``result`` is ``equal_to_rederived`` only when the
     packet is well-formed and equals its re-derivation; ``packet`` is the re-derived packet
     (None when it could not be re-derived)."""
@@ -350,7 +353,7 @@ def validate(m: recipe.Manifest, data: bytes, transport: str | None = None, snap
         return report("not_rederivable", problems, [], m, mode, None, None)
     structure = shape.check(submitted)
     ranks = oversized_ranks(m, submitted)
-    rederived, blocked = rederive(m, submitted, transport, snapshot_dir, mode, session_factory)
+    rederived, blocked = rederive(m, submitted, transport, snapshot_dir, mode, session_factory, history)
     if rederived is None:
         return report("not_rederivable", structure + ranks + blocked, structure, m, mode, submitted, None)
     try:

@@ -21,7 +21,7 @@ As of 2026-10-14: releases R0, R1 and R2 are accepted, as is reliance gate [#6](
 - [#16](https://github.com/snicolello/project_recovery/issues/16): refresh failed under QMD 2.8.3 on a blank note or a collection with no indexable notes. The owner authorized a fix; see #16 for its status.
 - [#17](https://github.com/snicolello/project_recovery/issues/17): the authority mapping expected a YAML frontmatter field that ordinary notes may not carry. The owner chose a configurable labelled-line mapping; see #17 for its status.
 
-R5 (public v1.0) is not started. Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Current baseline: [`STATE.md`](STATE.md).
+R5 (public v1.0) is not started. Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Optional [last-checked evidence](docs/last-checked-evidence.md) retains historical approval context without establishing current acceptance offline. Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 

@@ -2,19 +2,20 @@
 
 - Project: Project Recovery (`RECOVERY`)
 - Purpose: Level-0 routing baseline for the accepted release state, current gates and one safe continuation.
-- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. [PR #19](https://github.com/snicolello/project_recovery/pull/19) fixed blank-note refresh (#16) and the stderr-handle leak (#14), and [PR #20](https://github.com/snicolello/project_recovery/pull/20) fixed the authority-format gap within [#17](https://github.com/snicolello/project_recovery/issues/17), on synthetic evidence. The owner selected option 2 for offline provenance: retain last-checked evidence as historical context, with GitHub remaining the acceptance authority. The workflow has synthetic implementation and checks; no live run or transition readiness is established. Offline accepted decisions remain unknown by design. Run-004's authority and accepted decisions remain unknown, and recovery completeness remains false.
-- As of: 2026-10-15, option 2 last-checked evidence ruling.
+- Status: R2 and reliance gate #6 remain accepted; R3 is deferred. R4 is accepted as a bounded read-only mechanics pilot. [PR #19](https://github.com/snicolello/project_recovery/pull/19) fixed blank-note refresh (#16) and the stderr-handle leak (#14). The owner accepted [#17](https://github.com/snicolello/project_recovery/issues/17)'s implementation at synthetic scope: [PR #20](https://github.com/snicolello/project_recovery/pull/20)'s authority mapping and [PR #21](https://github.com/snicolello/project_recovery/pull/21)'s option 2 last-checked evidence workflow. GitHub remains the acceptance authority; history is context and offline accepted decisions remain unknown. All live capture and recovery runs remain on hold. Actual-use and transition readiness are not established. Run-004's authority and accepted decisions remain unknown, and recovery completeness remains false.
+- As of: 2026-10-15, #17 synthetic-scope implementation acceptance.
 - Authority: Stephen (owner), through rulings on the hub coordination Epic #113. Only the owner can change acceptance or scope. The hub is private: its links below work only for the owner and owner-side agents.
 - Sources:
   - the owner rulings authorizing the [#16 fix](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662), the [#14 fix](https://github.com/snicolello/project_recovery/issues/14#issuecomment-6177400983) and the [#17 labelled-line mapping](https://github.com/snicolello/project_recovery/issues/17#issuecomment-6177401293);
   - the governing-record contract amendment and stricter frontmatter behavior accepted by the owner ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6198390697));
   - the option 2 last-checked evidence ruling, synthetic implementation authorization and live-run hold ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6201195668));
+  - the #17 synthetic-scope acceptance ruling ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6202294163)) and prepared pilot approval packet with unconfirmed private inputs and execution on hold ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6202308663));
   - the R4 acceptance ruling ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6172657227)) and the R3 deferral and predecessor waiver ([owner-only link](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6145720151)), both still in force;
   - the public evidence below.
 
   Live pilot conditions and run detail are kept in the owner's private coordination record, not here.
 - Objective: preserve accepted R2/#6 and bounded R4 mechanics evidence, the blank-note and authority-format fixes, and a truthful distinction between historical approval evidence and current acceptance under #17.
-- Next action: stop for owner review of #17's synthetic last-checked workflow and any later live-run or readiness ruling. No live run, source write or move, or new install is authorized. Any later live run needs its source path reconfirmed by the owner first.
+- Next action: owner review of the private pilot approval packet under #17, confirmation of its exact source, acceptance records, policy, storage and independent pin custody, then a separate execution ruling if desired. All live capture and recovery runs remain on hold. No source write or move, new install or readiness ruling is implied; the current source path must be reconfirmed before any later live run.
 - Read when:
   - [`PROJECT.md`](PROJECT.md): checking project identity, outcome, trust zone or scope.
   - [`docs/recovery-contract.md`](docs/recovery-contract.md): implementing or reviewing any release; this remains the product contract. Section 4 was amended on 2026-10-14 for blank notes and empty collections under the #16 ruling, and on 2026-10-15 for the governing-record mapping and stricter frontmatter behavior under the Epic #113 ruling.
@@ -27,6 +28,8 @@
 ## Current baseline
 
 The accepted implementation baseline is R2 plus reliance gate #6, recorded at [`7e73ca4`](https://github.com/snicolello/project_recovery/commit/7e73ca4b77fe68bfdafda5c5a53ef5a0e2032a28), plus merged preparation through [`54ad8b02`](https://github.com/snicolello/project_recovery/commit/54ad8b021721040130c69a953f61a07177569f11) (the run-004 implementation baseline). The accepted release position also includes R4's bounded read-only mechanics pilot. R4 acceptance changed no core code or product contract. The recovery path exposes no write, edit, move or delete tools. Fixtures remain synthetic.
+
+The owner also accepted #17's authority mapping and last-checked workflow at synthetic scope, integrated through [`ad4726a`](https://github.com/snicolello/project_recovery/commit/ad4726a591da936a554fb4fd32761270631d0d0f). This changes the accepted synthetic implementation baseline, not the release or live-readiness gates. No real-source capture or post-fix recovery evidence is added by that acceptance.
 
 PR #19 changed the accepted core under the owner's rulings on #16 and #14:
 
@@ -61,7 +64,8 @@ Recovery contract section 4 records these changes and the owner's option 2 rulin
   - Acceptance is not readiness for actual use.
 - The first live R4 attempt stopped safely at refresh, before assembly, on a blank note. PR #19 fixed that defect (#16) on synthetic evidence (probes, scenario S9, unit tests) without weakening either integrity gate. It also fixed the missing-QMD stderr-handle leak (#14).
 - Run-004 left main authority unknown because the expected frontmatter field was absent. PR #20 fixed that format gap (#17) on synthetic evidence: plain `STATE.md`-style fixtures in `fixtures/authority-notes/`, scenario S10 and unit tests.
-- Neither fix has been run against a live folder.
+- PR #21 implemented separate last-checked capture and historical replay under the owner's option 2 ruling. The owner accepted #17's implementation at synthetic scope using the retained evidence below.
+- The blank-note fix, authority mapping and last-checked workflow have not been run against a live folder.
 
 ## Pending
 
@@ -71,7 +75,7 @@ Recovery contract section 4 records these changes and the owner's option 2 rulin
   - No accepted decision offline.
   - Packet `status: complete` means generation health only.
   - No operating-system sandbox or network isolation: client enforcement and before/after source hashes are the controls.
-- [#17](https://github.com/snicolello/project_recovery/issues/17) owns the last-checked workflow and its remaining acceptance/readiness decisions. Option 2 is historical context, not an offline approval workflow. Offline decisions stay unverified candidates, and accepted decisions stay unknown. No real-source capture or replay has been run.
+- [#17](https://github.com/snicolello/project_recovery/issues/17) owns the remaining representative evidence, operator trust/freshness checks and actual-use/transition readiness decisions. Its implementation is accepted at synthetic scope. The private pilot packet proposes bounded checks but requires exact input confirmation and explicit execution approval. Option 2 is historical context, not an offline approval workflow. Offline decisions stay unverified candidates, and accepted decisions stay unknown. No real-source capture or replay has been run.
 - R3 was waived only as R4's predecessor, without acceptance. Public records omit real source, index and cache paths, note names and content.
 - Limits of the labelled mapping: the label must match the start of the line exactly (an indented, nested or differently written label is absent); a line inside a fenced code block or HTML comment never matches, and an unclosed fence or comment hides the rest of the note; a status line that runs onto a second line is cited as its first line only.
 
@@ -87,7 +91,7 @@ Recovery contract section 4 records these changes and the owner's option 2 rulin
 
 ## Blocked
 
-- The blank-note and authority-format gaps have synthetic fixes, and #17's owner-selected last-checked workflow has synthetic implementation and checks. Actual-use and transition readiness remain owner gates. Any live evidence needs a separately authorized run; all live runs remain on hold. No complete-recovery or transition readiness is established.
+- The blank-note gap has a synthetic fix, and #17's authority mapping and last-checked implementation are accepted at synthetic scope. Actual-use and transition readiness remain owner gates. Representative live recovery, genuine acceptance capture/replay and operator pin custody remain unverified. Any live evidence needs a separately authorized run; all live runs remain on hold. No complete-recovery or transition readiness is established.
 
 ## Evidence
 
@@ -97,3 +101,4 @@ Recovery contract section 4 records these changes and the owner's option 2 rulin
 - [Run-004 aggregate evidence and limits](evidence/r4-pilot/run-004/README.md) and [aggregate results](evidence/r4-pilot/run-004/summary.json): retained measurements only.
 - [QMD 2.8.3 blank-note probe](evidence/qmd-blank-notes-2026-10-14/README.md). On PR #19, fixture hashes matched 16/16 before and after, every scenario check passed (220: the 184 from before plus 36 in S9) and the unit suite passed.
 - [PR #20](https://github.com/snicolello/project_recovery/pull/20) retains the synthetic validation evidence: before/after fixture hashes, scenarios S1 to S10, unit tests and CI, including the comment-value regressions and unchanged raw receipts.
+- [PR #21](https://github.com/snicolello/project_recovery/pull/21), tested head `519505bee770057956885748092cd00de1785329`, retains the accepted synthetic evidence: 261 unit tests, OK (one expected unprivileged-symlink skip); 270 scenario checks including S11 and both validation modes; 33 targeted independent-review checks with no blocking/backlog defects; original fixture hashes 16/16 before/after and all 51 fixture files unchanged. [Ubuntu/Windows CI](https://github.com/snicolello/project_recovery/actions/runs/38801139358) passed. Capture tests substitute synthetic responses for live requests; these are retained implementation results, not live evidence or a new test run for the acceptance record.

@@ -82,6 +82,23 @@ class LastCheckedCliTests(unittest.TestCase):
                               "--query", QUERY, flag, value])
             self.assertEqual(ctx.exception.code, 2)
 
+    def test_source_change_during_history_read_is_in_the_generation_gap(self):
+        code, captured = self.capture()
+        self.assertEqual(code, 0)
+        replay = last_checked.Replay(self.bundle, captured["bundle_sha256"])
+        source = self.env.root / "cobalt/Theme Decision.md"
+        class ConcurrentEdit:
+            def read(_, m, project):
+                context = replay.read(m, project)
+                source.write_bytes(source.read_bytes() + b"\nChanged during historical replay.\n")
+                return context
+        with rederive.VaultSession(self.m, "cobalt", []) as session:
+            packet = recipe.assemble(self.m, "cobalt", QUERY, session, 100000,
+                                     recipe.make_verifier(self.m, "offline"), history=ConcurrentEdit())
+        self.assertEqual(packet["status"], "incomplete")
+        self.assertTrue(any(g["source"] == "cobalt/Theme Decision.md"
+                            and g.get("detected") == "during_assembly" for g in packet["freshness"]["generation_gap"]))
+
 
 if __name__ == "__main__":
     unittest.main()

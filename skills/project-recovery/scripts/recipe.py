@@ -765,6 +765,7 @@ def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tok
         "next_action": a.label_field("next_action"),
     }
     hits = a.query_hits(query)
+    historical_context = history.read(m, project) if history is not None else None
     # Freshness is re-checked after assembly: a source edited, or a new generation
     # recorded, while the packet was being assembled makes it incomplete, by name.
     during = [dict(g, detected="during_assembly") for g in generation_gap(m, proj, record) if g not in gap]
@@ -814,7 +815,7 @@ def assemble(m: Manifest, project: str, query: str, session: McpSession, max_tok
     out["missing_sources"] = a.missing_links(out, listing)
     if history is not None:
         # Read-only historical context is separate from every current decision result.
-        out["last_checked"] = history.read(m, project)
+        out["last_checked"] = historical_context
     if hidden_from_rank is not None:
         out["query_hits"] = [h for h in hits if h["rank"] < hidden_from_rank]
         omitted_hits += len(hits) - len(out["query_hits"])

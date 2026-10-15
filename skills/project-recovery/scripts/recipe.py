@@ -96,6 +96,16 @@ def validate_manifest(raw: dict) -> list[str]:
         for field in REQUIRED_FIELDS:
             if field not in proj.get("fields", {}):
                 errors.append(f"projects.{name}.fields: missing {field}")
+        spec = proj.get("authority")
+        if isinstance(spec, dict) and "record_label" in spec:
+            # One mapping per governing record: a label never falls back to frontmatter, and
+            # configuring both is refused rather than ranked (project_recovery #17).
+            if "record_key" in spec:
+                errors.append(f"projects.{name}.authority: record_key and record_label are exclusive; "
+                              "configure one")
+            label = spec["record_label"]
+            if not isinstance(label, str) or not label.strip():
+                errors.append(f"projects.{name}.authority.record_label must be a non-empty string")
     return errors
 
 
@@ -324,6 +334,7 @@ class Line:
 def parse_note(text: str) -> dict:
     lines = [Line(i + 1, raw.rstrip("\r")) for i, raw in enumerate(text.split("\n"))]
     front: dict[str, Line] = {}
+    front_lines: dict[str, list[Line]] = {}  # every line per key; ``front`` keeps the last
     body_start = 1
     if lines and lines[0].text == "---":
         for line in lines[1:]:
@@ -333,13 +344,26 @@ def parse_note(text: str) -> dict:
             key, sep, _ = line.text.partition(":")
             if sep:
                 front[key.strip()] = line
+                front_lines.setdefault(key.strip(), []).append(line)
     body = [ln for ln in lines if ln.number >= body_start and ln.text.strip()]
     statement = next((ln for ln in body if not ln.text.startswith("#")), None)
-    return {"front": front, "body": body, "statement": statement}
+    return {"front": front, "front_lines": front_lines, "body": body, "statement": statement}
 
 
 def front_value(line: Line) -> str:
     return line.text.partition(":")[2].strip()
+
+
+def label_lines(note: dict, label: str) -> list[Line]:
+    """The body lines of a parsed note that start with ``label``, in order. The one
+    labelled-line reader: labelled fields and approvals cite the first, a labelled
+    governing record requires exactly one."""
+    return [ln for ln in note["body"] if ln.text.startswith(label)]
+
+
+def stated_value(text: str) -> str:
+    """A cited value without surrounding whitespace, quotes, colons or emphasis markers."""
+    return text.strip().strip("*_:\"' \t")
 
 
 def shared_notes(m: "Manifest", project: str) -> dict[str, dict]:
@@ -430,12 +454,12 @@ class Assembler:
         text = self.doc(rel)
         if text is None:
             return []
+        note = parse_note(text)
         out = []
         for label in labels:
-            for line in parse_note(text)["body"]:
-                if line.text.startswith(label):
-                    out.append(self.cite(field, rel, line.number, line.number))
-                    break
+            lines = label_lines(note, label)
+            if lines:
+                out.append(self.cite(field, rel, lines[0].number, lines[0].number))
         return out
 
     def label_field(self, field: str) -> dict:
@@ -457,16 +481,47 @@ class Assembler:
             return {"status": "unknown", "reason": "source states UNKNOWN", "items": [], "evidence": items}
         return {"status": "established", "items": items}
 
+    def governing_record(self, spec: dict, rel: str, text: str | None) -> dict:
+        """The governing record's status line, under exactly one configured mapping: a
+        frontmatter key (``record_key``, default ``status``) or, when ``record_label`` is
+        set, a body line starting with that label, read by ``label_lines``. A label never
+        falls back to frontmatter (project_recovery #17). Fails closed: no matching line,
+        more than one, or a cited value that is empty or starts with UNKNOWN leaves
+        authority unknown; matching lines that do not establish it are kept as evidence."""
+        if text is None:
+            return self.node("authority", [], "no governing record found")
+        note = parse_note(text)
+        label = spec.get("record_label")
+        if label is not None:
+            lines, mapping = label_lines(note, label), f"line labelled {label!r}"
+            absent = f"no {mapping} in the governing record"
+        else:
+            key = spec.get("record_key", "status")
+            lines, mapping, absent = note["front_lines"].get(key, []), f"frontmatter key {key!r}", \
+                "no governing record found"
+        if not lines:
+            return self.node("authority", [], absent)
+        items = [i for i in (self.cite("authority", rel, ln.number, ln.number) for ln in lines) if i]
+        if len(lines) > 1:
+            reason = f"{len(lines)} lines match the governing record's {mapping}; ambiguous, not resolved"
+            self.conflicts.append({"field": "authority", "kind": "authority_ambiguous",
+                                   "source": self.proj.source(rel), "reason": reason})
+        elif not items:
+            return self.node("authority", [], "the governing record's line failed receipt validation")
+        else:
+            cited = items[0]["text"]
+            value = stated_value(cited[len(label):] if label is not None else front_value(Line(0, cited)))
+            if value and not value.upper().startswith("UNKNOWN"):
+                return {"status": "established", "items": items}
+            reason = "source states UNKNOWN" if value else f"the governing record's {mapping} states no value"
+        self.unknowns.append({"field": "authority", "reason": reason})
+        return {"status": "unknown", "reason": reason, "items": [], "evidence": items}
+
     def authority(self) -> dict:
         spec = self.proj.authority
         rel = spec.get("record", self.proj.baseline_note)
         text = self.doc(rel)
-        items = []
-        if text is not None:
-            line = parse_note(text)["front"].get(spec.get("record_key", "status"))
-            if line:
-                items.append(self.cite("authority", rel, line.number, line.number))
-        node = self.node("authority", items, "no governing record found")
+        node = self.governing_record(spec, rel, text)
         node["authority_state"] = "local_only"
         node["verification"] = AUTHORITY_NOTE
         approver_items = self.labelled("authority.approver", rel, spec.get("approver_labels", [])) if text else []

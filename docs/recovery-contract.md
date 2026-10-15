@@ -1,6 +1,6 @@
 # Recovery contract
 
-Version 0.1, release R0, 2026-10-11. Governs every later release. Changes to this contract are owner rulings recorded on [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Amended 2026-10-14 under the owner ruling on [project_recovery #16](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662): blank notes and empty collections (section 4).
+Version 0.1, release R0, 2026-10-11. Governs every later release. Changes to this contract are owner rulings recorded on [stephen-project-hub#113](https://github.com/snicolello/stephen-project-hub/issues/113). Amended 2026-10-14 under the owner ruling on [project_recovery #16](https://github.com/snicolello/project_recovery/issues/16#issuecomment-6177400662): blank notes and empty collections (section 4). Amended 2026-10-14 under the owner ruling on [project_recovery #17](https://github.com/snicolello/project_recovery/issues/17#issuecomment-6177401293): the governing-record mapping (section 4).
 
 This contract derives from two existing records: the hub's fresh-session recovery protocol (six acceptance items for a reader with no conversation history) and the Phase 0 MVP (minimum viable product) acceptance criteria in `discovery/mvp-acceptance-criteria.md`. Where they differ, this document governs.
 
@@ -50,6 +50,8 @@ The cited text must validate against `content_sha` from the same bytes that were
 | `superseded` | A later verified record replaces it. |
 
 Verification requests run serially. Concurrent GitHub GraphQL requests are an untested cause of earlier failures and are avoided by design.
+
+**Governing record.** The `authority` field cites the one line of the configured governing record that states its status, under exactly one configured mapping: a frontmatter key, or a body line starting with a configured label (for example `- **Status:**`). Configuring both is refused, and a label never falls back to frontmatter. No matching line, more than one, or a cited value that is empty or starts with `UNKNOWN` makes `authority` `unknown`; matching lines are kept as evidence, and more than one is also a conflict. The governing record is a local claim (`local_only`): reading it never establishes a decision's acceptance.
 
 **Freshness.** Freshness is eventually consistent and is stated, not assumed. The packet separates `file_mtime`, `observed_at`, `generation` and `verified_at`. Before assembly the recipe refreshes the index and records the generation; a read whose generation differs from the one recorded is `incomplete`, and the packet says so. Byte equality means integrity, not currency or approval. Both checks are the orchestrator's responsibility at session start.
 

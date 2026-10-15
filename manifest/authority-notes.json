@@ -1,0 +1,272 @@
+{
+  "manifest_version": "0.1",
+  "name": "authority-notes",
+  "description": "Manifest for the synthetic authority-note fixtures (project_recovery #17). Delta, Echo, Foxtrot and Golf are plain STATE.md-style notes whose governing status is a '- **Status:**' line (authority.record_label); Hotel and India keep the frontmatter mapping (authority.record_key). Paths are relative to this file; source locators are relative to the vault root.",
+  "vault": {
+    "root": "../fixtures/authority-notes"
+  },
+  "index": {
+    "engine": "qmd",
+    "version": "2.8.3",
+    "search": {
+      "type": "lex",
+      "rerank": false,
+      "limit": 10
+    },
+    "embeddings": false
+  },
+  "budget": {
+    "max_tokens": 4000,
+    "tokenizer": "approx-utf8-bytes-div-2.9"
+  },
+  "authority_policy": {
+    "local_claims": "decision_candidates",
+    "verifier": {
+      "transport": "offline",
+      "serial": true,
+      "snapshot_dir": "../fixtures/github-snapshots"
+    },
+    "acceptance_records": [
+      {
+        "kind": "pull_merge",
+        "rule": "a merged pull request; bound to a decision per authority.verify_decision",
+        "body_marker": "ACCEPTED:"
+      },
+      {
+        "kind": "pull_review",
+        "rule": "an approving pull request review; bound to a decision per authority.verify_decision",
+        "body_marker": "ACCEPTED:"
+      },
+      {
+        "kind": "issue_comment",
+        "rule": "an issue comment; bound to a decision per authority.verify_decision",
+        "body_marker": "ACCEPTED:"
+      }
+    ],
+    "repositories": [
+      {
+        "host": "github.example.test",
+        "repo": "portfolio/delta",
+        "projects": [
+          "delta"
+        ],
+        "approvers": [
+          "fixture-owner"
+        ]
+      }
+    ],
+    "reference": {
+      "frontmatter_key": "acceptance_record",
+      "body_labels": [
+        "Authority fixture:"
+      ]
+    },
+    "binding": {
+      "frontmatter_key": "source_revision",
+      "record_field": "subject_revision"
+    },
+    "note": "Decision acceptance is unchanged by the labelled-line authority mapping (project_recovery #17): a note with status accepted is a decision candidate until a cited acceptance record is bound to it under authority.verify_decision. No snapshot is captured for the Delta record, so it is unavailable under every transport the gates use."
+  },
+  "projects": {
+    "delta": {
+      "collection": "delta",
+      "root": "delta",
+      "baseline_note": "STATE.md",
+      "fields": {
+        "objective": [
+          "- **Objective:**"
+        ],
+        "current_state": [
+          "- **Current state:**"
+        ],
+        "blockers": [
+          "- **Blocker:**"
+        ],
+        "next_action": [
+          "- **Next action:**"
+        ],
+        "accepted_decisions": [
+          "- **Accepted decision:**"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "STATE.md",
+        "record_label": "- **Status:**",
+        "approver_labels": [
+          "- **Authority:**"
+        ],
+        "approvals": []
+      }
+    },
+    "echo": {
+      "collection": "echo",
+      "root": "echo",
+      "baseline_note": "STATE.md",
+      "fields": {
+        "objective": [
+          "- **Objective:**"
+        ],
+        "current_state": [
+          "- **Current state:**"
+        ],
+        "blockers": [
+          "- **Blocker:**"
+        ],
+        "next_action": [
+          "- **Next action:**"
+        ],
+        "accepted_decisions": [
+          "- **Accepted decision:**"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "STATE.md",
+        "record_label": "- **Status:**",
+        "approver_labels": [],
+        "approvals": []
+      }
+    },
+    "foxtrot": {
+      "collection": "foxtrot",
+      "root": "foxtrot",
+      "baseline_note": "STATE.md",
+      "fields": {
+        "objective": [
+          "- **Objective:**"
+        ],
+        "current_state": [
+          "- **Current state:**"
+        ],
+        "blockers": [
+          "- **Blocker:**"
+        ],
+        "next_action": [
+          "- **Next action:**"
+        ],
+        "accepted_decisions": [
+          "- **Accepted decision:**"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "STATE.md",
+        "record_label": "- **Status:**",
+        "approver_labels": [],
+        "approvals": []
+      }
+    },
+    "golf": {
+      "collection": "golf",
+      "root": "golf",
+      "baseline_note": "STATE.md",
+      "fields": {
+        "objective": [
+          "- **Objective:**"
+        ],
+        "current_state": [
+          "- **Current state:**"
+        ],
+        "blockers": [
+          "- **Blocker:**"
+        ],
+        "next_action": [
+          "- **Next action:**"
+        ],
+        "accepted_decisions": [
+          "- **Accepted decision:**"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "STATE.md",
+        "record_label": "- **Status:**",
+        "approver_labels": [],
+        "approvals": []
+      }
+    },
+    "hotel": {
+      "collection": "hotel",
+      "root": "hotel",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": [
+          "Objective:"
+        ],
+        "current_state": [
+          "Current state:"
+        ],
+        "blockers": [
+          "Blocker:"
+        ],
+        "next_action": [
+          "Next authorized action:"
+        ],
+        "accepted_decisions": [
+          "Accepted decision:"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": []
+      }
+    },
+    "india": {
+      "collection": "india",
+      "root": "india",
+      "baseline_note": "Project.md",
+      "fields": {
+        "objective": [
+          "Objective:"
+        ],
+        "current_state": [
+          "Current state:"
+        ],
+        "blockers": [
+          "Blocker:"
+        ],
+        "next_action": [
+          "Next authorized action:"
+        ],
+        "accepted_decisions": [
+          "Accepted decision:"
+        ]
+      },
+      "decision_statuses": [
+        "accepted",
+        "draft",
+        "superseded"
+      ],
+      "authority": {
+        "record": "Project.md",
+        "record_key": "status",
+        "approver_labels": [],
+        "approvals": []
+      }
+    }
+  }
+}

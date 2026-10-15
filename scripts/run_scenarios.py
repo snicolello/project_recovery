@@ -784,6 +784,13 @@ def run_s10(g: Gates, out_dir: Path) -> None:
         if name != "delta":  # scored above
             g.check("unsupported", f"S10-{name}", not pk.unsupported_assertions(p, m.vault_root),
                     "0 unsupported material assertions")
+    delta_bytes = (m.vault_root / "delta" / "STATE.md").read_bytes()
+    delta = packets["S10-delta"]["fields"]["authority"]
+    g.check("authority-label", "S10-delta: fenced and commented status examples ignored, not ambiguous",
+            b"```markdown\n- **Status:**" in delta_bytes and b"<!-- - **Status:**" in delta_bytes
+            and [i["receipt"]["span"] for i in delta["items"]] == [[4, 4]]
+            and not any(c["kind"] == "authority_ambiguous" for c in packets["S10-delta"]["conflicts"]),
+            f"{delta['status']}, cited spans {[i['receipt']['span'] for i in delta['items']]}")
     foxtrot = packets["S10-foxtrot"]
     g.check("authority-label", "S10-foxtrot: a configured label never falls back to frontmatter status",
             not any(r["source"] == "foxtrot/STATE.md" and r["span"] == [3, 3] for r in pk.ordered_receipts(foxtrot)),

@@ -121,12 +121,13 @@
           "decision_statuses": {"type": "array", "items": {"type": "string"}, "description": "Frontmatter status values that mark a note as a decision source. 'accepted' makes a decision candidate (accepted_decisions only after verification); others go to other_decisions."},
           "authority": {
             "type": "object",
-            "description": "The governing record is read under exactly one mapping: a frontmatter key (record_key) or a labelled body line (record_label). Configuring both is refused; a label never falls back to frontmatter. No matching line, more than one, or a value that is empty or starts with UNKNOWN leaves authority unknown (project_recovery #17).",
+            "description": "The governing record is read under exactly one mapping: a frontmatter key (record_key) or a labelled body line (record_label). Configuring both, or any other key, is refused; a label never falls back to frontmatter. No matching line, more than one, or a value that is empty or starts with UNKNOWN leaves authority unknown (project_recovery #17).",
             "not": {"required": ["record_key", "record_label"]},
+            "additionalProperties": false,
             "properties": {
               "record": {"type": "string", "description": "Governing record, relative to the project root."},
-              "record_key": {"type": "string", "default": "status", "description": "Frontmatter key whose line states the governing record's status. Used when record_label is absent."},
-              "record_label": {"type": "string", "minLength": 1, "description": "Line prefix, for example '- **Status:**': the one body line starting with it states the governing record's status, cited verbatim with a receipt."},
+              "record_key": {"type": "string", "pattern": "\\S", "default": "status", "description": "Frontmatter key whose line states the governing record's status. Used when record_label is absent."},
+              "record_label": {"type": "string", "pattern": "\\S", "description": "Line prefix, for example '- **Status:**': the one body line starting with it states the governing record's status, cited verbatim with a receipt."},
               "approver_labels": {"type": "array", "items": {"type": "string"}},
               "approvals": {
                 "type": "array",

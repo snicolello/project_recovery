@@ -74,6 +74,7 @@ class Manifest:
 
 
 REQUIRED_FIELDS = ("objective", "current_state", "blockers", "next_action", "accepted_decisions")
+AUTHORITY_KEYS = frozenset({"record", "record_key", "record_label", "approver_labels", "approvals"})
 
 
 def validate_manifest(raw: dict) -> list[str]:
@@ -97,15 +98,19 @@ def validate_manifest(raw: dict) -> list[str]:
             if field not in proj.get("fields", {}):
                 errors.append(f"projects.{name}.fields: missing {field}")
         spec = proj.get("authority")
-        if isinstance(spec, dict) and "record_label" in spec:
-            # One mapping per governing record: a label never falls back to frontmatter, and
-            # configuring both is refused rather than ranked (project_recovery #17).
-            if "record_key" in spec:
-                errors.append(f"projects.{name}.authority: record_key and record_label are exclusive; "
-                              "configure one")
-            label = spec["record_label"]
-            if not isinstance(label, str) or not label.strip():
-                errors.append(f"projects.{name}.authority.record_label must be a non-empty string")
+        if not isinstance(spec, dict):
+            continue
+        # A misspelt key must never fall back silently to the frontmatter ``status`` default.
+        extra = sorted(set(spec) - AUTHORITY_KEYS)
+        if extra:
+            errors.append(f"projects.{name}.authority: unknown key(s) {extra}")
+        # One mapping per governing record: a label never falls back to frontmatter, and
+        # configuring both is refused rather than ranked (project_recovery #17).
+        if "record_key" in spec and "record_label" in spec:
+            errors.append(f"projects.{name}.authority: record_key and record_label are exclusive; configure one")
+        for key in ("record_key", "record_label"):
+            if key in spec and (not isinstance(spec[key], str) or not spec[key].strip()):
+                errors.append(f"projects.{name}.authority.{key} must be a non-empty string")
     return errors
 
 
@@ -347,7 +352,19 @@ def parse_note(text: str) -> dict:
                 front_lines.setdefault(key.strip(), []).append(line)
     body = [ln for ln in lines if ln.number >= body_start and ln.text.strip()]
     statement = next((ln for ln in body if not ln.text.startswith("#")), None)
-    return {"front": front, "front_lines": front_lines, "body": body, "statement": statement}
+    return {"front": front, "front_lines": front_lines, "body": body, "statement": statement,
+            "visible": visible_lines(text)}
+
+
+def visible_lines(text: str) -> list[str]:
+    """Each line of ``text`` with fenced code blocks and HTML comments blanked to spaces, so
+    line numbers are kept. The same patterns ``authority.approval_markers`` strips, applied in
+    the same order (fences, then comments); an unclosed fence or comment blanks the rest."""
+    plain = text.replace("\r\n", "\n")
+
+    def blank(m: re.Match) -> str:
+        return re.sub(r"[^\n]", " ", m.group(0))
+    return au.HTML_COMMENT.sub(blank, au.FENCE.sub(blank, plain)).split("\n")
 
 
 def front_value(line: Line) -> str:
@@ -355,15 +372,21 @@ def front_value(line: Line) -> str:
 
 
 def label_lines(note: dict, label: str) -> list[Line]:
-    """The body lines of a parsed note that start with ``label``, in order. The one
-    labelled-line reader: labelled fields and approvals cite the first, a labelled
-    governing record requires exactly one."""
-    return [ln for ln in note["body"] if ln.text.startswith(label)]
+    """The body lines of a parsed note that start with ``label``, in order, outside fenced
+    code blocks and HTML comments (an example or commented-out line states nothing). The
+    one labelled-line reader: labelled fields and approvals cite the first, a labelled
+    governing record requires exactly one. The raw line is what gets cited."""
+    return [ln for ln in note["body"] if note["visible"][ln.number - 1].startswith(label)]
 
 
 def stated_value(text: str) -> str:
-    """A cited value without surrounding whitespace, quotes, colons or emphasis markers."""
-    return text.strip().strip("*_:\"' \t")
+    """A cited value without surrounding whitespace, quotes, backticks, colons or emphasis
+    markers."""
+    return text.strip().strip("*_:\"'` \t")
+
+
+def states_unknown(text: str) -> bool:
+    return stated_value(text).upper().startswith("UNKNOWN")
 
 
 def shared_notes(m: "Manifest", project: str) -> dict[str, dict]:
@@ -475,8 +498,7 @@ class Assembler:
         items = [i for i in self.labelled(path, rel, [spec["label"]]) if i]
         if not items:
             return self.node(path, [], f"no line labelled {spec['label']!r}")
-        remainder = items[0]["text"][len(spec["label"]):].strip()
-        if remainder.upper().startswith("UNKNOWN"):
+        if states_unknown(items[0]["text"][len(spec["label"]):]):
             self.unknowns.append({"field": path, "reason": "source states UNKNOWN"})
             return {"status": "unknown", "reason": "source states UNKNOWN", "items": [], "evidence": items}
         return {"status": "established", "items": items}
@@ -511,7 +533,7 @@ class Assembler:
         else:
             cited = items[0]["text"]
             value = stated_value(cited[len(label):] if label is not None else front_value(Line(0, cited)))
-            if value and not value.upper().startswith("UNKNOWN"):
+            if value and not states_unknown(value):
                 return {"status": "established", "items": items}
             reason = "source states UNKNOWN" if value else f"the governing record's {mapping} states no value"
         self.unknowns.append({"field": "authority", "reason": reason})

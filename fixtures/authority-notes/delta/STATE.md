@@ -13,3 +13,11 @@
 
 - Earlier status lines are replaced in place, not appended.
 - The owner approved the export plan in chat. This sentence is local prose, not an acceptance record.
+
+## Template for the next update
+
+```markdown
+- **Status:** <one line, replaced in place>
+```
+
+<!-- - **Status:** Pilot pending (replaced by the line above). -->

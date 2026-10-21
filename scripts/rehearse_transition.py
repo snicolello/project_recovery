@@ -251,6 +251,9 @@ def poisoned_advertisement_probe(output: Path) -> dict:
         def start(self):
             return None
 
+        def join(self, timeout=None):
+            return None
+
     class PoisonedSession(McpSession):
         def _rpc(self, method: str, params: dict | None = None) -> dict:
             if method == "tools/list":

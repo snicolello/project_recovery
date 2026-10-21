@@ -113,6 +113,7 @@ class McpSession:
         self._seq = 0
         self._responses: queue.Queue = queue.Queue()
         self._proc: subprocess.Popen | None = None
+        self._reader: threading.Thread | None = None
         self._stderr = None
 
     def __enter__(self) -> "McpSession":
@@ -127,7 +128,9 @@ class McpSession:
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._stderr,
                 text=True, encoding="utf-8", errors="replace", bufsize=1,
             )
-            threading.Thread(target=self._read, args=(self._proc.stdout,), daemon=True).start()
+            reader = threading.Thread(target=self._read, args=(self._proc.stdout,), daemon=True)
+            reader.start()
+            self._reader = reader
             self._rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "capabilities": {},
                                      "clientInfo": {"name": "project-recovery", "version": "0.1"}})
             self._send({"jsonrpc": "2.0", "method": "notifications/initialized"})
@@ -147,7 +150,7 @@ class McpSession:
         self.close()
 
     def close(self) -> None:
-        """Stop the server and close the stderr log; the log is closed even if stopping fails."""
+        """Stop the server, then release its pipes and the stderr log, each even if an earlier step fails."""
         try:
             if self._proc is not None:
                 proc, self._proc = self._proc, None
@@ -159,18 +162,37 @@ class McpSession:
                 except OSError:
                     proc.kill()  # terminate failed: still try to stop it, then report why
                     raise
+                finally:
+                    self._close_pipes(proc)
         finally:
             if self._stderr is not None:
                 stderr, self._stderr = self._stderr, None
                 stderr.close()
 
+    def _close_pipes(self, proc: subprocess.Popen) -> None:
+        # project_recovery #25. The reader thread owns stdout and closes it at end of file:
+        # closing it here could block on, or break, a read in progress.
+        reader, self._reader = self._reader, None
+        try:
+            if proc.stdin is not None:
+                try:
+                    proc.stdin.close()
+                except BrokenPipeError:
+                    pass  # the server has gone; as in subprocess.Popen.__exit__
+        finally:
+            if reader is not None:
+                reader.join(timeout=5)
+            elif proc.stdout is not None:
+                proc.stdout.close()  # no reader was started
+
     def _read(self, stdout) -> None:
         # The pipe is passed in: close() may clear self._proc before this thread first runs.
-        for line in stdout:
-            try:
-                self._responses.put(json.loads(line))
-            except json.JSONDecodeError:
-                continue
+        with stdout:
+            for line in stdout:
+                try:
+                    self._responses.put(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
 
     def _send(self, msg: dict) -> None:
         assert self._proc is not None and self._proc.stdin is not None

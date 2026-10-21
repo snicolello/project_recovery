@@ -197,12 +197,13 @@ class SessionStartTests(unittest.TestCase):
 
     def test_server_exiting_mid_session_closes_cleanly(self):
         started = self.track_popen()
-        session = qmd_client.McpSession(self.state, timeout=2)
+        session = qmd_client.McpSession(self.state, timeout=20)
         with mock.patch.object(qmd_client, "_command", return_value=self.fake_server(
                 sorted(qmd_client.ALLOWED_TOOLS), "exit-on-call")), \
                 warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always", ResourceWarning)
             with session as s:
+                s.timeout = 1  # only the call the server never answers should wait briefly
                 with self.assertRaisesRegex(qmd_client.QmdError, "timeout waiting for tools/call"):
                     s.status()  # the server exits instead of answering
                 [proc] = started

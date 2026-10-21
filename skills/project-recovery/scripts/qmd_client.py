@@ -13,6 +13,7 @@ Nothing here exposes write, edit, move, delete or shell capability to a caller.
 """
 from __future__ import annotations
 
+import errno
 import json
 import os
 import queue
@@ -171,14 +172,18 @@ class McpSession:
 
     def _close_pipes(self, proc: subprocess.Popen) -> None:
         # project_recovery #25. The reader thread owns stdout and closes it at end of file:
-        # closing it here could block on, or break, a read in progress.
+        # closing it here could block on, or break, a read in progress. If the server cannot
+        # be stopped, stdout stays open until the reader reaches end of file.
         reader, self._reader = self._reader, None
         try:
             if proc.stdin is not None:
                 try:
-                    proc.stdin.close()
+                    proc.stdin.close()  # released even when the final flush fails
                 except BrokenPipeError:
-                    pass  # the server has gone; as in subprocess.Popen.__exit__
+                    pass  # the server has gone, as subprocess.Popen._stdin_write allows
+                except OSError as exc:
+                    if exc.errno != errno.EINVAL:  # Windows reports a gone server as EINVAL
+                        raise
         finally:
             if reader is not None:
                 reader.join(timeout=5)

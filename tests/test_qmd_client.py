@@ -6,6 +6,7 @@ Run: python -I -m unittest discover -s tests
 """
 from __future__ import annotations
 
+import errno
 import gc
 import io
 import sys
@@ -31,6 +32,8 @@ for line in sys.stdin:
         result = {"protocolVersion": "2025-11-25", "capabilities": {}, "serverInfo": {"name": "fake"}}
     elif msg["method"] == "tools/list":
         result = {"tools": [{"name": n} for n in tools]}
+    elif "exit-on-call" in sys.argv[2:]:
+        break
     else:
         result = {"structuredContent": {"collections": []}}
     print(json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": result}), flush=True)
@@ -94,10 +97,10 @@ class SessionStartTests(unittest.TestCase):
         proc.stdout = io.StringIO("")
         return proc
 
-    def fake_server(self, tools: list[str]) -> list[str]:
+    def fake_server(self, tools: list[str], *flags: str) -> list[str]:
         script = Path(self.tmp.name) / "fake_mcp.py"
         script.write_text(FAKE_SERVER, encoding="utf-8")
-        return [sys.executable, "-I", str(script), ",".join(tools)]
+        return [sys.executable, "-I", str(script), ",".join(tools), *flags]
 
     def test_absent_qmd_raises_original_error_and_leaves_no_handle(self):
         session = qmd_client.McpSession(self.state)
@@ -173,21 +176,45 @@ class SessionStartTests(unittest.TestCase):
         self.assert_pipes_closed(proc)
         self.assert_no_open_handle(session)
 
-    def test_broken_stdin_on_close_is_not_an_error(self):
-        proc = self.fake_proc()
-        proc.stdin = mock.Mock()
-        proc.stdin.close.side_effect = BrokenPipeError("server gone")
+    def test_gone_server_stdin_on_close_is_not_an_error(self):
         tools = {"tools": [{"name": n} for n in sorted(qmd_client.ALLOWED_TOOLS)]}
-        session = qmd_client.McpSession(self.state)
-        with mock.patch.object(qmd_client, "_command", return_value=[sys.executable]), \
-                mock.patch.object(qmd_client.subprocess, "Popen", return_value=proc), \
-                mock.patch.object(qmd_client.McpSession, "_rpc", return_value=tools), \
-                mock.patch.object(qmd_client.McpSession, "_send"):
-            with session:
-                pass
-        proc.stdin.close.assert_called_once()
-        self.assertTrue(proc.stdout.closed)
-        self.assert_no_open_handle(session)
+        # POSIX reports a gone server as a broken pipe, Windows as EINVAL.
+        for gone in (BrokenPipeError("server gone"), OSError(errno.EINVAL, "Invalid argument")):
+            with self.subTest(gone=gone):
+                proc = self.fake_proc()
+                proc.stdin = mock.Mock()
+                proc.stdin.close.side_effect = gone
+                session = qmd_client.McpSession(self.state)
+                with mock.patch.object(qmd_client, "_command", return_value=[sys.executable]), \
+                        mock.patch.object(qmd_client.subprocess, "Popen", return_value=proc), \
+                        mock.patch.object(qmd_client.McpSession, "_rpc", return_value=tools), \
+                        mock.patch.object(qmd_client.McpSession, "_send"):
+                    with session:
+                        pass
+                proc.stdin.close.assert_called_once()
+                self.assertTrue(proc.stdout.closed)
+                self.assert_no_open_handle(session)
+
+    def test_server_exiting_mid_session_closes_cleanly(self):
+        started = self.track_popen()
+        session = qmd_client.McpSession(self.state, timeout=2)
+        with mock.patch.object(qmd_client, "_command", return_value=self.fake_server(
+                sorted(qmd_client.ALLOWED_TOOLS), "exit-on-call")), \
+                warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", ResourceWarning)
+            with session as s:
+                with self.assertRaisesRegex(qmd_client.QmdError, "timeout waiting for tools/call"):
+                    s.status()  # the server exits instead of answering
+                [proc] = started
+                proc.wait(timeout=10)
+                with self.assertRaises(OSError):  # writing to the gone server fails
+                    s.status()
+            self.assert_no_open_handle(session)
+            self.assert_pipes_closed(proc)
+            del proc, s
+            started.clear()
+            gc.collect()
+        self.assert_no_resource_warning(caught)
 
     def test_close_kills_when_terminate_fails_and_still_closes_the_log(self):
         proc = mock.Mock()

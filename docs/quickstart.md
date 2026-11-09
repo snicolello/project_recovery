@@ -1,6 +1,8 @@
-# Quickstart (draft, release R2, Windows)
+# Quickstart (Windows)
 
-Reproduce the R2 result: recover the synthetic Atlas, Beacon and Cobalt projects through QMD, see a decision move from candidate to accepted only when its acceptance record is verified, and pass scenarios S1 to S11. About ten minutes on Windows. Linux instructions arrive with release R5.
+Reproduce the accepted synthetic result: recover the synthetic Atlas, Beacon and Cobalt projects through QMD, see a decision move from candidate to accepted only when its acceptance record is verified, and pass scenarios S1 to S11. About ten minutes on Windows.
+
+The walkthrough is written for Windows PowerShell. CI runs the commands in steps 3, 4 and 6 on Ubuntu as well as Windows on every push, but a tested Linux walkthrough and the outside-reader usability check are part of release R5.
 
 Everything stays inside the clone. QMD is installed into the git-ignored `qmd-runtime/`; its index lives in the git-ignored `.qmd/`; scenarios S4, S6, S7, S8 and S9 edit throwaway copies in the git-ignored `runtime-vaults/`, and S10 only reads `fixtures/authority-notes/`. Nothing is installed globally, no hooks are added, no model is downloaded, and `fixtures/` is never written. Acceptance records are read from fixed synthetic snapshots or not at all; only the optional step 7 reads GitHub.
 

@@ -6,6 +6,37 @@ Recover a project's governing state from Markdown notes and GitHub, read-only, w
 
 A fresh agent session that resumes an interrupted project needs five things: the objective, the accepted decisions, the current state, the blockers, and the next authorized action. Searching notes is only part of that job. This project defines the recovery contract, ships synthetic fixtures and scenarios to test it, and builds a thin verification and assembly layer over an existing retrieval engine ([QMD](https://github.com/tobi/qmd)) rather than a new one.
 
+## Example
+
+Given a folder of ordinary project notes, the recipe returns one JSON packet. Every recovered line carries a receipt (source file, line span, content hash), and anything the notes do not establish is reported as `unknown` instead of being guessed. Abridged from the packet's `fields` for the synthetic Atlas project (hashes shortened):
+
+```json
+{
+  "objective": {
+    "status": "established",
+    "items": [{
+      "text": "Objective: Build an offline field-report queue for one laptop.",
+      "receipt": { "source": "atlas/Project.md", "span": [9, 9], "content_sha": "480098ea...", "generation": "qmd-2.8.3:d3096a01a1830271" }
+    }]
+  },
+  "accepted_decisions": {
+    "status": "unknown",
+    "basis": "verified acceptance records only",
+    "reason": "no decision has verified acceptance evidence; 2 candidate(s): not_referenced 1, unavailable 1"
+  },
+  "decision_candidates": {
+    "decisions": [{
+      "title": "Queue Decision",
+      "local_status": "accepted",
+      "authority_state": "unverified",
+      "verification": { "transport": "offline", "result": "unavailable" }
+    }]
+  }
+}
+```
+
+The note says the decision is accepted, but offline that is only a claim, so it stays a candidate. Run the same command with the acceptance record available and the decision moves to `accepted_decisions` as `verified`, bound to the SHA-256 of the note's exact bytes. [`docs/quickstart.md`](docs/quickstart.md) walks through both runs in about ten minutes.
+
 ## What this demonstrates
 
 - **A read-only recovery path.** The recipe exposes read tools only: no write, edit, move, delete or shell capability. Changes to notes happen outside it, through ordinary governed git and filesystem actions. The scenario suite checks that every fixture note hashes identically before and after it runs.
@@ -16,12 +47,18 @@ A fresh agent session that resumes an interrupted project needs five things: the
 
 ## Status
 
-As of 2026-10-18: releases R0, R1 and R2 are accepted, as is reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) (the check that makes `validate` strong enough to rely on a packet received from elsewhere). R3, the Librarian, is deferred without acceptance. R4 is accepted as a bounded, read-only mechanics pilot: one live run on one owner-selected folder showed that refresh, assembly and validation work outside the fixtures. It does not show that recovery is complete or that the project is ready for real use. At R4 acceptance, real use was blocked by two issues; each issue has its current status:
+As of 2026-10-21. In short: the recipe works end to end and passes every gate on synthetic fixtures, and it has had one bounded live run. It is not yet established as ready for real use.
 
-- [#16](https://github.com/snicolello/project_recovery/issues/16): refresh failed under QMD 2.8.3 on a blank note or a collection with no indexable notes. The owner authorized a fix; see #16 for its status.
-- [#17](https://github.com/snicolello/project_recovery/issues/17): the authority mapping expected a YAML frontmatter field that ordinary notes may not carry. The owner chose a configurable labelled-line mapping; see #17 for its status.
+- **Accepted:** releases R0, R1 and R2, and reliance gate [#6](https://github.com/snicolello/project_recovery/issues/6) (the check that makes `validate` strong enough to rely on a packet received from elsewhere).
+- **Accepted as a bounded pilot:** R4. One live, read-only run on one owner-selected folder showed that refresh, assembly and validation work outside the fixtures. It does not show that recovery is complete.
+- **Deferred without acceptance:** R3, the Librarian.
+- **Fixed since the pilot, on synthetic evidence only:** the pilot found two blockers to real use, and both are now closed as completed at synthetic scope. Neither fix has been run against a live folder.
+  - [#16](https://github.com/snicolello/project_recovery/issues/16): refresh failed under QMD 2.8.3 on a blank note or a collection with no indexable notes.
+  - [#17](https://github.com/snicolello/project_recovery/issues/17): the authority mapping expected a YAML frontmatter field that ordinary notes may not carry. A manifest can now name a labelled line instead.
+- **Open:** [#23](https://github.com/snicolello/project_recovery/issues/23) holds the remaining pilot and real-use readiness decisions, and [#26](https://github.com/snicolello/project_recovery/issues/26) tracks a difference between the folders QMD skips and the folders refresh scans. All live capture and recovery runs are on hold.
+- **Not started:** R5 (public v1.0).
 
-The remaining pilot and real-use readiness decisions are tracked in [#23](https://github.com/snicolello/project_recovery/issues/23). All live capture and recovery runs are on hold, and real-use readiness is not established. R5 (public v1.0) is not started. Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Optional [last-checked evidence](docs/last-checked-evidence.md) retains historical approval context without establishing current acceptance offline. Current baseline: [`STATE.md`](STATE.md).
+Try the recipe on the synthetic fixtures: [`docs/quickstart.md`](docs/quickstart.md). Optional [last-checked evidence](docs/last-checked-evidence.md) retains historical approval context without establishing current acceptance offline. Current baseline: [`STATE.md`](STATE.md).
 
 ## Why not a new tool
 
@@ -53,10 +90,14 @@ A one-day hand trial (2026-10-10) ran two existing tools, Basic Memory 0.23.2 an
 | R1 | Project manifest and a read, refresh, assemble recipe over QMD, shipped as an agent skill; passes the five scenarios. | Accepted |
 | R2 | Serial GitHub acceptance verification with an explicit "unverified" state offline; index generation in every result; three more scenarios (concurrent edit, budget stress, adversarial cross-project). | Accepted (bounded); reliance gate #6 accepted |
 | R3 | Librarian: a local model takes a bounded field list, runs retrieval, and returns a packet that a deterministic verifier checks span by span. | Deferred, not accepted |
-| R4 | Pilot against a user-selected Obsidian-synced folder, indexes outside the vault. | Accepted as a bounded mechanics pilot; at acceptance, real use blocked by [#16](https://github.com/snicolello/project_recovery/issues/16) and [#17](https://github.com/snicolello/project_recovery/issues/17) |
+| R4 | Pilot against a user-selected Obsidian-synced folder, indexes outside the vault. | Accepted as a bounded mechanics pilot; at acceptance, real use blocked by [#16](https://github.com/snicolello/project_recovery/issues/16) and [#17](https://github.com/snicolello/project_recovery/issues/17), both since closed at synthetic scope |
 | R5 | Public v1.0 with a 15-minute quickstart on Windows and Linux, uninstall steps, stated limitations, and an upstream QMD issue or PR. | Not started |
 
-Each release is gated by an owner ruling. The public summary of every gate, with its date, what was accepted and its stated limits, is in [`docs/releases.md`](docs/releases.md). Detailed coordination records live in the owner's private project hub.
+Each release is gated by an owner ruling. The public summary of every gate, with its date, what was accepted and its stated limits, is in [`docs/releases.md`](docs/releases.md). Detailed coordination records live in the owner's private project hub: links to `stephen-project-hub` in this repository open only for the owner, and everything an outside reader needs is in the public records above.
+
+## How this was built
+
+The code and documents were written with AI coding agents under the owner's direction, and the commits carry the agents' co-author trailers. The owner sets scope, rules on every release gate and merges every pull request. Changes land through pull requests, with review rounds before merge and CI on Ubuntu and Windows. [`docs/usage/outcomes.jsonl`](docs/usage/outcomes.jsonl) records, per ticket, the model used, the review rounds and the findings.
 
 ## Security posture
 

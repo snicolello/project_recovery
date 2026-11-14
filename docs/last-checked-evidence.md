@@ -1,6 +1,6 @@
 # Last-checked decision evidence
 
-Owner-approved option 2 for [#17](https://github.com/snicolello/project_recovery/issues/17), recorded on [Epic #113](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6201195668). GitHub remains the acceptance authority. Historical evidence answers what was previously checked; it never establishes current acceptance offline.
+Owner-approved option 2 for [#17](https://github.com/snicolello/project_recovery/issues/17), recorded on [Epic #113](https://github.com/snicolello/stephen-project-hub/issues/113#issuecomment-6201195668) (owner-only link). GitHub remains the acceptance authority. Historical evidence answers what was previously checked; it never establishes current acceptance offline.
 
 ## What recovery reports
 

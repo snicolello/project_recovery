@@ -12,4 +12,5 @@ runtime-vaults/
 
 # Local scratch
 .scratch/
+.review-*/
 *.log
